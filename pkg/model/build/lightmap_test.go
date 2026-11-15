@@ -1,6 +1,5 @@
 //go:build !js
 
-//nolint:gosec // All read paths are test-owned files beneath t.TempDir.
 package modelbuild_test
 
 import (
@@ -23,7 +22,11 @@ func TestLightmappedGLBPublishesMatchingCachedArtifacts(t *testing.T) {
 	t.Setenv("CC", "compiler-must-not-run")
 	t.Setenv("CXX", "compiler-must-not-run")
 
-	project := t.TempDir()
+	project, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir(filepath.Join(project, "assets"), 0o750); err != nil {
 		t.Fatal(err)
 	}

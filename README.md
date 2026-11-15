@@ -6,11 +6,6 @@ A Go-first WebGPU engine built around one mantra:
 
 > Do as much work as possible ahead of time so you have to do as little as possible at runtime.
 
-Applications explicitly register the GPU features they use with
-`app.Register(features.Standard(), ...)`. Retained UI attaches through
-`uiapp.Attach`; unused implementations are not enabled by default. See the
-[application guide](pkg/engine/README.md).
-
 ## Features
 
 - **Browser and native Linux rendering** with a shared Go API and WebGPU backend.
@@ -19,11 +14,6 @@ Applications explicitly register the GPU features they use with
 - **Retained UI** with layout, controls, text editing, motion and virtual lists. Keyboard operation and semantic metadata are supported; platform screen-reader bridges are not implemented.
 - **Offline asset preparation** for models, textures, atlases, lighting and reflection maps.
 - **GPU compute** with WGSL and explicit buffers.
-
-Native applications and offline asset recipes use pinned standard Go. Browser
-builds also support pinned TinyGo 0.44.0 through `--compiler=tinygo` or
-`mise run samples-tinygo`; each export includes its matching JavaScript bridge
-and compiler identity. Device performance requires separate qualification.
 
 ## Try it
 

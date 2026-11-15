@@ -113,14 +113,24 @@ func TestTinyGoWebExport(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	writeWebFixtures(t, root, map[string]string{
 		"go.mod":                            "module example.test/tinygo\n\ngo 1.27.0\n",
 		"a/view/main.go":                    tinyGoAsyncFixture,
 		"b/view/main.go":                    "package main\nfunc main() { println(\"two\") }\n",
 		"b/view/generated/public/asset.bin": "prepared resource",
 	})
-	output := filepath.Join(t.TempDir(), "site")
+
+	outputRoot, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	output := filepath.Join(outputRoot, "site")
 
 	options := webOptions{compiler: "tinygo"}
 	if err := buildWebDistribution(t.Context(), root, output, "./...", options); err != nil {

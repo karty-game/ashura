@@ -21,7 +21,11 @@ import (
 func TestRecipePreparesCachesCatalogAndPrunesRemovedModel(t *testing.T) {
 	t.Parallel()
 
-	project := t.TempDir()
+	project, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir(filepath.Join(project, "assets"), 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +54,6 @@ func TestRecipePreparesCachesCatalogAndPrunesRemovedModel(t *testing.T) {
 
 	codePath := filepath.Join(project, "generated", "models", "model_AssetsScene.go")
 
-	//nolint:gosec // Test-owned path beneath t.TempDir.
 	code, err := os.ReadFile(codePath)
 	if err != nil {
 		t.Fatal(err)
@@ -99,7 +102,11 @@ func TestRecipePreparesCachesCatalogAndPrunesRemovedModel(t *testing.T) {
 func TestMixedImageAndModelRecipeBuildsDistinctPackages(t *testing.T) {
 	t.Parallel()
 
-	project := t.TempDir()
+	project, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir(filepath.Join(project, "assets"), 0o750); err != nil {
 		t.Fatal(err)
 	}

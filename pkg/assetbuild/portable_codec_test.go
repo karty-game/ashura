@@ -4,6 +4,7 @@ package assetbuild
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 
 	"github.com/karty-game/karty-webgpu/internal/basistranscode"
@@ -142,7 +143,12 @@ func TestDefaultPortableCodecsNeedNoExecutablesAndReuseCache(t *testing.T) {
 	t.Setenv("CXX", "must-not-run")
 	config := Config{Output: "prepared", Pipelines: []Pipeline{{Name: "portable", Output: []Plugin{portableCodecFixture{test: t}}}}}
 
-	options := Options{Project: t.TempDir(), Identity: "portable-codec-qualified-1"}
+	project, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := Options{Project: project, Identity: "portable-codec-qualified-1"}
 	if report, err := Build(t.Context(), config, options); err != nil || report.Executed != 1 {
 		t.Fatal("cold portable build", report, err)
 	}
