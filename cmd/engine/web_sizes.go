@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	defaultSampleLimit int64 = 20_000_000
-	sponzaSampleLimit  int64 = 35_000_000
-	repositorySamples        = "github.com/karty-game/karty-webgpu/samples/"
+	defaultSampleLimit   int64 = 20_000_000
+	impostorsSampleLimit int64 = 30_000_000
+	sponzaSampleLimit    int64 = 35_000_000
+	repositorySamples          = "github.com/karty-game/karty-webgpu/samples/"
 )
 
 var errBudget = errors.New("sample export exceeds its complete-file budget")
@@ -82,6 +83,10 @@ func repositorySampleBudget(item webPackage) (string, int64) {
 
 	if name == "sponza" {
 		return name, sponzaSampleLimit
+	}
+
+	if name == "impostors" {
+		return name, impostorsSampleLimit
 	}
 
 	return name, defaultSampleLimit

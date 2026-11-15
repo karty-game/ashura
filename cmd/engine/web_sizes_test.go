@@ -71,7 +71,7 @@ func TestSponzaLimitCountsAllPublishedProfiles(t *testing.T) {
 	}
 }
 
-func TestOnlySponzaGetsExceptionAndMissingAppsFail(t *testing.T) {
+func TestBudgetExceptionsDoNotApplyToCopiesAndMissingAppsFail(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()
 	sizedFile(t, root, "apps/samples/sponza-copy/app.wasm", defaultSampleLimit+1)
@@ -123,15 +123,45 @@ func TestSampleBudgetsUseCanonicalPackageIdentity(t *testing.T) {
 		limit int64
 	}{
 		{budgetSamplePackages("sponza")[0], sponzaSampleLimit},
+		{budgetSamplePackages("impostors")[0], impostorsSampleLimit},
 		{budgetSamplePackages("future/sample")[0], defaultSampleLimit},
 		{budgetSamplePackages("sponza-copy")[0], defaultSampleLimit},
+		{budgetSamplePackages("impostors-copy")[0], defaultSampleLimit},
 		{webPackage{ImportPath: "example.test/app/samples/sponza", RelativePath: filepath.Join("samples", "sponza")}, 0},
+		{webPackage{ImportPath: "example.test/app/samples/impostors", RelativePath: filepath.Join("samples", "impostors")}, 0},
 		{webPackage{ImportPath: repositorySamples + "sponza", RelativePath: "elsewhere"}, 0},
+		{webPackage{ImportPath: repositorySamples + "impostors", RelativePath: "elsewhere"}, 0},
 		{webPackage{ImportPath: repositorySamples + "../sponza", RelativePath: filepath.Join("samples", "sponza")}, 0},
 	} {
 		if _, got := repositorySampleBudget(test.item); got != test.limit {
 			t.Fatalf("package %+v: limit %d, want %d", test.item, got, test.limit)
 		}
+	}
+}
+
+func TestImpostorsLimitCountsAllModelsAndSharedFiles(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	for path, length := range map[string]int64{
+		"apps/samples/impostors/app.wasm":     1,
+		"apps/samples/impostors/boulder.kimp": impostorsSampleLimit - 4,
+		"apps/samples/impostors/stool.kimp":   1,
+		"apps/samples/impostors/vase.kimp":    1,
+		"apps/samples/basic/app.wasm":         1,
+		"wasm_exec.js":                        1,
+	} {
+		sizedFile(t, root, path, length)
+	}
+
+	packages := budgetSamplePackages("impostors", "basic")
+	if err := checkWebSampleBudgets(root, packages, &bytes.Buffer{}); err != nil {
+		t.Fatal("exact complete impostor limit rejected", err)
+	}
+
+	sizedFile(t, root, "apps/samples/impostors/unreferenced.bin", 1)
+
+	if err := checkWebSampleBudgets(root, packages, &bytes.Buffer{}); !errors.Is(err, errBudget) {
+		t.Fatal("impostor budget excluded an extra published file", err)
 	}
 }
 

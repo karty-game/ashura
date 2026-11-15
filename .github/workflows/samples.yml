@@ -93,6 +93,8 @@ jobs:
             ~/.cache/mise
             ~/.local/share/mise/installs
           key: ${{ runner.os }}-${{ runner.arch }}-mise-asset-tools-${{ hashFiles('mise.toml', 'pkg/assetbuild/managed_tool*.go', 'pkg/assetbuild/tool_releases/*.json', 'pkg/assetbuild/materialize_tools.go') }}
+      - name: Check impostor export budget before full preparation
+        run: mise exec -- go run ./cmd/engine build web ./samples/impostors --compiler=tinygo --output "$RUNNER_TEMP/impostors-budget"
       - name: Run formatting, lint, tests and target builds
         run: mise run check
       - name: Export sample gallery
