@@ -1,0 +1,22 @@
+ASHURA BRANDING
+
+logo.svg           Scalable vector master, transparent, 1024-square viewBox
+logo-256.png       256 x 256 transparent PNG emblem
+favicon.ico        16, 32, 48, 64 and 256px RGBA PNG entries
+favicon-32.png     32 x 32 transparent PNG for modern browsers
+banner-sns.png     1500 x 500 PNG social/profile header
+banner-readme.png  1600 x 500 PNG README banner
+
+README embed from the repository root:
+![Ashura](branding/banner-readme.png)
+
+HTML favicon links (copy files to the appropriate public paths):
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
+
+The two banners reuse the approved guardian artwork. SNS preserves its 3:1
+composition; README uses a centered crop that preserves the full foreground logo.
+PNG exports use Catmull-Rom resampling. Icons preserve genuine alpha transparency.
+The clean vector master is logo.svg; its 1024px raster export is in source/.
+Earlier design explorations are in proposals/. The icon fill is vermilion #F52A0A.
+Imagegen prompts are retained beside the corresponding source/proposal files.

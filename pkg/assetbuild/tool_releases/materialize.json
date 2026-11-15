@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "name": "materialize",
+  "version": "2.0.0",
+  "availability": "published",
+  "artifacts": {
+    "linux-amd64": {
+      "url": "https://github.com/karty-game/karty-tools/releases/download/materialize-v2.0.0/materialize-2.0.0-linux-amd64.zip",
+      "sha256": "676e0adfdec3945f9ffd47585faaabf7307cce0204d0cfc35eef6eb126ff41e6",
+      "format": "zip",
+      "executable": "bin/materialize-cli"
+    },
+    "linux-arm64": {
+      "url": "https://github.com/karty-game/karty-tools/releases/download/materialize-v2.0.0/materialize-2.0.0-linux-arm64.zip",
+      "sha256": "09d93b61eca2d7f24139294a2900a86bfef911c8d7cf4535431738d292df7b92",
+      "format": "zip",
+      "executable": "bin/materialize-cli"
+    },
+    "darwin-arm64": {
+      "url": "https://github.com/karty-game/karty-tools/releases/download/materialize-v2.0.0/materialize-2.0.0-darwin-arm64.zip",
+      "sha256": "1afd52bff3129506e7b3708b244532ba24476af1d231189e908f343cde8d8d6a",
+      "format": "zip",
+      "executable": "bin/materialize-cli"
+    },
+    "windows-amd64": {
+      "url": "https://github.com/karty-game/karty-tools/releases/download/materialize-v2.0.0/materialize-2.0.0-windows-amd64.zip",
+      "sha256": "3dc10e0ef85471ca7846205619a511e891d2edfc9999a634a7adcd373d5b0a14",
+      "format": "zip",
+      "executable": "bin/materialize-cli.exe"
+    }
+  }
+}

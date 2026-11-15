@@ -1,0 +1,27 @@
+{
+  "banner_source": "proposals/ashura-banner-guardian-v1.png",
+  "favicon_sizes": [
+    16,
+    32,
+    48,
+    64,
+    256
+  ],
+  "logo_fill": "#F52A0A",
+  "logo_size": [
+    256,
+    256
+  ],
+  "logo_source": "logo.svg",
+  "png_transparency_verified": true,
+  "readme_size": [
+    1600,
+    500
+  ],
+  "resampling": "Catmull-Rom",
+  "sns_size": [
+    1500,
+    500
+  ],
+  "vector_source": "proposals/ashura-01-sigil-v2.png"
+}

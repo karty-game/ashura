@@ -1,0 +1,132 @@
+min_version = "2026.11.5"
+
+[tools]
+go = "1.27.3"
+tinygo = "0.44.0"
+golangci-lint = "2.15.0"
+node = "26.13.0"
+
+# TinyGo bundles wasm-opt on Linux/macOS. Its Windows distribution requires
+# Binaryen separately; consume the upstream archive, never repackage it.
+[tools."http:tinygo-binaryen"]
+version = "133"
+os = ["windows/x64"]
+url = "https://github.com/WebAssembly/binaryen/releases/download/version_133/binaryen-version_133-x86_64-windows.tar.gz"
+checksum = "sha256:17a2cbeac6b5693c5fbafab3838d3c65fd9c1eb38b05f5baec6c657e8c84995b"
+strip_components = 1
+bin_path = "bin"
+
+[tasks.assets]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Generate sample asset declarations and prepared payloads for development"
+run = "go run ./cmd/engine assets generate ./samples/..."
+
+[tasks.start]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Build and serve the introductory scene"
+run = "go run ./cmd/engine run web ./samples/basic-scene"
+
+[tasks.samples]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Build and serve the full sample gallery with automatic build-tool installation"
+run = "go run ./cmd/engine run web ./samples/..."
+
+[tasks.build-samples]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Export TinyGo browser samples and enforce complete distribution size budgets"
+run = "go run ./cmd/engine build web ./samples/... --compiler=tinygo --output dist/samples"
+
+[tasks.samples-tinygo]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Build and serve the gallery with pinned TinyGo browser applications"
+run = "go run ./cmd/engine run web ./samples/... --compiler=tinygo"
+
+[tasks.build-samples-tinygo]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Export the gallery with pinned TinyGo and enforce sample size budgets"
+depends = ["build-samples"]
+
+[tasks.test-tinygo]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Verify TinyGo gallery export, runtime pairing and atomic failure"
+run = "go test ./cmd/engine -run ^TestTinyGo"
+
+[tasks.fmt]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Format Go source with the repository formatter policy"
+run = "golangci-lint fmt"
+
+[tasks.check-fmt]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Check Go formatting without changing files"
+run = "golangci-lint fmt --diff"
+
+[tasks.lint-go]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Run the configured Go linters"
+run = "golangci-lint run ./..."
+
+[tasks.lint-web]
+env = { CGO_ENABLED = "0", GOOS = "js", GOARCH = "wasm" }
+description = "Lint browser/WASM packages"
+run = "golangci-lint run ./..."
+
+[tasks.test]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Run public API and black-box tests"
+run = "go test ./..."
+
+[tasks.test-wasm-allocations]
+env = { CGO_ENABLED = "0", GOOS = "js", GOARCH = "wasm" }
+description = "Execute runtime allocation, browser ownership and resource cancellation regressions in WASM"
+shell = "node -e"
+run = '''
+const {spawnSync} = require('node:child_process');
+const path = require('node:path');
+function run(command, args, options = {}) {
+  const result = spawnSync(command, args, options);
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+  return result.stdout;
+}
+// Go's -exec parser supports literal quoted fields, without shell escapes.
+function quote(value) {
+  if (!/[\s"']/.test(value)) return value;
+  if (!value.includes('"')) return '"' + value + '"';
+  if (!value.includes("'")) return "'" + value + "'";
+  throw new Error('Go -exec cannot represent a path containing both quote styles');
+}
+const root = run('go', ['env', 'GOROOT'], {encoding: 'utf8'}).trim();
+const runner = path.join(root, 'lib', 'wasm', 'wasm_exec_node.js');
+const cleanRunner = "const r=require('node:child_process').spawnSync(process.execPath,['--stack-size=8192',...process.argv.slice(1)],{env:{},stdio:'inherit'});if(r.error)throw r.error;process.exit(r.status??1)";
+const executor = [process.execPath, '-e', cleanRunner, runner].map(quote).join(' ');
+const tests = 'TestAppUpdateFrameDoesNotAllocate|TestSteadyFrameDoesNotAllocate|TestReflectedInstancesDoNotAllocate|TestReflectionGroupsPreserveProbeVolumesAndTies|TestDetachedMeshRetiresCachedDrawReferences|TestReplacingMeshWithSharedInstanceRetiresOldDraw|TestUnrelatedComponentMutationKeepsInstanceUploadClean|TestWorldRemovalKeepsOrderBounded|TestWorldIterationSurvivesCompactionAndAddition|TestChangingMetricTextKeepsShapingAllocationsBounded|TestSparseInstanceUploadsReuseStagingWithoutGoAllocations|TestUIAttachmentRejectsInvalidOrOccupiedHosts|TestUISubmissionRequiresAttachedBackend|TestFailedUIAttachmentRemainsOwnedUntilDriverClose|TestUnfocusedKeysReachOnlyGlobalUIPreviews|Test.*Feature.*|Test.*Registration.*';
+run('go', ['test', './pkg/engine', './pkg/ui', './internal/platform/browser',
+  '-run', '^(' + tests + ')$', '-exec', executor], {stdio: 'inherit'});
+run('go', ['test', './pkg/scene/resource', './pkg/level',
+  '-run', '^(TestBrowser.*|TestPresentationCloseInsideJSCallback)$', '-exec', executor], {stdio: 'inherit'});
+'''
+
+[tasks.build-native]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Compile native packages"
+run = "go build -o ./dist/build/native/ ./..."
+
+[tasks.build-web]
+env = { CGO_ENABLED = "0", GOOS = "js", GOARCH = "wasm" }
+description = "Compile browser/WASM packages"
+run = "go build -o ./dist/build/web/ ./..."
+
+[tasks.check]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Run formatting, lint, tests and both target builds"
+run = [
+  "mise run assets",
+  "mise run check-fmt",
+  "mise run lint-go",
+  "mise run lint-web",
+  "mise run test",
+  "mise run test-wasm-allocations",
+  "mise run build-native",
+  "mise run build-web",
+]

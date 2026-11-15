@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ashura samples</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; color: #e6e9ef; background: #17191f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100dvh; display: grid; grid-template-columns: 15rem minmax(0, 1fr); }
+    aside { padding: 1.5rem 1rem; overflow-y: auto; background: #1e2129; border-right: 1px solid #343945; }
+    h1 { margin: 0 .65rem; font-size: 1.2rem; font-weight: 650; }
+    aside p { margin: .4rem .65rem 1.5rem; font-size: .85rem; color: #a6adbb; }
+    nav { display: grid; gap: .35rem; }
+    nav a { display: block; padding: .75rem .65rem; border: 1px solid transparent; border-radius: .45rem; color: #c1c9d8; text-decoration: none; font-size: .9rem; }
+    nav a:hover { background: #2a2e39; color: #fff; }
+    nav a[aria-current="page"] { background: #273e51; border-color: #466b8a; color: #e0f2ff; }
+    a:focus-visible { outline: 2px solid #86c6ff; outline-offset: 2px; }
+    main { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    header { min-height: 3.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1.25rem; border-bottom: 1px solid #343945; }
+    h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+    header a { color: #a8d8ff; font-size: .85rem; white-space: nowrap; }
+    iframe { width: 100%; height: 100%; border: 0; background: #17191f; }
+    @media (max-width: 720px) {
+      body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+      aside { padding: .8rem; border-right: 0; border-bottom: 1px solid #343945; overflow: hidden; }
+      h1 { margin: 0 .2rem .6rem; font-size: 1rem; }
+      aside p { display: none; }
+      nav { display: flex; overflow-x: auto; gap: .3rem; padding: .15rem; }
+      nav a { flex-shrink: 0; padding: .55rem .65rem; font-size: .8rem; }
+      header { padding: .65rem 1rem; min-height: 3.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Ashura samples</h1>
+    <p>{{len .}} scenes to explore</p>
+    <nav aria-label="Samples">
+      {{range .}}<a href="./{{.Path}}" target="sample-preview" data-sample-path="{{.Path}}">{{.Name}}</a>
+      {{end}}
+    </nav>
+  </aside>
+  <main>
+    <header>
+      <div>
+        <h2 id="sample-title">{{(index . 0).Name}}</h2>
+      </div>
+      <a id="open-sample" href="./{{(index . 0).Path}}" target="_blank" rel="noopener noreferrer">Open sample ↗</a>
+    </header>
+    <iframe id="sample-preview" name="sample-preview" title="Sample preview" allowfullscreen></iframe>
+  </main>
+  <script>
+    const links = Array.from(document.querySelectorAll("nav a"));
+    const preview = document.getElementById("sample-preview");
+    const title = document.getElementById("sample-title");
+    const openSample = document.getElementById("open-sample");
+
+    function selectedLink() {
+      let path = "";
+      try { path = decodeURIComponent(location.hash.slice(1)); } catch (_) {}
+      return links.find((link) => link.dataset.samplePath === path) || links[0];
+    }
+
+    function selectSample(link) {
+      const path = link.dataset.samplePath;
+      const name = link.textContent.trim();
+      for (const item of links) {
+        if (item === link) item.setAttribute("aria-current", "page");
+        else item.removeAttribute("aria-current");
+      }
+      title.textContent = name;
+      document.title = name + " — Ashura samples";
+      openSample.href = link.getAttribute("href");
+      preview.title = name;
+      if (preview.dataset.samplePath !== path) {
+        preview.dataset.samplePath = path;
+        preview.src = link.getAttribute("href");
+      }
+    }
+
+    for (const link of links) {
+      link.addEventListener("click", (event) => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        const fragment = encodeURIComponent(link.dataset.samplePath);
+        if (location.hash.slice(1) === fragment) selectSample(link);
+        else location.hash = fragment;
+      });
+    }
+    window.addEventListener("hashchange", () => selectSample(selectedLink()));
+    selectSample(selectedLink());
+  </script>
+</body>
+</html>

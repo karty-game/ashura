@@ -1,0 +1,215 @@
+{
+  "space": "room",
+  "cell": [
+    0,
+    0,
+    0
+  ],
+  "objects": [
+    {
+      "name": "polished stone floor",
+      "shape": 0,
+      "size": {
+        "x": 12,
+        "z": 12
+      },
+      "surface": {
+        "color": {
+          "r": 0.62,
+          "g": 0.67,
+          "b": 0.72,
+          "a": 1
+        },
+        "roughness": 0.12,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "polished ceiling",
+      "shape": 0,
+      "size": {
+        "x": 12,
+        "z": 12
+      },
+      "position": {
+        "y": 6
+      },
+      "rotation": {
+        "x": 3.141592653589793
+      },
+      "surface": {
+        "color": {
+          "r": 0.82,
+          "g": 0.86,
+          "b": 0.9,
+          "a": 1
+        },
+        "roughness": 0.14,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "back wall",
+      "shape": 0,
+      "size": {
+        "x": 12,
+        "z": 6
+      },
+      "position": {
+        "y": 3,
+        "z": -6
+      },
+      "rotation": {
+        "x": 1.5707963267948966
+      },
+      "surface": {
+        "color": {
+          "r": 0.72,
+          "g": 0.76,
+          "b": 0.82,
+          "a": 1
+        },
+        "roughness": 0.2,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "front wall",
+      "shape": 0,
+      "size": {
+        "x": 12,
+        "z": 6
+      },
+      "position": {
+        "y": 3,
+        "z": 6
+      },
+      "rotation": {
+        "x": -1.5707963267948966
+      },
+      "surface": {
+        "color": {
+          "r": 0.72,
+          "g": 0.76,
+          "b": 0.82,
+          "a": 1
+        },
+        "roughness": 0.2,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "left wall",
+      "shape": 0,
+      "size": {
+        "x": 6,
+        "z": 12
+      },
+      "position": {
+        "x": -6,
+        "y": 3
+      },
+      "rotation": {
+        "z": -1.5707963267948966
+      },
+      "surface": {
+        "color": {
+          "r": 0.72,
+          "g": 0.4,
+          "b": 0.28,
+          "a": 1
+        },
+        "roughness": 0.17,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "right wall",
+      "shape": 0,
+      "size": {
+        "x": 6,
+        "z": 12
+      },
+      "position": {
+        "x": 6,
+        "y": 3
+      },
+      "rotation": {
+        "z": 1.5707963267948966
+      },
+      "surface": {
+        "color": {
+          "r": 0.28,
+          "g": 0.48,
+          "b": 0.76,
+          "a": 1
+        },
+        "roughness": 0.17,
+        "reflectionStrength": 0.85
+      }
+    },
+    {
+      "name": "center block",
+      "shape": 1,
+      "size": {
+        "x": 1.2,
+        "y": 1.2,
+        "z": 1.2
+      },
+      "position": {
+        "y": 0.7
+      },
+      "rotation": {
+        "y": 0.35
+      },
+      "surface": {
+        "color": {
+          "r": 1,
+          "g": 0.376,
+          "a": 1
+        },
+        "roughness": 0.48
+      }
+    },
+    {
+      "name": "blue orb",
+      "shape": 2,
+      "size": {
+        "x": 1.2
+      },
+      "position": {
+        "x": -2.8,
+        "y": 0.85,
+        "z": -1.5
+      },
+      "surface": {
+        "color": {
+          "b": 1,
+          "a": 1
+        },
+        "roughness": 0.24
+      }
+    },
+    {
+      "name": "red pillar",
+      "shape": 1,
+      "size": {
+        "x": 0.7,
+        "y": 3,
+        "z": 0.7
+      },
+      "position": {
+        "x": 3,
+        "y": 1.5,
+        "z": -2.2
+      },
+      "surface": {
+        "color": {
+          "r": 1,
+          "a": 1
+        },
+        "roughness": 0.55
+      }
+    }
+  ]
+}

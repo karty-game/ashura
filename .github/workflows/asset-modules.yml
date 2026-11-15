@@ -1,0 +1,56 @@
+name: Verify public asset modules
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asset-modules-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  tools:
+    name: Compiler-free public asset tools on ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            runner: ubuntu-24.04
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+          - target: darwin-arm64
+            runner: macos-14
+          - target: windows-amd64
+            runner: windows-2022
+    runs-on: ${{ matrix.runner }}
+    env:
+      GOWORK: 'off'
+      CGO_ENABLED: '0'
+      GOFLAGS: '-tags=nofakecgo'
+      CC: 'compiler-must-not-run'
+      CXX: 'compiler-must-not-run'
+      KARTY_VERIFY_PUBLIC_TOOLS: '1'
+      KARTY_VERIFY_TOOL_HOST: ${{ matrix.target }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install required mise and pinned development tools
+        uses: jdx/mise-action@v3
+      - name: Execute embedded portable codecs and UV preparation
+        run: mise exec -- go test ./internal/basiscodec ./internal/msdfcodec ./internal/xatlas ./internal/lightmapbuild ./pkg/model/build -count=1 -timeout=5m
+      - name: Verify executable-free texture pipeline and cache reuse
+        run: mise exec -- go test ./pkg/assetbuild -run '^TestDefaultPortableCodecsNeedNoExecutablesAndReuseCache$' -count=1 -timeout=5m
+      - name: Install official wgpu-native library and verify offline reuse
+        run: mise exec -- go test ./pkg/level/build -run '^TestPublicNativeLibraryInstallAndOfflineReuse$' -count=1 -timeout=5m
+      - name: Install public Materialize through mise and probe cold and offline execution
+        run: mise exec -- go test ./pkg/assetbuild -run '^TestMaterializePublicInstallAndOfflineProbe$' -count=1 -timeout=10m
+      - name: Verify executable-free font preparation and offline cache reuse
+        run: mise exec -- go test ./pkg/ui/build -run '^TestDefaultFontWASMNeedsNoExecutablesAndReusesCache$' -count=1 -timeout=10m

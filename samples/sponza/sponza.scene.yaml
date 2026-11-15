@@ -1,0 +1,19 @@
+version: 1
+root:
+  id: sponza
+  children:
+    - id: architecture
+      components:
+        render3d.model: {asset: assets/sponza.glb}
+    - id: lamp-power
+      components:
+        logic.bool: {initial: true}
+    - id: courtyard-lamp
+      components:
+        spatial.transform3d: {position: [-6, 3, -1.5]}
+        render3d.point:
+          enabled: /lamp-power
+          bake: static
+          color: [1, 0.9, 0.8]
+          intensity: 2
+          range: 18

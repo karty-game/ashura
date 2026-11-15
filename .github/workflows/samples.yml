@@ -1,0 +1,126 @@
+name: Build, test and publish samples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: samples-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  browser-toolchains:
+    name: TinyGo browser export (${{ matrix.host }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: linux-amd64
+            runner: ubuntu-24.04
+            go-host: linux/amd64
+          - host: linux-arm64
+            runner: ubuntu-24.04-arm
+            go-host: linux/arm64
+          - host: macos-arm64
+            runner: macos-15
+            go-host: darwin/arm64
+          - host: windows-amd64
+            runner: windows-2025
+            go-host: windows/amd64
+    runs-on: ${{ matrix.runner }}
+    env:
+      GOMAXPROCS: '2'
+      GOWORK: 'off'
+      ASHURA_TEST_HOST: ${{ matrix.go-host }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install pinned compilers and dependencies
+        uses: jdx/mise-action@v3
+      - name: Verify TinyGo is installed (regression must not skip)
+        run: mise exec -- tinygo version
+      - name: Verify Windows Binaryen is installed
+        if: runner.os == 'Windows'
+        run: mise exec -- wasm-opt --version
+      - name: Compile, execute and verify browser exports
+        run: mise run test-tinygo
+
+  build:
+    name: Test and build native, WASM and sample gallery
+    runs-on: ubuntu-24.04
+    env:
+      GOMAXPROCS: '2'
+      GOWORK: 'off'
+      CGO_ENABLED: '0'
+      GOFLAGS: '-tags=nofakecgo'
+      KARTY_LIGHTMAP_SOFTWARE_FOR_CI: '1'
+      WGPU_BACKEND: 'vulkan'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install pinned tools
+        uses: jdx/mise-action@v3
+      - name: Cache Go modules and compilation
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('mise.toml', 'go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install software Vulkan for explicit functional asset builds
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvulkan1 mesa-vulkan-drivers
+      - name: Select the native CPU Vulkan adapter
+        shell: bash
+        run: |
+          shopt -s nullglob
+          asset_icds=(/usr/share/vulkan/icd.d/lvp_icd*.json)
+          test "${#asset_icds[@]}" -eq 1
+          echo "VK_ICD_FILENAMES=${asset_icds[0]}" >> "$GITHUB_ENV"
+      - name: Cache mise asset tool downloads and installations
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/mise
+            ~/.local/share/mise/installs
+          key: ${{ runner.os }}-${{ runner.arch }}-mise-asset-tools-${{ hashFiles('mise.toml', 'pkg/assetbuild/managed_tool*.go', 'pkg/assetbuild/tool_releases/*.json', 'pkg/assetbuild/materialize_tools.go') }}
+      - name: Run formatting, lint, tests and target builds
+        run: mise run check
+      - name: Export sample gallery
+        run: mise run build-samples
+      - name: Upload GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/samples
+
+  deploy:
+    name: Publish sample gallery
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [build, browser-toolchains]
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy sample gallery
+        id: deployment
+        uses: actions/deploy-pages@v4

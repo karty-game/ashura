@@ -1,0 +1,45 @@
+{
+  "space": "room",
+  "fill": {
+    "name": "room fill",
+    "direction": {
+      "y": 1
+    },
+    "skyColor": {
+      "r": 0.65,
+      "g": 0.75,
+      "b": 1,
+      "a": 1
+    },
+    "groundColor": {
+      "r": 0.3,
+      "g": 0.27,
+      "b": 0.22,
+      "a": 1
+    },
+    "intensity": 0.35
+  },
+  "key": {
+    "name": "room key",
+    "direction": {
+      "x": -0.3,
+      "y": -1,
+      "z": -0.25
+    },
+    "color": {
+      "r": 1,
+      "g": 1,
+      "b": 1,
+      "a": 1
+    },
+    "intensity": 1.5
+  },
+  "probePosition": {
+    "y": 3
+  },
+  "probeHalfExtents": {
+    "x": 6.1,
+    "y": 3.1,
+    "z": 6.1
+  }
+}

@@ -1,0 +1,29 @@
+# Keep module boundaries tracked so Go ignores scratch code during ./... scans.
+/dist/*
+!/dist/go.mod
+/tmp/*
+!/tmp/go.mod
+/spec/*
+node_modules/
+test-results/
+__pycache__/
+*.py[cod]
+spikes/
+*-RESUME.txt
+.vscode/mise-tools/
+
+
+# Local contributor overrides
+go.work
+go.work.sum
+
+# Local agent configuration
+.codex/
+.agents/
+
+# Prepared sample assets and generated Go catalogs
+/samples/*/generated/
+
+# Local asset-pipeline state and root project output.
+/generated/
+/pkg/ui/fonts/defaultfont/generated/

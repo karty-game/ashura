@@ -1,0 +1,20 @@
+{
+  "package": "msdfgen-wasm",
+  "version": "1.0.0",
+  "archive_url": "https://registry.npmjs.org/msdfgen-wasm/-/msdfgen-wasm-1.0.0.tgz",
+  "archive_integrity": "sha512-Ro4sZzriImt9OVb6ougc/p2N98yZ9PFUwO5YL/jR6af3cfGaZ0Nx8unbF2XU+79EXbgGdECoth6TwGabDOUrYA==",
+  "archive_sha256": "9489ae83ef97651ac5766ba4b84ab3b79144377151ae539655b38fdef9121af3",
+  "git_revision": "5bd05f4d6cffa0f6b6dcdab64292afcbac45f0d5",
+  "wasm_path": "package/wasm/msdfgen.wasm",
+  "wasm_bytes": 1153845,
+  "wasm_sha256": "68ebde09f4e9109583ba3c4477de6eeecffeb56916ce8a84850c82caae510848",
+  "source_build_script": "https://github.com/md5crypt/msdfgen-wasm/blob/5bd05f4d6cffa0f6b6dcdab64292afcbac45f0d5/wasm/build.sh",
+  "declared_sources": {
+    "msdfgen": "v1.12",
+    "freetype": "VER-2-13-3",
+    "libpng": "v1.6.39",
+    "zlib": "v1.2.13",
+    "skia": "chrome/m133"
+  },
+  "modified": false
+}

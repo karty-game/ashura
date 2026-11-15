@@ -1,0 +1,18 @@
+ASHURA — Production exports
+
+Built-in image_gen explored transparent extraction from the approved sigil. That draft is retained as proposals/ashura-logo-extraction-draft.png.
+The final clean vector master is branding/logo.svg, traced from the approved proposals/ashura-01-sigil-v2.png silhouette with its triangular counter preserved and a solid #F52A0A fill. source/logo-master.png is its 1024px raster export.
+PNG resizing/cropping and ICO packaging are deterministic exports. Both banners reuse the approved guardian artwork; no new banner artwork was generated.
+
+Initial logo extraction prompt:
+Use case: background-extraction / logo-brand production asset.
+Extract ONLY the approved red Ashura emblem from the supplied banner and deliver it as a centered square logo icon on a genuinely transparent background with alpha.
+The emblem is the vermilion angular A-shaped six-armed sigil on the LEFT. Preserve that exact chosen design and its proportions: one upward central pointed apex, a triangular counter inside the A, a bold horizontal crossbar, and THREE pairs of outward angular arms. The lowest pair points diagonally down and out. There is NO extra central downward stem under the crossbar. Preserve the left-right symmetry, arm shapes, sharp endpoints, line weight and original red color. Do not redesign or simplify away an arm.
+Remove ALL of the ASHURA wordmark and ALL background. No lettering, guardian figure, rectangular plate, drop shadow, glow, metallic effects or added outlines. Clean crisp logo edges with good antialiasing, flat vermilion fill suitable for a small favicon. Use a square canvas with the symbol centered and approximately 8% transparent padding on each side of its maximum extent; keep the entire symbol visible. This will be exported at 256px and down to 16px, so avoid texture and fine decorative detail. Actual transparency, not a checkerboard illustration. Deliver only the isolated icon.
+
+Cleanup prompt:
+Use case: precise-object-edit. Clean up this transparent logo extraction for production use, changing ONLY the unwanted texture/noise.
+Keep the exact red six-armed A sigil outline, six arms, triangular hole, proportions, symmetry and square placement. No lower central stem.
+Make the emblem a perfect clean flat graphic with ONE solid vermilion red fill (#F52A0A), fully opaque inside its continuous silhouette, and smooth antialiased polygon edges. Remove ALL floating red speckles, dust, stray pixels, ghost shapes, mottling and distressed texture surrounding the emblem and inside the triangular cutout. Every area outside the single connected emblem, including its counter and gaps between arms, must be completely transparent alpha zero. Preserve narrow antialiasing only immediately on the actual outline.
+This must look like a meticulously exported vector logo, NOT a textured illustration or noisy background removal. No text, backdrop, checkerboard drawing, shading, gradient, glow or drop shadow. Genuine transparent PNG output.
+

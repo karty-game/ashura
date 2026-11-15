@@ -1,0 +1,7 @@
+{
+  "Version": 1,
+  "Outputs": [
+    "atlas.rgba",
+    "glyphs.bin"
+  ]
+}

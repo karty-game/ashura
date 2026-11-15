@@ -1,0 +1,121 @@
+version: "2"
+
+# Inspired by Golden config for golangci-lint gist
+# ref: https://gist.github.com/maratori/47a4d00457a92aa426dbd48a18776322
+
+run:
+  timeout: 2m
+
+issues:
+  # Maximum count of issues with the same text.
+  max-same-issues: 5
+
+linters:
+  default: all
+  disable:
+    - depguard # No package allowlist is maintained; repository ownership is documented separately.
+    - exhaustruct # Optional fields and useful zero values are part of the host's APIs.
+    - exhaustruct_v5 # Same zero-value policy as exhaustruct.
+    - ireturn # Backend factories and I/O adapters deliberately return interfaces.
+    - lll # golines owns the 140-column formatting policy.
+    - wrapcheck # Internal sentinel propagation is deliberate; add context at ownership boundaries.
+    - testpackage # State, protocol and allocation tests inspect package-private invariants.
+    - nonamedreturns # Named results make multi-value geometry and protocol helpers readable.
+    - wsl # wsl_v5 owns whitespace policy.
+    - noinlineerr # Scoped inline error guards are the preferred local style.
+    - godoclint # Require useful API documentation without boilerplate for every private helper.
+    - gomodguard # gomodguard_v2 owns module dependency policy.
+
+  settings:
+    goconst:
+      # Independent test fixtures keep their expected values visible.
+      ignore-tests: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    revive:
+      # Count every physical line, including comments and blank lines. Generated
+      # bindings are excluded by their standard generated-code headers.
+      rules:
+        - name: file-length-limit
+          arguments:
+            - max: 500
+              skip-comments: false
+              skip-blank-lines: false
+    funlen:
+      # Checks the number of lines in a function.
+      # If lower than 0, disable the check.
+      # Default: 60
+      lines: 70
+      # Checks the number of statements in a function.
+      # If lower than 0, disable the check.
+      # Default: 40
+      statements: 50
+
+    cyclop:
+      # The maximal cyclomatic complexity a function can have.
+      # Default: 10
+      max-complexity: 20
+      # The maximal average package complexity.
+      # If it's higher than 0.0 (float) the check is enabled.
+      # Default: 0.0
+      package-average: 12.0
+
+    errcheck:
+      # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+      # Such cases aren't reported by default.
+      # Default: false
+      check-type-assertions: true
+
+    misspell:
+      locale: US
+
+    mnd:
+      # List of function patterns to exclude from analysis.
+      # Values always ignored: `time.Date`,
+      # `strconv.FormatInt`, `strconv.FormatUint`, `strconv.FormatFloat`,
+      # `strconv.ParseInt`, `strconv.ParseUint`, `strconv.ParseFloat`.
+      # Default: []
+      checks:
+        - case
+        - condition
+        - operation
+        - return
+        - assign
+
+  exclusions:
+    generated: strict
+    warn-unused: true
+    paths:
+      - internal/webgpu/ # Retained upstream binding; targeted regressions run as normal Go tests.
+
+    rules:
+      - path: '(.+)_test\.go'
+        text: "file-length-limit:"
+        linters: [revive]
+      # Independent fixtures may repeat setup and keep multi-step assertions together.
+      - path: '(.+)_test\.go'
+        linters:
+          - cyclop
+          - funlen
+          - dupl
+
+formatters:
+  exclusions:
+    generated: strict
+    paths:
+      - "(^|/)dist(/|$)"
+      - "(^|/)internal/webgpu(/|$)"
+      - "(^|/)(tmp|spikes)(/|$)"
+      - '(^|/)\.(karty|codex|agents)(/|$)'
+  enable:
+    - gci # checks if code and import statements are formatted, with additional rules
+    - gofmt # checks if the code is formatted according to 'gofmt' command
+    - golines # checks if code is formatted, and fixes long lines
+
+  settings:
+    golines:
+      max-len: 140
+
+output:
+  path-mode: "abs"
