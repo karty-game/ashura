@@ -5,6 +5,7 @@ package assetbuild
 import (
 	"context"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/karty-game/karty-webgpu/internal/basistranscode"
@@ -73,7 +74,7 @@ func (fixture portableCodecFixture) run(ctx context.Context) Bundle {
 			t.Fatal("native mip/transfer admission", target, err)
 		}
 
-		files[string(target)+".ktx2"] = encoded
+		files[strconv.Itoa(int(target))+".ktx2"] = encoded
 	}
 
 	etc1s, err := PrepareETC1S(ctx, source, 192)

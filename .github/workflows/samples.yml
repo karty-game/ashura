@@ -46,8 +46,7 @@ jobs:
         uses: jdx/mise-action@v3
       - name: Verify TinyGo is installed (regression must not skip)
         run: mise exec -- tinygo version
-      - name: Verify Windows Binaryen is installed
-        if: runner.os == 'Windows'
+      - name: Verify WebAssembly optimizer is installed
         run: mise exec -- wasm-opt --version
       - name: Compile, execute and verify browser exports
         run: mise run test-tinygo
