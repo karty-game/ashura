@@ -141,6 +141,7 @@ func TestSampleBudgetsUseCanonicalPackageIdentity(t *testing.T) {
 
 func TestImpostorsLimitCountsAllModelsAndSharedFiles(t *testing.T) {
 	t.Parallel()
+
 	root := t.TempDir()
 	for path, length := range map[string]int64{
 		"apps/samples/impostors/app.wasm":     1,
