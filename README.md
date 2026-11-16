@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-    // Initialize Engine
+	// Initialize Engine
 	app := engine.NewApp(engine.AppConfig{Title: "Cube", CanvasID: "game"})
 	defer app.Close()
 	if err := app.Register(features.Standard()); err != nil {
@@ -39,18 +39,18 @@ func main() {
 
 	world := engine.NewWorld()
 
-    // Create Orbit Camera
+	// Create Orbit Camera
 	projection, orbit := camera.Orbit()
 	orbit.Distance = 3
 	world.Add(engine.DefaultTransform(), projection, orbit)
 	world.Add(light.DefaultHemisphere("sky"))
 
-    // Create Cube
+	// Create Cube
 	pose := engine.DefaultTransform()
 	pose.Rotation = engine.Vector3{X: .4, Y: .6}
 	world.Add(mesh.NewBox("cube", mesh.BoxOptions{}), pose, material.DefaultStandard())
 
-    // Render
+	// Render
 	if err := app.Run(world); err != nil {
 		panic(err)
 	}
