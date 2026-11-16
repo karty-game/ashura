@@ -80,8 +80,10 @@ same `--profile` and `--no-cache` options as browser previews are supported.
 
 The [sample workflow](../.github/workflows/samples.yml) runs the full mise check
 gate (assets, formatting, native/browser lint, tests and target builds), and
-exports the full gallery on pull requests
-and pushes to `main`. After successful checks on `main`, it deploys only
+exports the full gallery once on Linux amd64 for pull requests and pushes to
+`main`. The same job verifies TinyGo/Go export and runtime pairing through the
+CLI test suite; sample publication has no host OS matrix. After successful
+checks on `main`, it deploys only
 `dist/samples/` through the `github-pages` environment. It can also be run manually;
 only runs on `main` deploy. In the repository's **Settings → Pages**, select
 **GitHub Actions** as the build and deployment source before the first deployment.
