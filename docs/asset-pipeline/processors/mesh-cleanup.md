@@ -26,7 +26,7 @@ The implementation is Go and adds no runtime decoder or compression format.
 ## How to use it
 
 The maintained level path runs cleanup after
-[PreparedGLB](../importers/model-prepared-glb.md), before scene import and UV
+[PreparedGLB](../importers/model-glb.md#pass-the-model-to-later-build-steps), before scene import and UV
 generation. Import `modelbuild` from `pkg/model/build` and `levelbuild` from
 `pkg/level/build` under `github.com/karty-game/karty-webgpu/`:
 

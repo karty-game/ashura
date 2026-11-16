@@ -76,7 +76,7 @@ Add the imports from [GLBWithOptions](../importers/model-glb.md) and use the
 [recipe wrapper](../getting-started.md#prepare-some-textures). `GLBWithOptions` prepares the source model
 first; `Cards` consumes it and leaves the original model available too. No
 `KTX2` or `GoCatalog` is needed. Both stages publish their own output. If only
-the proxy is needed, [PreparedGLB](../importers/model-prepared-glb.md) can import the model without
+the proxy is needed, [PreparedGLB](../importers/model-glb.md#pass-the-model-to-later-build-steps) can import the model without
 publishing the original model catalog.
 
 Place `Cards` directly after its importer. It currently selects resources during

@@ -2,7 +2,14 @@
 
 GLB is an authoring format. The build-only `model/build.GLBWithOptions` asset plugin
 prepares GPU-ready geometry/textures and named generated declarations. Games
-import `model`, not the build package. A recipe uses:
+import `model`, not the build package.
+
+Both `GLBWithOptions` and `PreparedGLB` read ordinary source `.glb` files.
+`GLBWithOptions` writes an embedded model catalog; `PreparedGLB` keeps the
+converted result inside the build pipeline for level or impostor plugins.
+See [the GLB import guide](../../docs/asset-pipeline/importers/model-glb.md).
+
+A recipe uses:
 
 ```go
 assetbuild.Config{

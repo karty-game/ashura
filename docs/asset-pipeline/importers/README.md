@@ -8,13 +8,13 @@ its data, generators derive other assets, and publishers write the result.
 | I have… | Use | Result |
 | --- | --- | --- |
 | PNG or JPEG artwork | [Image import](image-import.md) | Images ready for resizing, atlases or texture encoding. |
-| A static GLB to load directly | [GLBWithOptions](model-glb.md) | A prepared model with an embedded Go accessor. |
-| GLB models for a level or an impostor-only recipe | [PreparedGLB](model-prepared-glb.md) | Prepared models consumed by the downstream level or impostor plugins. |
+| A GLB model | [Import GLB models](model-glb.md) | Embed the converted model, or pass it to level/impostor plugins. |
 | YAML scenes and prefabs | [Level scenes](scene-lightmap-baking.md) | Gameplay constructors and static geometry for chunking and lighting preparation. |
 
-`GLBWithOptions` can reduce embedded texture resolution. `PreparedGLB` keeps the
-authored texture resolution. Both read the same supported subset of
-[glTF/GLB](https://www.khronos.org/gltf/).
+The model guide covers two output choices for the same ordinary GLB input.
+`GLBWithOptions` publishes an embedded catalog and can cap texture resolution;
+`PreparedGLB` keeps the converted result inside the build pipeline for later
+plugins and preserves authored texture resolution.
 
 ```mermaid
 flowchart LR

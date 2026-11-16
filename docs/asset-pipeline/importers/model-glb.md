@@ -1,35 +1,38 @@
-# Import static GLB models
+# Import GLB models
 
-[Asset pipeline](../README.md) · [Importers](README.md) · Static models
+[Asset pipeline](../README.md) · [Importers](README.md)
 
-Use `modelbuild.GLBWithOptions(options)` to turn a static model into an asset your game can load
-directly. The build applies node transforms, prepares geometry and embedded
-textures, and creates smaller texture levels for distant views. It writes the
-prepared model and a Go function that embeds it.
+Both model import functions read an ordinary `.glb` source file, such as a model
+you downloaded or exported from a modeling tool. During the build, Ashura
+applies node transforms and converts its geometry and textures into data the
+game can load directly.
 
-[GLB is the binary form of glTF](https://www.khronos.org/gltf/). Ashura supports
-a static subset of that format, described below.
+Choose what happens to that converted result:
+
+| I want to… | Use | Result |
+| --- | --- | --- |
+| Embed the model and load it in the game | `modelbuild.GLBWithOptions(...)` | Writes model data and a Go catalog that embeds it. |
+| Feed the model into a level bake or impostor generator | `modelbuild.PreparedGLB()` | Keeps the converted model inside the build pipeline for later plugins, without publishing the original model. |
+
+The word “prepared” describes Ashura's intermediate output. The input to both
+functions is the same ordinary GLB format.
 
 Import `modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"`.
 
 ## Settings and defaults
 
-Pass `modelbuild.GLBOptions{}` to keep authored texture dimensions.
-
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `GLBOptions.MaxTextureDimension` | `0` | Keep authored resolution. A positive value caps either dimension, preserving aspect ratio, before mip generation. Accepted range: 0–4096. |
-| `Pipeline.Input` | No inputs | Project-relative paths or patterns. Only `.glb` files are selected, case-insensitively. |
+| `Pipeline.Input` | No inputs | Project-relative paths or patterns. Both functions select `.glb` files, case-insensitively. |
+| `GLBOptions.MaxTextureDimension` | `0` | For `GLBWithOptions`: keep authored texture dimensions. A positive value caps either dimension, preserves aspect ratio and never upscales. Range: 0–4096. Applied before mip generation. |
 
-For each source, the plugin writes `models/model_<Name>.kmodel` and
-`models/model_<Name>.go` below `Config.Output`. The generated package is `models`.
-For `assets/rock.glb`, it provides `models.AssetsRock()`, returning a `model.Asset`.
-Names include the source path; two sources that produce the same Go name fail
-the build.
+Pass `modelbuild.GLBOptions{}` to keep authored texture dimensions with
+`GLBWithOptions`. `PreparedGLB` has no options and keeps authored texture
+resolution. Both generate texture mipmaps during the build.
 
-## How to use it
+## Embed the model in the game
 
-Place the plugin in `Import` in your [recipe](../getting-started.md):
+Place `GLBWithOptions` in your [recipe](../getting-started.md):
 
 ```go
 assetbuild.Pipeline{
@@ -43,23 +46,56 @@ assetbuild.Pipeline{
 }
 ```
 
+For `assets/rock.glb`, output under `Config.Output` contains
+`models/model_AssetsRock.kmodel` and `models/model_AssetsRock.go`. The generated
+`models` package provides `models.AssetsRock()`, returning a `model.Asset`.
+Source paths determine the Go names; name collisions fail the build.
+
 For a game module named `example.com/game`, import
 `"example.com/game/generated/models"`, then call
-`models.AssetsRock().Load(app)`. The generated asset contains the prepared bytes;
-the game does not open the original GLB or decode its source images.
+`models.AssetsRock().Load(app)`. The accessor embeds the converted model; the
+game doesn't open the source GLB or decode its source images.
 
-## When to use another importer
+## Pass the model to later build steps
 
-Use [PreparedGLB](model-prepared-glb.md) for a level bake or an impostor-only
-recipe. It leaves publication to those downstream plugins. `GLBWithOptions`
-publishes its own embedded model while importing; later geometry changes do
-not replace that published copy. Texture resizing belongs to `GLBWithOptions`;
-`PreparedGLB` has no texture-cap option.
+Use `PreparedGLB` when a level or impostor plugin will consume the converted
+model. The maintained level path starts like this. Import `levelbuild` from
+`github.com/karty-game/karty-webgpu/pkg/level/build` and `meshbuild` from
+`github.com/karty-game/karty-webgpu/pkg/mesh/build`:
 
-Supported models use embedded GLB 2.0 data and the engine's lightweight Standard
-materials. Opaque and MASK materials are supported. Animation, skins, BLEND,
-external images, extensions and full glTF metallic/PBR workflows are rejected.
-See the [complete supported profile and limits](../../../pkg/model/README.md)
-before exporting a new model.
+```go
+Import: []assetbuild.Plugin{
+    modelbuild.PreparedGLB(),
+    meshbuild.Cleanup(),
+    levelbuild.Scenes(levelbuild.SceneOptions{
+        Input: []string{"levels/main.scene.yaml"},
+    }),
+},
+Process: []assetbuild.Plugin{
+    levelbuild.Materials(levelbuild.MaterialOptions{}),
+    levelbuild.StaticChunks(levelbuild.ChunkOptions{}),
+    // Add UV preparation, optimization and lighting bake here.
+},
+```
+
+Declare the referenced GLBs and YAML in `Pipeline.Input`. Later plugins refer
+to models by their source path, such as `assets/building.glb`. Keep these steps
+in the same pipeline. [Level scene import](scene-lightmap-baking.md) and the
+[Sponza recipe](../../../samples/sponza/asset.config.go) show the full workflow.
+
+For proxy-only output, use `PreparedGLB` directly before
+[impostor cards](../generators/model-impostors.md). That generator publishes its
+own asset without embedding the full source model. `GLBWithOptions` instead
+publishes the original model during import, so later processing doesn't replace
+that already-published copy.
+
+## Supported GLB files
+
+[GLB is the binary form of glTF](https://www.khronos.org/gltf/). Ashura supports
+static GLB 2.0 models with embedded images and lightweight Standard materials.
+Opaque and MASK materials are supported. Animation, skins, BLEND, external
+images, extensions and full metallic/PBR workflows are rejected. Check the
+[complete profile and limits](../../../pkg/model/README.md) when choosing or
+exporting a model.
 
 [Go implementation](../../../pkg/model/build/glb.go)

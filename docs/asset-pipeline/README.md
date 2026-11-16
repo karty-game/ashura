@@ -35,7 +35,7 @@ for example. Each guide shows where to put the plugin and what else it needs.
 | Textures for a material | [Image importer](importers/image-import.md), then [texture output](publishers/image-ktx2.md) |
 | Icons or panel artwork | [UI images](publishers/ui-images.md) |
 | Sprites | [2D images](publishers/sprite-images.md) |
-| A static model | [GLBWithOptions](importers/model-glb.md); use [PreparedGLB](importers/model-prepared-glb.md) for levels or impostor-only output |
+| A GLB model to embed or use in a level/impostor recipe | [Import GLB models](importers/model-glb.md) |
 | A level with models, lights, logic and prefabs | [Level scene import](importers/scene-lightmap-baking.md) |
 | A cheaper substitute for a distant model | [Impostor cards](generators/model-impostors.md) |
 | A reflection capture from a primitive room | [Reflection generator](generators/scene-reflections.md) |

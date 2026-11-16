@@ -166,7 +166,7 @@ data aligned. These offline steps add no mesh decoder to the game.
 | `model/build.GLBWithOptions(GLBOptions{})` | Flatten static GLB scenes into GPU-ready model resources and generated declarations |
 | `impostor/build.Cards(Options{...})` | Capture prepared model resources into multi-view color/normal/depth cards and generated declarations |
 | `level/build` plugins | Resolve scenes, partition static geometry, unwrap density-controlled UV1, bake RNM and publish external chunk assets |
-| `model/build.PreparedGLB()` | Expose prepared models to level processors without embedding/publishing original model catalogs |
+| `model/build.PreparedGLB()` | Read ordinary source GLBs for later level/impostor steps without publishing the original model |
 
 Select compressed image storage explicitly in the output stage:
 

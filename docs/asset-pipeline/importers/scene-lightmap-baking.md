@@ -46,7 +46,7 @@ portal connection.
 ## Start a baked-lighting recipe
 
 This is the beginning of a [recipe](../getting-started.md). Import `modelbuild`
-as shown in [PreparedGLB](model-prepared-glb.md):
+as shown in [GLB import for later build steps](model-glb.md#pass-the-model-to-later-build-steps):
 
 ```go
 assetbuild.Pipeline{
