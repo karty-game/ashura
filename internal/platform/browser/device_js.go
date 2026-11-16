@@ -9,6 +9,11 @@ import (
 
 var errDeviceLost = errors.New("browser WebGPU device was lost")
 
+func (driver *Driver) startDeviceWatch() {
+	driver.deviceWatchDone = make(chan struct{})
+	go driver.watchDevice()
+}
+
 // watchDevice owns its promise callbacks until loss or explicit device destruction.
 // It sleeps on a promise rather than polling or waiting during frame submission.
 func (driver *Driver) watchDevice() {

@@ -40,20 +40,14 @@ func (driver *Driver) present(frame render.Frame) error {
 
 	driver.metrics.Step(diagnostics.PreparePhase)
 
-	texture := driver.context.Call("getCurrentTexture")
-	if texture.IsUndefined() || texture.IsNull() {
-		return errSurfaceTexture
+	if !driver.frameHost.Call("begin", driver.context, driver.device).Bool() {
+		return errFrameStart
 	}
 
-	view := texture.Call("createView")
-	if view.IsUndefined() || view.IsNull() {
-		return errSurfaceView
-	}
+	driver.frameOpen = true
+	defer driver.abortFrame()
 
-	encoder := driver.device.Call("createCommandEncoder")
-	if encoder.IsUndefined() || encoder.IsNull() {
-		return errCommandEncoder
-	}
+	view, encoder := driver.surfaceView, driver.frameEncoder
 
 	driver.metrics.Step(diagnostics.SurfacePhase)
 
@@ -79,7 +73,7 @@ func (driver *Driver) present(frame render.Frame) error {
 
 	driver.metrics.Step(diagnostics.RenderPhase)
 
-	return driver.submit(encoder)
+	return driver.submit()
 }
 
 func (driver *Driver) updateAttachedUI(frame *uipaint.Frame) error {
@@ -106,7 +100,7 @@ func (driver *Driver) beginScenePass(encoder, view js.Value, clearColor [4]float
 	driver.attachColor(view)
 	driver.depthAttach.Set(viewProperty, driver.depthView)
 
-	pass := encoder.Call("beginRenderPass", driver.passDescriptor)
+	pass := driver.startRenderPass(encoder, driver.passDescriptor)
 	if pass.IsUndefined() || pass.IsNull() {
 		return js.Undefined(), errRenderPass
 	}
@@ -114,20 +108,12 @@ func (driver *Driver) beginScenePass(encoder, view js.Value, clearColor [4]float
 	return pass, nil
 }
 
-func (driver *Driver) submit(encoder js.Value) error {
-	commands := encoder.Call("finish")
-	if commands.IsUndefined() || commands.IsNull() {
+func (driver *Driver) submit() error {
+	if !driver.frameHost.Call("submit", driver.queue).Bool() {
 		return errCommandBuffer
 	}
 
-	queue := driver.queue
-	if driver.submitBuffers.IsUndefined() {
-		driver.submitBuffers = js.Global().Get("Array").New(1)
-	}
-
-	driver.submitBuffers.SetIndex(0, commands)
-	queue.Call("submit", driver.submitBuffers)
-	driver.submitBuffers.SetIndex(0, js.Undefined())
+	driver.frameOpen = false
 	driver.metrics.Step(diagnostics.SubmitPhase)
 
 	return nil
@@ -230,6 +216,7 @@ func (driver *Driver) prepareScenePass() error {
 	driver.passDescriptor = jsObject(map[string]any{
 		uiAttachments: driver.attachments, "depthStencilAttachment": driver.depthAttach,
 	})
+	driver.clearPassDescriptor = jsObject(map[string]any{uiAttachments: driver.attachments})
 
 	return nil
 }
@@ -317,22 +304,18 @@ func (driver *Driver) drawMaterials(pass js.Value, frame render.Frame) error {
 			activeImpostor = draw.call.Impostor != nil
 		}
 
-		pass.Call("setVertexBuffer", 0, draw.geometry.vertices)
-		pass.Call("setVertexBuffer", 1, draw.instance.buffer)
-
+		lightmapUV := js.Undefined()
 		if draw.call.Impostor == nil {
-			uv := draw.geometry.lightmapUV
-			if uv.IsUndefined() {
-				uv = draw.geometry.vertices
+			lightmapUV = draw.geometry.lightmapUV
+			if lightmapUV.IsUndefined() {
+				lightmapUV = draw.geometry.vertices
 			}
-
-			pass.Call("setVertexBuffer", 2, uv)
 		}
 
-		pass.Call("setIndexBuffer", draw.geometry.indices, driver.indexFormat)
-		pass.Call("setBindGroup", 0, group)
-		// WebGPU defaults firstIndex, baseVertex and firstInstance to zero.
-		pass.Call("drawIndexed", draw.count, draw.instances)
+		// Forward the existing bindings/draw together so TinyGo creates argument
+		// storage once per draw rather than once per individual GPU command.
+		pass.Call("drawMesh", draw.geometry.vertices, draw.instance.buffer, lightmapUV,
+			draw.geometry.indices, driver.indexFormat, group, draw.count, draw.instances)
 		driver.metrics.Draw(
 			uint64(draw.count),     //nolint:gosec // Prepared index counts come from nonnegative slice lengths.
 			uint64(draw.instances), //nolint:gosec // Prepared instance counts come from nonnegative slice lengths.

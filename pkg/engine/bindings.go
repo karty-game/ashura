@@ -13,6 +13,7 @@ type entityBindings struct {
 	mesh             meshComponent
 	prepared         preparedMeshComponent
 	identity         meshIdentity
+	sourceBatch      *sourceBatches
 	billboard        billboardComponent
 	material         materialComponent
 	alphaMask        alphaMaskMaterialComponent

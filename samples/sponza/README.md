@@ -150,7 +150,7 @@ The output is ignored `generated/`: typed `levels/` descriptors, compiled scene
 metadata and `public/levels/` payloads. The normal CLI stages only that active
 publication. Historical comparison outputs elsewhere under `generated/` are
 not part of the exported sample. The complete exported sample has a
-35,000,000-byte budget, including its WASM, host files and all four published
+45,000,000-byte budget, including its standard-Go WASM, host files and all four published
 RGB/RNM device profiles. Count logical file lengths across the whole export;
 filesystem compression and selecting only one profile do not reduce that total.
 See [lightmapper design](../../spec/lightmap.md),

@@ -251,6 +251,11 @@ func TestUnchangedOverlayFramesDoNotAllocateOrRelayout(t *testing.T) {
 		if !view.PreventsPointerLock() {
 			t.Fatal("overlay cursor state changed")
 		}
+
+		// Exercise reverse hit/scroll/overlay scans even when the point misses.
+		if !view.ConsumesPointer(499, 1) || view.ConsumesPointer(-1, -1) {
+			t.Fatal("unchanged overlay changed pointer consumption")
+		}
 	})
 	if allocations != 0 || frameErr != nil || view.Stats() != before {
 		t.Fatal("unchanged overlay performed frame work", allocations, frameErr, before, view.Stats())

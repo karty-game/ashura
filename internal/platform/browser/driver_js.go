@@ -49,7 +49,12 @@ type Driver struct {
 	draws                   []browserDraw
 	geometry                render.GeometryCache[gpuGeometry]
 	instances               map[uint32]*gpuInstances
-	submitBuffers           js.Value
+	frameHost               js.Value
+	frameEncoder            js.Value
+	renderPass              js.Value
+	computePass             js.Value
+	surfaceView             js.Value
+	frameOpen               bool
 	textures                map[*texturedata.Texture]gpuTexture
 	materials               map[uint32]*gpuMaterial
 	impostorViews           map[*impostordata.Document]*gpuImpostor
@@ -74,6 +79,7 @@ type Driver struct {
 	colorAttach            js.Value
 	depthAttach            js.Value
 	passDescriptor         js.Value
+	clearPassDescriptor    js.Value
 	attachments            js.Value
 	depthTexture           js.Value
 	depthView              js.Value
@@ -103,6 +109,11 @@ type Driver struct {
 // New obtains a browser WebGPU device and selects or creates a canvas.
 func New(config platform.Config) (platform.Driver, error) {
 	if err := platform.ValidateConfigFeatures(config); err != nil {
+		return nil, err
+	}
+
+	host, err := newFrameHost()
+	if err != nil {
 		return nil, err
 	}
 
@@ -153,6 +164,8 @@ func New(config platform.Config) (platform.Driver, error) {
 		canvas: canvas, context: context, device: device, queue: device.Get("queue"),
 		sampleCount: config.SampleCount, colorFormat: format, metrics: config.Metrics,
 	}
+	driver.initFrameHost(host)
+
 	if err := driver.prepareScene(config); err != nil {
 		return nil, err
 	}
@@ -163,8 +176,7 @@ func New(config platform.Config) (platform.Driver, error) {
 		return nil, err
 	}
 
-	driver.deviceWatchDone = make(chan struct{})
-	go driver.watchDevice()
+	driver.startDeviceWatch()
 
 	return driver, nil
 }
@@ -262,6 +274,12 @@ func (driver *Driver) Close() error {
 	driver.releaseInstances()
 
 	driver.releaseTargets()
+
+	if !driver.frameHost.IsUndefined() && !driver.frameHost.IsNull() {
+		driver.frameHost.Call("close")
+	}
+
+	driver.frameOpen = false
 
 	if !driver.device.IsUndefined() && !driver.device.IsNull() {
 		driver.device.Call("destroy")

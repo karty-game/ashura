@@ -166,6 +166,36 @@ func TestImpostorsLimitCountsAllModelsAndSharedFiles(t *testing.T) {
 	}
 }
 
+func TestMixedRuntimeFilesCountAgainstEverySample(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	for path, length := range map[string]int64{
+		"apps/samples/basic-scene/app.wasm":        defaultSampleLimit - 7,
+		"apps/samples/basic-scene/build-info.json": 1,
+		"apps/samples/instancing/app.wasm":         1,
+		"runtimes/go/wasm_exec.js":                 1,
+		"runtimes/go/build-info.json":              1,
+		"runtimes/tinygo/wasm_exec.js":             1,
+		"runtimes/tinygo/build-info.json":          1,
+		"build-info.json":                          1,
+		"index.html":                               1,
+	} {
+		sizedFile(t, root, path, length)
+	}
+
+	packages := budgetSamplePackages("basic-scene", "instancing")
+	if err := checkWebSampleBudgets(root, packages, &bytes.Buffer{}); err != nil {
+		t.Fatal("exact limit including both runtime bundles rejected", err)
+	}
+
+	sizedFile(t, root, "runtimes/unreferenced.bin", 1)
+
+	if err := checkWebSampleBudgets(root, packages, &bytes.Buffer{}); !errors.Is(err, errBudget) {
+		t.Fatal("unreferenced runtime bytes excluded from complete-file limit", err)
+	}
+}
+
 func TestMixedExportCountsOrphansAndForeignApplications(t *testing.T) {
 	t.Parallel()
 	root := t.TempDir()

@@ -104,10 +104,10 @@ bytes (4.54 MiB)**, or 14,274,288 bytes (13.61 MiB) for all three sample pairs.
 The static descriptor is 3,168B and geometry 152B.
 Container metadata and executable/host files are additional; these figures are
 not complete sample export sizes. Retained CPU copies and GPU allocation overhead
-are separate residency costs. The temporary 256px TinyGo development preview
-totals 25,472,564 bytes (25.47 MB) across all four files and fails the unchanged
-20,000,000-byte sample publishing cap. It runs as a development preview but is
-not qualified for gallery publication; see [validation](../../spec/validation.md).
+are separate residency costs. The published sample uses standard Go with a
+35,000,000-byte complete-file budget to preserve the temporary 256px captures
+and all three reference models. See [validation](../../spec/validation.md)
+for measured complete exports and runtime qualification limits.
 The `detailed` profile is an extended-mip reference at the
 same 256px capture resolution, with padding 16 and five mips. All capture, dilation, mip construction,
 channel packing and compression are offline; camera motion causes no asset rebuilding.

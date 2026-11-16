@@ -75,6 +75,14 @@ This example is compiled in [api_examples_test.go](api_examples_test.go). Runnin
 it opens a native window, or the named canvas when built for browser/WASM.
 The [samples](../../samples/README.md) include the browser build and host setup.
 
+CLI browser exports include the version 1 frame host before WASM startup. Custom
+pages must retain that bootstrap or load the matching
+[framehost.js](../../internal/platform/browser/framehost/framehost.js) first,
+alongside the selected compiler's matching `wasm_exec.js`. Missing or incompatible
+hosts fail during initialization. The host keeps transient WebGPU objects in
+JavaScript to avoid Go finalizer churn; it does not make the entire browser loop
+allocation-free.
+
 ## Setup, updates and errors
 
 `NewApp` creates an owner; `Run` opens its backend. Declare compute buffers,

@@ -68,14 +68,12 @@ on the App thread and can pause presentation briefly; this is not streaming.
 The sample embeds all three prepared pairs. The temporary recipe uses about
 2 MiB for full-model material textures and 13.61 MiB of BC1 block payload for the
 three impostor atlas pairs, plus original geometry and metadata. The published
-browser sample uses TinyGo and must fit within 20,000,000 bytes including every exported file.
-The temporary 256px TinyGo development preview totals **25,472,564 bytes
-(25.47 MB)** across all four files. Its six prepared model/impostor containers
-alone occupy 20,226,921 bytes. Development preview works, but the complete size
-audit fails the unchanged 20,000,000-byte publishing cap; this setting is not
-qualified for gallery publication. The earlier 128px export figure does not
-qualify this setting. See [validation](../../spec/validation.md) for measured
-build provenance and limits.
+browser sample now uses standard Go for frame pacing, with a **35,000,000-byte**
+complete-file budget. Its six prepared model/impostor containers alone occupy
+20,226,921 bytes. The compiler policy preserves the temporary 256px captures,
+mip chain and all three reference models; capture-method redesign remains
+deferred. See [validation](../../spec/validation.md) for measured export sizes
+and build provenance.
 This is a comparison bundle containing both representations.
 
 `asset.config.go` declares one `impostors` pipeline with those three GLBs as

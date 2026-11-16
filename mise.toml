@@ -39,23 +39,23 @@ run = "go run ./cmd/engine run web ./samples/..."
 
 [tasks.build-samples]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Export TinyGo browser samples and enforce complete distribution size budgets"
-run = "go run ./cmd/engine build web ./samples/... --compiler=tinygo --output dist/samples"
+description = "Export Basic Scene with TinyGo and other samples with Go; enforce complete-file budgets"
+run = "go run ./cmd/engine build web ./samples/... --compiler=auto --output dist/samples"
 
 [tasks.samples-tinygo]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Build and serve the gallery with pinned TinyGo browser applications"
-run = "go run ./cmd/engine run web ./samples/... --compiler=tinygo"
+description = "Build and serve Basic Scene with pinned TinyGo"
+run = "go run ./cmd/engine run web ./samples/basic-scene --compiler=tinygo"
 
 [tasks.build-samples-tinygo]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Export the gallery with pinned TinyGo and enforce sample size budgets"
-depends = ["build-samples"]
+description = "Export Basic Scene with pinned TinyGo and enforce its complete-file budget"
+run = "go run ./cmd/engine build web ./samples/basic-scene --compiler=tinygo --output dist/basic-scene-tinygo"
 
 [tasks.test-tinygo]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Verify TinyGo gallery export, runtime pairing and atomic failure"
-run = "go test ./cmd/engine -run ^TestTinyGo"
+description = "Verify TinyGo and mixed-gallery export, runtime pairing and atomic failure"
+run = 'go test ./cmd/engine -run "^Test(TinyGo|MixedWebGallery|AutomaticSampleCompiler)"'
 
 [tasks.fmt]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
@@ -106,12 +106,21 @@ const root = run('go', ['env', 'GOROOT'], {encoding: 'utf8'}).trim();
 const runner = path.join(root, 'lib', 'wasm', 'wasm_exec_node.js');
 const cleanRunner = "const r=require('node:child_process').spawnSync(process.execPath,['--stack-size=8192',...process.argv.slice(1)],{env:{},stdio:'inherit'});if(r.error)throw r.error;process.exit(r.status??1)";
 const executor = [process.execPath, '-e', cleanRunner, runner].map(quote).join(' ');
-const tests = 'TestAppUpdateFrameDoesNotAllocate|TestSteadyFrameDoesNotAllocate|TestReflectedInstancesDoNotAllocate|TestReflectionGroupsPreserveProbeVolumesAndTies|TestDetachedMeshRetiresCachedDrawReferences|TestReplacingMeshWithSharedInstanceRetiresOldDraw|TestUnrelatedComponentMutationKeepsInstanceUploadClean|TestWorldRemovalKeepsOrderBounded|TestWorldIterationSurvivesCompactionAndAddition|TestChangingMetricTextKeepsShapingAllocationsBounded|TestSparseInstanceUploadsReuseStagingWithoutGoAllocations|TestUIAttachmentRejectsInvalidOrOccupiedHosts|TestUISubmissionRequiresAttachedBackend|TestFailedUIAttachmentRemainsOwnedUntilDriverClose|TestUnfocusedKeysReachOnlyGlobalUIPreviews|Test.*Feature.*|Test.*Registration.*';
+const tests = 'TestAppUpdateFrameDoesNotAllocate|TestSteadyFrameDoesNotAllocate|TestReflectedInstancesDoNotAllocate|TestReflectionGroupsPreserveProbeVolumesAndTies|TestDetachedMeshRetiresCachedDrawReferences|TestReplacingMeshWithSharedInstanceRetiresOldDraw|TestUnrelatedComponentMutationKeepsInstanceUploadClean|TestWorldRemovalKeepsOrderBounded|TestWorldIterationSurvivesCompactionAndAddition|TestChangingMetricTextKeepsShapingAllocationsBounded|TestSparseInstanceUploadsReuseStagingWithoutGoAllocations|TestUIAttachmentRejectsInvalidOrOccupiedHosts|TestUISubmissionRequiresAttachedBackend|TestFailedUIAttachmentRemainsOwnedUntilDriverClose|TestUnfocusedKeysReachOnlyGlobalUIPreviews|TestFrameHost.*|Test.*Feature.*|Test.*Registration.*';
+const frameTests = tests + '|TestDrawMaterials.*';
 run('go', ['test', './pkg/engine', './pkg/ui', './internal/platform/browser',
-  '-run', '^(' + tests + ')$', '-exec', executor], {stdio: 'inherit'});
+  '-run', '^(' + frameTests + ')$', '-exec', executor], {stdio: 'inherit'});
 run('go', ['test', './pkg/scene/resource', './pkg/level',
   '-run', '^(TestBrowser.*|TestPresentationCloseInsideJSCallback)$', '-exec', executor], {stdio: 'inherit'});
 '''
+
+[tasks.test-tinygo-allocations]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Execute scene and browser bridge allocation regressions with pinned TinyGo"
+run = [
+  "tinygo test -target=wasm -opt=z -p=2 -run '^TestPrimitiveFramesKeepAllocationAndFinalizerPressureBounded$' -v ./internal/platform/browser/framehost",
+  "tinygo test -target=wasm -opt=z -p=2 -run '^Test(SourceBatchCache.*|AppUpdateFrameDoesNotAllocate|SteadyFrameDoesNotAllocate|ReflectedInstancesDoNotAllocate|NamedDescriptorFramesDoNotAllocate)$' -v ./pkg/engine",
+]
 
 [tasks.build-native]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
@@ -128,11 +137,19 @@ env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
 description = "Run formatting, lint, tests and both target builds"
 run = [
   "mise run assets",
+  "mise run check-prepared",
+]
+
+[tasks.check-prepared]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Run the complete source gate after assets have been prepared"
+run = [
   "mise run check-fmt",
   "mise run lint-go",
   "mise run lint-web",
   "mise run test",
   "mise run test-wasm-allocations",
+  "mise run test-tinygo-allocations",
   "mise run build-native",
   "mise run build-web",
 ]

@@ -53,9 +53,13 @@ tasks and `mise exec -- <command>` for focused commands. Do not add toolchain
 wrappers. Use the pinned standard Go compiler for native builds and offline asset recipes.
 Browser apps may use the pinned Go or TinyGo compiler through the CLI selector;
 ship the matching compiler runtime bridge with each WASM artifact.
+The default sample policy uses TinyGo only for Basic Scene and standard Go for
+every other sample. Mixed galleries retain separate compiler runtimes and
+per-application compiler receipts; never substitute one runtime for the other.
 Published sample budgets count the logical lengths of every exported file:
 WASM, all asset variants and shared host/runtime files. Ordinary samples must
-stay within 20,000,000 bytes; Sponza may use 35,000,000 bytes. Moving assets
+stay within 20,000,000 bytes; Impostors may use 35,000,000 bytes and Sponza
+45,000,000 bytes. Moving assets
 outside WASM or quoting compressed transfer sizes does not satisfy these limits.
 Sample exports enforce complete-file budgets before publication. Run
 `build-samples` for the release gallery; see decision 0017.

@@ -140,7 +140,7 @@ func (driver *spriteFeature) drawSprites(encoder, view js.Value) {
 	}
 
 	gpu.passAttachment.Set(viewProperty, view)
-	pass := encoder.Call("beginRenderPass", gpu.passDescriptor)
+	pass := driver.startRenderPass(encoder, gpu.passDescriptor)
 	pass.Call("setPipeline", gpu.pipeline)
 	pass.Call("setVertexBuffer", 0, gpu.buffer)
 	pass.Call("setBindGroup", 0, gpu.group)

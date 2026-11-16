@@ -6,10 +6,21 @@ import "github.com/karty-game/karty-webgpu/internal/render"
 type materialKey = render.MaterialKey
 
 type sourceBatches struct {
+	key      sourceKey
 	firstKey materialKey
 	first    *frameBatch
 	others   map[materialKey]*frameBatch
 	used     bool
+	active   bool
+}
+
+// Inactive groups may still have a bounded entity cache pointing at them. Drop
+// every source/material/draw reference when their registry entry is retired.
+func (groups *sourceBatches) retire() {
+	groups.key = sourceKey{}
+	groups.firstKey = materialKey{}
+	groups.first, groups.others = nil, nil
+	groups.used, groups.active = false, false
 }
 
 func batchMaterialKey(draw render.DrawCall) materialKey { return render.EffectiveMaterial(draw) }

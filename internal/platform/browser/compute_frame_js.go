@@ -34,7 +34,9 @@ func (driver *computeBackend) recordCompute(encoder js.Value, commands []compute
 		return nil
 	}
 
-	pass := encoder.Call("beginComputePass")
+	encoder.Call("beginComputePass")
+
+	pass := driver.computePass
 
 	for _, command := range commands {
 		pipeline, hasPipeline := driver.computePipelines[command.Pipeline]

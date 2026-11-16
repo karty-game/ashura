@@ -27,6 +27,11 @@ func TestDrawMaterialsBindsSharedShadowOnlyForPipelineChanges(t *testing.T) {
   setPipeline(p) { this.pipeline = p; this.pipelines.push(p); },
   setVertexBuffer() {}, setIndexBuffer() {},
   setBindGroup(slot, group) { if (slot === 1) { this.shadow = group; this.shadowBindings.push(group); } },
+  drawMesh(v, i, uv, ix, f, g, count, instances) {
+   this.setVertexBuffer(0,v); this.setVertexBuffer(1,i);
+   if (uv !== undefined) this.setVertexBuffer(2,uv);
+   this.setIndexBuffer(ix,f); this.setBindGroup(0,g); this.drawIndexed(count,instances);
+  },
   drawIndexed(...args) { this.draws.push({ args, pipeline: this.pipeline, shadow: this.shadow }); }
  }`).Invoke()
 		if err := driver.drawMaterials(pass, frame); err != nil {

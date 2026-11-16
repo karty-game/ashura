@@ -13,7 +13,7 @@ type webOptions struct {
 }
 
 func parseWebOptions(args []string) ([]string, webOptions, error) {
-	compiler := "go"
+	compiler := automaticWebCompiler
 	remaining := make([]string, 0, len(args))
 
 	for index := 0; index < len(args); index++ {
@@ -21,7 +21,7 @@ func parseWebOptions(args []string) ([]string, webOptions, error) {
 		switch {
 		case argument == "--compiler":
 			if index+1 >= len(args) {
-				return nil, webOptions{}, fmt.Errorf("--compiler requires go or tinygo: %w", errUsage)
+				return nil, webOptions{}, fmt.Errorf("--compiler requires auto, go or tinygo: %w", errUsage)
 			}
 
 			index++
@@ -34,8 +34,8 @@ func parseWebOptions(args []string) ([]string, webOptions, error) {
 		}
 	}
 
-	if compiler != "go" && compiler != tinyGoCompiler {
-		return nil, webOptions{}, fmt.Errorf("unsupported browser compiler %q; choose go or tinygo: %w", compiler, errUsage)
+	if compiler != automaticWebCompiler && compiler != "go" && compiler != tinyGoCompiler {
+		return nil, webOptions{}, fmt.Errorf("unsupported browser compiler %q; choose auto, go or tinygo: %w", compiler, errUsage)
 	}
 
 	remaining, assets, err := parseAssetRunArgs(remaining)

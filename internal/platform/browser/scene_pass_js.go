@@ -45,8 +45,6 @@ func (driver *Driver) clearSurface(encoder, view js.Value, color [4]float32) {
 	driver.colorAttach.Set(viewProperty, view)
 	driver.colorAttach.Set("resolveTarget", js.Undefined())
 	driver.colorAttach.Set(storeOpProperty, driver.storeOperation)
-	driver.passDescriptor.Set("depthStencilAttachment", js.Undefined())
-	pass := encoder.Call("beginRenderPass", driver.passDescriptor)
+	pass := driver.startRenderPass(encoder, driver.clearPassDescriptor)
 	pass.Call("end")
-	driver.passDescriptor.Set("depthStencilAttachment", driver.depthAttach)
 }

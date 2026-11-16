@@ -1,7 +1,5 @@
 package ui
 
-import "slices"
-
 // OverlayAnchor selects a viewport corner for a retained nonmodal overlay.
 type OverlayAnchor uint8
 
@@ -81,7 +79,10 @@ func (v *View) overlayContains(positionX, positionY float32) bool {
 }
 
 func (v *View) overlayAt(positionX, positionY float32) *Node {
-	for _, entry := range slices.Backward(v.overlays) {
+	//nolint:modernize // slices.Backward closures allocate in pinned TinyGo's frame path.
+	for index := len(v.overlays) - 1; index >= 0; index-- {
+		entry := v.overlays[index]
+
 		root := entry.root
 		if !root.hidden && v.inScope(root) && root.rect.Contains(positionX, positionY) && root.clip.Contains(positionX, positionY) {
 			return root

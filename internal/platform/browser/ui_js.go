@@ -199,7 +199,7 @@ func (driver *browserUIBridge) drawUI(encoder, view js.Value, frame *uipaint.Fra
 	}
 
 	gpu.passAttachment.Set("view", view)
-	pass := encoder.Call("beginRenderPass", gpu.passDescriptor)
+	pass := driver.startRenderPass(encoder, gpu.passDescriptor)
 	pass.Call("setPipeline", gpu.pipeline)
 	pass.Call("setVertexBuffer", 0, gpu.buffer)
 	pass.Call("setBindGroup", 0, gpu.group)

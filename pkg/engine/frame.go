@@ -104,14 +104,26 @@ func makeFrame(world *World, width, height int) (render.Frame, error) {
 
 	storage.collectReflectionProbes(world)
 
-	world.Each(func(entity Entity) {
-		appendEntityLights(&storage.frame, world, entity)
+	// Match Each's mutation-safe traversal without a capturing callback, which
+	// TinyGo otherwise allocates together with its captured world/storage.
+	for index := 0; index < len(world.order); {
+		entity := world.order[index]
+		if entity.world != nil {
+			entry := world.bindings[entity]
+			appendBoundLights(&storage.frame, entry)
 
-		if draw, ok := drawForEntity(world, entity); ok {
-			storage.applyReflection(&draw)
-			storage.append(draw)
+			if draw, ok := drawForBindings(world, entity, entry); ok {
+				storage.applyReflection(&draw)
+				storage.append(draw, entry)
+			}
 		}
-	})
+
+		if index < len(world.order) && world.order[index] == entity {
+			index++
+		} else {
+			index = world.afterEntity(entity)
+		}
+	}
 
 	frame := storage.finish()
 
@@ -175,7 +187,11 @@ func validateFrame(frame render.Frame) error {
 }
 
 func appendEntityLights(frame *render.Frame, world *World, entity Entity) {
-	for _, provider := range world.bindings[entity].lights {
+	appendBoundLights(frame, world.bindings[entity])
+}
+
+func appendBoundLights(frame *render.Frame, entry *entityBindings) {
+	for _, provider := range entry.lights {
 		if len(frame.Lights) > render.MaxLights {
 			return
 		}
@@ -185,8 +201,10 @@ func appendEntityLights(frame *render.Frame, world *World, entity Entity) {
 }
 
 func drawForEntity(world *World, entity Entity) (render.DrawCall, bool) {
-	entry := world.bindings[entity]
+	return drawForBindings(world, entity, world.bindings[entity])
+}
 
+func drawForBindings(world *World, entity Entity, entry *entityBindings) (render.DrawCall, bool) {
 	draw := render.DrawCall{ID: entity.index}
 	if entry.owner != nil {
 		draw.MeshOwner, draw.MeshValid = entry.owner.RuntimeMeshOwner()

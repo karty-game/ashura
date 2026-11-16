@@ -59,6 +59,9 @@ func (driver *Driver) Run(ctx context.Context, update func(time.Duration, platfo
 
 		return nil
 	})
+	// RAF's Window receiver is unused. Bind null once so TinyGo does not
+	// register another Go finalizer for that receiver on every callback.
+	driver.frame.Value = driver.frame.Call("bind", js.Null())
 	driver.frameID = driver.window.Call("requestAnimationFrame", driver.frame)
 
 	select {

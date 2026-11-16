@@ -275,7 +275,7 @@ func (app *App) runCompute() error {
 	app.computeFrame.commands = app.computeFrame.commands[:0]
 
 	app.computeActive = true
-	defer func() { app.computeActive = false }()
+	defer app.finishCompute()
 
 	entries := app.computeUpdates.begin()
 	defer app.computeUpdates.end()
@@ -295,6 +295,11 @@ func (app *App) runCompute() error {
 	}
 
 	return nil
+}
+
+// A receiver cleanup avoids allocating a captured defer closure on TinyGo.
+func (app *App) finishCompute() {
+	app.computeActive = false
 }
 
 func (app *App) collectUploads() []bufferdata.Upload {

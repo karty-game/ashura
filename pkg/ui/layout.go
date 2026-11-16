@@ -1,8 +1,6 @@
 //nolint:mnd // UI metrics, coordinate equations and bounded prepared-format widths are explicit.
 package ui
 
-import "slices"
-
 func (v *View) layout() error {
 	v.layoutRevision++
 	v.stats.Layouts++
@@ -222,7 +220,10 @@ func (v *View) placeNode(node *Node, rect, clip Rect, fitGrow bool) error {
 
 func (v *View) hit(positionX, positionY float32) *Node {
 	boundary := v.overlayAt(positionX, positionY)
-	for _, node := range slices.Backward(v.order) {
+	// Reverse indexes preserve hit order without TinyGo iterator closures.
+	//nolint:modernize // slices.Backward closures allocate in pinned TinyGo's frame path.
+	for index := len(v.order) - 1; index >= 0; index-- {
+		node := v.order[index]
 		if node.eligible() && v.inScope(node) && node.rect.Contains(positionX, positionY) && node.clip.Contains(positionX, positionY) {
 			if boundary == nil || withinNode(node, boundary) {
 				return node
@@ -238,7 +239,9 @@ func (v *View) hit(positionX, positionY float32) *Node {
 }
 func (v *View) scrollAt(positionX, positionY float32) *Node {
 	boundary := v.overlayAt(positionX, positionY)
-	for _, node := range slices.Backward(v.order) {
+	//nolint:modernize // slices.Backward closures allocate in pinned TinyGo's frame path.
+	for index := len(v.order) - 1; index >= 0; index-- {
+		node := v.order[index]
 		if node.style.Scroll && modalAvailable(node, v) && node.rect.Contains(positionX, positionY) &&
 			node.clip.Contains(positionX, positionY) &&
 			v.inScope(node) {

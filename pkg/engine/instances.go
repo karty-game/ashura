@@ -85,17 +85,12 @@ func (storage *frameStorage) invalidate(entity uint32, renderable bool) {
 	}
 }
 
-func (storage *frameStorage) append(draw render.DrawCall) {
+func (storage *frameStorage) append(draw render.DrawCall, entry *entityBindings) {
 	var group *sourceBatches
 
 	if draw.InstanceKey != nil {
 		key := sourceKey{mesh: draw.InstanceKey, probe: draw.ProbeID}
-
-		group = storage.groups[key]
-		if group == nil {
-			group = &sourceBatches{}
-			storage.groups[key] = group
-		}
+		group = storage.sourceGroup(key, entry)
 
 		group.used = true
 		if existing := group.find(draw); existing != nil {
@@ -103,6 +98,8 @@ func (storage *frameStorage) append(draw render.DrawCall) {
 
 			return
 		}
+	} else {
+		entry.sourceBatch = nil
 	}
 
 	batch := storage.batch(draw.ID)
@@ -125,6 +122,25 @@ func (storage *frameStorage) append(draw render.DrawCall) {
 	storage.order = append(storage.order, batch)
 }
 
+func (storage *frameStorage) sourceGroup(key sourceKey, entry *entityBindings) *sourceBatches {
+	group := entry.sourceBatch
+	// Interface-key hashing allocates on TinyGo. Equality does not: unchanged
+	// entities reuse their admitted group even when many sources alternate.
+	if group != nil && group.active && group.key == key {
+		return group
+	}
+
+	group = storage.groups[key]
+	if group == nil {
+		group = &sourceBatches{key: key, active: true}
+		storage.groups[key] = group
+	}
+
+	entry.sourceBatch = group
+
+	return group
+}
+
 func (batch *frameBatch) addInstance(draw render.DrawCall) {
 	index := batch.cursor
 	if index >= len(batch.draw.Instances) {
@@ -145,6 +161,7 @@ func (storage *frameStorage) finish() render.Frame {
 	for key, groups := range storage.groups {
 		if !groups.used {
 			delete(storage.groups, key)
+			groups.retire()
 		}
 	}
 

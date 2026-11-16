@@ -93,10 +93,28 @@ jobs:
             ~/.cache/mise
             ~/.local/share/mise/installs
           key: ${{ runner.os }}-${{ runner.arch }}-mise-asset-tools-${{ hashFiles('mise.toml', 'pkg/assetbuild/managed_tool*.go', 'pkg/assetbuild/tool_releases/*.json', 'pkg/assetbuild/materialize_tools.go') }}
+      - name: Restore prepared asset action cache
+        id: sample-assets
+        uses: actions/cache/restore@v4
+        with:
+          # Exclude generated outputs, publication journals and project locks.
+          path: samples/*/generated/cache/assets/v1
+          key: ${{ runner.os }}-${{ runner.arch }}-sample-assets-v1-${{ hashFiles('mise.toml', 'go.mod', 'go.sum') }}-${{ hashFiles('pkg/**', 'internal/**', 'samples/**/asset.config.go', 'samples/**/assets/**', 'samples/**/*.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-sample-assets-v1-${{ hashFiles('mise.toml', 'go.mod', 'go.sum') }}-
       - name: Check impostor export budget before full preparation
-        run: mise exec -- go run ./cmd/engine build web ./samples/impostors --compiler=tinygo --output "$RUNNER_TEMP/impostors-budget"
+        run: mise exec -- go run ./cmd/engine build web ./samples/impostors --compiler=go --output "$RUNNER_TEMP/impostors-budget"
+      - name: Prepare sample assets
+        run: mise run assets
+      - name: Save prepared asset action cache before validation
+        if: steps.sample-assets.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: samples/*/generated/cache/assets/v1
+          # Use the restore key captured before generated files existed.
+          key: ${{ steps.sample-assets.outputs.cache-primary-key }}
       - name: Run formatting, lint, tests and target builds
-        run: mise run check
+        run: mise run check-prepared
       - name: Export sample gallery
         run: mise run build-samples
       - name: Upload GitHub Pages artifact

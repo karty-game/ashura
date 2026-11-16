@@ -196,8 +196,19 @@ func spriteHardwareDriver(t *testing.T, format string) *Driver {
 
 	driver := &Driver{device: device, queue: device.Get("queue"), colorFormat: format, metrics: &diagnostics.Monitor{}}
 
+	installTestFrameHost(t)
+
+	host, err := newFrameHost()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	driver.frameHost, driver.frameEncoder = host, host.Get("encoder")
+	driver.renderPass, driver.surfaceView = host.Get("renderPass"), host.Get("surface")
+
 	t.Cleanup(func() {
 		driver.closeSprites()
+		host.Call("close")
 		device.Call("destroy")
 	})
 
@@ -236,22 +247,31 @@ func spriteHardwarePixels(t *testing.T, driver *Driver, screen *draw2d.Screen, w
 	}))
 	defer texture.Call("destroy")
 
-	view := texture.Call("createView")
-	encoder := driver.device.Call("createCommandEncoder")
-	clearPass := encoder.Call("beginRenderPass", jsObject(map[string]any{"colorAttachments": []any{
+	context := js.Global().Get("Function").New("texture", "return {getCurrentTexture() {return texture; }}").Invoke(texture)
+	if !driver.frameHost.Call("begin", context, driver.device).Bool() {
+		t.Fatal("failed to begin sprite readback frame")
+	}
+
+	view, encoder := driver.surfaceView, driver.frameEncoder
+	clearPass := driver.startRenderPass(encoder, jsObject(map[string]any{"colorAttachments": []any{
 		jsObject(map[string]any{"view": view, "loadOp": "clear", "storeOp": "store", "clearValue": []any{0, 0, 0, 1}}),
 	}}))
 	clearPass.Call("end")
 	driver.drawSprites(encoder, view)
+
+	if err := driver.submit(); err != nil {
+		t.Fatal(err)
+	}
 
 	row := (width*4 + 255) / 256 * 256
 	buffer := driver.device.Call("createBuffer", jsObject(map[string]any{"size": row * height, "usage": 9})) // MAP_READ | COPY_DST.
 
 	defer buffer.Call("destroy")
 
-	encoder.Call("copyTextureToBuffer", jsObject(map[string]any{"texture": texture}),
+	readbackEncoder := driver.device.Call("createCommandEncoder")
+	readbackEncoder.Call("copyTextureToBuffer", jsObject(map[string]any{"texture": texture}),
 		jsObject(map[string]any{"buffer": buffer, "bytesPerRow": row, "rowsPerImage": height}), []any{width, height, 1})
-	driver.queue.Call("submit", []any{encoder.Call("finish")})
+	driver.queue.Call("submit", []any{readbackEncoder.Call("finish")})
 
 	if _, err := awaitPromise(buffer.Call("mapAsync", 1)); err != nil {
 		t.Fatal(err)

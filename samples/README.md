@@ -12,7 +12,7 @@ Build and serve the full gallery:
 
 ```sh
 mise run samples
-# use the pinned size-oriented browser compiler:
+# run only Basic Scene with TinyGo:
 mise run samples-tinygo
 # or
 mise exec -- go run ./cmd/engine run web ./samples/...
@@ -32,9 +32,12 @@ Asset recipes run across samples with up to four workers (also capped by
 `GOMAXPROCS`). Browser compilation starts after all assets are ready and batches
 the sample packages into one Go build, sharing dependency discovery and Go's
 normal build concurrency. Samples with the same executable name use separate
-batches to keep their outputs distinct. `--compiler=tinygo` builds each main
-separately with TinyGo 0.44.0 and stages that compiler's matching JavaScript bridge;
-asset recipes continue to run with host standard Go.
+batches to keep their outputs distinct. The default `--compiler=auto` policy
+uses TinyGo 0.44.0 only for Basic Scene and standard Go for every other sample.
+Mixed galleries share one bridge per compiler under `runtimes/`, and each app
+records its own compiler identity and bridge hash in `build-info.json`.
+Explicit compiler selectors remain available for diagnostics and custom apps;
+asset recipes always run with host standard Go.
 
 Selecting a sample replaces the active view; only one scene runs at a time.
 The **Open sample** link opens that sample in its own tab. Gallery selections are
@@ -64,10 +67,12 @@ mise run build-samples
 mise exec -- go run ./cmd/engine build web ./samples/basic-scene --output dist/basic-scene
 ```
 
-`build-samples` selects TinyGo and checks the entire published size per sample:
-20,000,000 bytes maximum, or 35,000,000 for Sponza. The target for simple samples
+`build-samples` uses the automatic compiler policy and checks the entire
+published size per sample: 20,000,000 bytes maximum, with exceptions of
+35,000,000 for Impostors and 45,000,000 for Sponza. The target for simple samples
 is 10,000,000 bytes. Prepared assets, shared scripts and pages count before any
-transfer compression. The gallery is written to `dist/samples/`, including the matching WASM runtime,
+transfer compression. Both shared compiler runtimes count in full against every
+sample. The gallery is written to `dist/samples/`, including the matching WASM runtimes,
 sample pages, WASM binaries and prepared public resources. The destination must
 not already exist; remove or rename a previous export before rebuilding. Failed
 builds remove their staging directory without publishing a partial site. The
@@ -83,6 +88,18 @@ only runs on `main` deploy. In the repository's **Settings → Pages**, select
 GitHub Pages must be available for the repository's visibility and GitHub plan.
 The HTTPS site works below the repository path without rewriting asset URLs.
 CI tests and compilation do not establish browser GPU execution or performance.
+
+CI restores each sample's `generated/cache/assets/v1/` action cache before asset
+preparation and saves it before the check gate, so a later test failure retains
+completed preparation. Cache keys include the host, pinned tools, dependencies,
+recipes, source assets and processing code. A compatible older cache can seed a
+changed build; the pipeline still verifies action identities, tracked inputs and
+output hashes before reuse. Generated outputs, locks and recovery journals are
+rebuilt locally. CI runs `assets` followed by `check-prepared`, the same checks as
+`mise run check`, without a duplicate preparation pass before validation. All
+checks and export budgets still run on cache hits. Sponza's GPU sampling and
+resolve actions remain uncached without an explicit backend
+identity; other verified preparation can be reused.
 A warmed local cache does not establish a successful fresh public CI run.
 
 Warm runs reuse Go's cached recipe executables and verified asset actions.

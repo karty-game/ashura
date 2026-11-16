@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/karty-game/karty-webgpu/internal/platform/browser/framehost"
 )
 
 // buildWebPreview stages one complete immutable distribution before it is served.
@@ -25,7 +27,7 @@ func buildWebPreview(ctx context.Context, root, dist, pattern string, options we
 }
 
 func stageWebDistribution(ctx context.Context, root, dist, pattern string, packages []webPackage, options webOptions) error {
-	compiler, err := resolveWebCompiler(ctx, options.compiler)
+	groups, err := planWebCompilers(ctx, packages, options.compiler)
 	if err != nil {
 		return err
 	}
@@ -33,6 +35,12 @@ func stageWebDistribution(ctx context.Context, root, dist, pattern string, packa
 	if err := prepareWebAssets(ctx, root, packages, options.assets); err != nil {
 		return err
 	}
+
+	if len(groups) > 1 {
+		return stageMixedWebDistribution(ctx, root, dist, packages, groups)
+	}
+
+	compiler := groups[0].compiler
 
 	if err := compiler.stageRuntime(dist); err != nil {
 		return err
@@ -102,7 +110,8 @@ func relativeWebPath(path string) string {
 
 // writeSamplePage keeps both runtime and WASM URLs relative to the sample page.
 func writeSamplePage(dist, runtimePath, title string) error {
-	page := strings.ReplaceAll(indexHTML, "__WASM_RUNTIME__", html.EscapeString(runtimePath))
+	page := strings.ReplaceAll(indexHTML, "__ASHURA_FRAME_HOST__", framehost.Source)
+	page = strings.ReplaceAll(page, "__WASM_RUNTIME__", html.EscapeString(runtimePath))
 	page = strings.ReplaceAll(page, "__SAMPLE_TITLE__", html.EscapeString(title+" — Ashura"))
 	//nolint:gosec // dist is a fresh preview/export staging directory; the filename is fixed.
 	if err := os.WriteFile(filepath.Join(dist, "index.html"), []byte(page), 0o600); err != nil {
@@ -129,6 +138,7 @@ const indexHTML = `<!doctype html>
   <pre id="error"></pre>
   <script src="__WASM_RUNTIME__"></script>
   <script>
+__ASHURA_FRAME_HOST__
     const go = new Go();
     WebAssembly.instantiateStreaming(fetch("./app.wasm"), go.importObject)
       .then(({ instance }) => go.run(instance))

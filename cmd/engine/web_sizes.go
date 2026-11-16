@@ -14,8 +14,8 @@ import (
 
 const (
 	defaultSampleLimit   int64 = 20_000_000
-	impostorsSampleLimit int64 = 30_000_000
-	sponzaSampleLimit    int64 = 35_000_000
+	impostorsSampleLimit int64 = 35_000_000
+	sponzaSampleLimit    int64 = 45_000_000
 	repositorySamples          = "github.com/karty-game/karty-webgpu/samples/"
 )
 

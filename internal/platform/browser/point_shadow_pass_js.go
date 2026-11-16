@@ -135,8 +135,8 @@ func (driver *pointShadowFeature) recordPointShadow(encoder js.Value, frame rend
 		array := js.Global().Get("Uint8Array").New(len(data))
 		js.CopyBytesToJS(array, data[:])
 		driver.queue.Call("writeBuffer", shadow.uniforms[face], 0, array)
-		pass := encoder.Call(
-			"beginRenderPass",
+		pass := driver.startRenderPass(
+			encoder,
 			jsObject(
 				map[string]any{
 					labelProperty: "point shadow face",

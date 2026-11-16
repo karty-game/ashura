@@ -31,8 +31,8 @@ const (
 
 var (
 	errUsage = errors.New(
-		"usage: engine run web [go-package-or-pattern] [--addr host:port] [--compiler go|tinygo] [--profile dev] [--no-cache] | " +
-			"engine build web [go-package-or-pattern] [--output dist/samples] [--compiler go|tinygo] [--profile dev] [--no-cache] | " +
+		"usage: engine run web [go-package-or-pattern] [--addr host:port] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] | " +
+			"engine build web [go-package-or-pattern] [--output dist/samples] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] | " +
 			"engine assets build [--project directory | --source assets --output generated/assets] [--jobs count] | " +
 			"engine assets generate [go-package-or-pattern | --project directory] [--profile dev] | " +
 			"engine assets model --input source.glb --output prepared.kmodel | " +

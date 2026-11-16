@@ -31,17 +31,6 @@ mise install
 mise run start
 ```
 
-Open the printed URL in a WebGPU-capable browser. This starts the basic scene
-without native asset tools. The full gallery (`mise run samples`) also prepares
-Sponza using embedded UV/codec libraries and native hardware compute. See
-[dependency availability and qualification limits](spec/asset-tools.md).
-
-On Linux, Sponza's offline bake requires the system Vulkan loader and your GPU's
-Vulkan driver. For AMD/Intel on Debian or Ubuntu, install `libvulkan1` and
-`mesa-vulkan-drivers`. Mise installs wgpu-native; the system packages supply the
-Vulkan runtime and hardware driver it uses. Browser rendering and a working
-OpenGL driver do not establish that this native build dependency is installed.
-
 [API guide](pkg/engine/README.md) · [Samples](samples/README.md) · [First scene](samples/basic-scene/) · [UI Components](samples/ui/) · [Asset recipes](pkg/assetbuild/README.md) · [Specifications](spec/README.md)
 
 ## Repository layout

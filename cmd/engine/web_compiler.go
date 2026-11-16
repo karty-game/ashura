@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	tinyGoVersion  = "0.44.0"
-	tinyGoCompiler = "tinygo"
+	tinyGoVersion        = "0.44.0"
+	tinyGoCompiler       = "tinygo"
+	automaticWebCompiler = "auto"
 )
 
 // Resolve the compiler and its matching JS bridge together. Compiler caches are

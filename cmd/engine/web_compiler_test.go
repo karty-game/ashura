@@ -40,7 +40,7 @@ func TestParseWebOptions(t *testing.T) {
 	}
 
 	_, options, err := parseWebOptions(nil)
-	if err != nil || options.compiler != "go" {
+	if err != nil || options.compiler != "auto" {
 		t.Fatalf("default compiler: %+v %v", options, err)
 	}
 
