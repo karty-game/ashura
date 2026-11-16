@@ -35,13 +35,6 @@ type Module struct {
 	Generate   func(*Component) (string, error)
 }
 
-// Options selects scene entry points and installed component modules.
-type Options struct {
-	Input   []string
-	Package string
-	Modules []Module
-}
-
 // Component is the build-only context passed to a module's code generator.
 type Component struct {
 	Config    map[string]any

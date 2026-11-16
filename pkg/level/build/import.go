@@ -22,14 +22,10 @@ import (
 const levelPointBias = .015
 
 type importPlugin struct {
-	options    ImportOptions
-	sourceOnly bool
+	options SceneOptions
 }
 
-// ImportScenes combines scene import and material preparation for flat recipes.
-// New staged recipes use Scenes, then Materials after image processing.
-func ImportScenes(options ImportOptions) assetbuild.Plugin { return importPlugin{options: options} }
-func (importPlugin) Name() string                          { return "level-import" }
+func (importPlugin) Name() string { return "level-import" }
 func (plugin importPlugin) Plan(plan *assetbuild.Plan) error {
 	options := plugin.options
 	if len(options.Modules) == 0 {
@@ -43,21 +39,6 @@ func (plugin importPlugin) Plan(plan *assetbuild.Plan) error {
 
 	if err := publishLevelSchema(plan, schema); err != nil {
 		return err
-	}
-
-	resources, schemas, inputs, err := levelResources(plan)
-	if err != nil {
-		return err
-	}
-
-	if plugin.sourceOnly {
-		inputs = nil
-
-		for _, resource := range plan.Resources {
-			if schemas[resource.ID] == modelbuild.PreparedSchema {
-				inputs = append(inputs, resource.Ref)
-			}
-		}
 	}
 
 	sources, err := selectedLevelSources(plan, options.Input)
@@ -74,7 +55,32 @@ func (plugin importPlugin) Plan(plan *assetbuild.Plan) error {
 		}
 
 		names[name] = true
-		if err := addLevelImport(plan, source, name, options, schema, resources, schemas, inputs, plugin.sourceOnly); err != nil {
+	}
+
+	return plan.Expand(
+		assetbuild.Expansion{ID: "level/import/discover-models", Run: func(_ *assetbuild.Context, child *assetbuild.Plan) error {
+			return plugin.planSources(child, sources, options, schema)
+		}},
+	)
+}
+
+func (plugin importPlugin) planSources(plan *assetbuild.Plan, sources []string, options SceneOptions, schema []byte) error {
+	resources, schemas, err := levelResources(plan)
+	if err != nil {
+		return err
+	}
+
+	var inputs []assetbuild.Ref
+
+	for _, resource := range plan.Resources {
+		if schemas[resource.ID] == modelbuild.PreparedSchema {
+			inputs = append(inputs, resource.Ref)
+		}
+	}
+
+	for _, source := range sources {
+		name := assetbuild.AssetName(strings.TrimSuffix(path.Base(source), ".scene.yaml"))
+		if err := addLevelImport(plan, source, name, options, schema, resources, schemas, inputs); err != nil {
 			return err
 		}
 	}
@@ -103,24 +109,21 @@ func selectedLevelSources(plan *assetbuild.Plan, patterns []string) ([]string, e
 	return slices.Sorted(maps.Keys(selected)), nil
 }
 
-func levelResources(plan *assetbuild.Plan) (map[string]assetbuild.Resource, map[string]string, []assetbuild.Ref, error) {
+func levelResources(plan *assetbuild.Plan) (map[string]assetbuild.Resource, map[string]string, error) {
 	resources := make(map[string]assetbuild.Resource)
 	schemas := make(map[string]string)
-
-	var inputs []assetbuild.Ref
 
 	for _, resource := range plan.Resources {
 		schema, err := plan.SlotSchema(resource.Ref)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, err
 		}
 
 		resources[resource.ID] = resource
 		schemas[resource.ID] = schema
-		inputs = append(inputs, resource.Ref)
 	}
 
-	return resources, schemas, inputs, nil
+	return resources, schemas, nil
 }
 
 func publishLevelSchema(plan *assetbuild.Plan, schema []byte) error {
@@ -141,27 +144,21 @@ func publishLevelSchema(plan *assetbuild.Plan, schema []byte) error {
 	return nil
 }
 
-func addLevelImport(plan *assetbuild.Plan, source, name string, options ImportOptions, schema []byte,
-	resources map[string]assetbuild.Resource, schemas map[string]string, inputs []assetbuild.Ref, sourceOnly bool) error {
-	identity, revision, outputSchema := "level/import/", "resolved-static-world@2", importSchema
-	if sourceOnly {
-		identity, revision, outputSchema = "level/source/", "scene-source@1", sceneSourceSchema
-	}
-
+func addLevelImport(plan *assetbuild.Plan, source, name string, options SceneOptions, schema []byte,
+	resources map[string]assetbuild.Resource, schemas map[string]string, inputs []assetbuild.Ref) error {
 	refs, err := plan.Add(
 		assetbuild.Action{
-			ID:        identity + source,
+			ID:        "level/source/" + source,
 			Processor: "level-import",
-			Revision:  revision,
+			Revision:  "scene-source@1",
 			Inputs:    inputs,
 			Options: struct {
 				Schema         string
-				SSBump         map[string]map[string]string
 				Spaces         map[string]string
 				SeparateMasked bool
-			}{string(schema), options.SSBump, options.Spaces, options.SeparateMasked},
+			}{string(schema), options.Spaces, options.SeparateMasked},
 			Outputs: []assetbuild.Slot{
-				{Name: slot, Schema: outputSchema},
+				{Name: slot, Schema: sceneSourceSchema},
 				{Name: filesSlot, Schema: filesSchema},
 			},
 			Run: func(ctx *assetbuild.Context) (assetbuild.Result, error) {
@@ -170,17 +167,14 @@ func addLevelImport(plan *assetbuild.Plan, source, name string, options ImportOp
 					return nil, err
 				}
 
-				imported, err := importSceneSource(ctx, resolved, options, resources, schemas, sourceOnly)
+				imported, err := importSceneSource(ctx, resolved, importOptions{
+					Spaces: options.Spaces, SeparateMasked: options.SeparateMasked,
+				}, resources, schemas)
 				if err != nil {
 					return nil, err
 				}
 
-				var record any = imported
-				if sourceOnly {
-					record = sceneSource{Scene: imported, SeparateMasked: options.SeparateMasked}
-				}
-
-				output, err := result(record)
+				output, err := result(sceneSource{Scene: imported, SeparateMasked: options.SeparateMasked})
 				if err != nil {
 					return nil, err
 				}
@@ -206,34 +200,33 @@ func addLevelImport(plan *assetbuild.Plan, source, name string, options ImportOp
 	return nil
 }
 
+type importOptions struct {
+	SSBump         map[string]map[string]string
+	Spaces         map[string]string
+	SeparateMasked bool
+}
+
 type levelImportState struct {
-	sourceOnly bool
-	options    ImportOptions
-	resources  map[string]assetbuild.Resource
-	schemas    map[string]string
-	models     map[string]assetbuild.Artifact
-	textures   map[string]assetbuild.Artifact
-	documents  map[string]modeldata.Document
-	materials  map[string]map[string]assetbuild.Artifact
+	options   importOptions
+	resources map[string]assetbuild.Resource
+	schemas   map[string]string
+	models    map[string]assetbuild.Artifact
+	textures  map[string]assetbuild.Artifact
+	documents map[string]modeldata.Document
+	materials map[string]map[string]assetbuild.Artifact
 }
 
-func importResolved(ctx *assetbuild.Context, resolved scenebuild.Resolved, options ImportOptions,
+func importSceneSource(ctx *assetbuild.Context, resolved scenebuild.Resolved, options importOptions,
 	resources map[string]assetbuild.Resource, schemas map[string]string) (imported, error) {
-	return importSceneSource(ctx, resolved, options, resources, schemas, false)
-}
-
-func importSceneSource(ctx *assetbuild.Context, resolved scenebuild.Resolved, options ImportOptions,
-	resources map[string]assetbuild.Resource, schemas map[string]string, sourceOnly bool) (imported, error) {
 	record := imported{Source: resolved.Source}
 	state := levelImportState{
-		sourceOnly: sourceOnly,
-		options:    options,
-		resources:  resources,
-		schemas:    schemas,
-		models:     map[string]assetbuild.Artifact{},
-		textures:   map[string]assetbuild.Artifact{},
-		documents:  map[string]modeldata.Document{},
-		materials:  map[string]map[string]assetbuild.Artifact{},
+		options:   options,
+		resources: resources,
+		schemas:   schemas,
+		models:    map[string]assetbuild.Artifact{},
+		textures:  map[string]assetbuild.Artifact{},
+		documents: map[string]modeldata.Document{},
+		materials: map[string]map[string]assetbuild.Artifact{},
 	}
 
 	nodes := make(map[string]scenebuild.ResolvedNode)

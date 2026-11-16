@@ -49,7 +49,8 @@ func productionHardwareFixture(t *testing.T, size [3]float32, expectedChunks int
 			Input: []string{"*.scene.yaml", "*.kmodel"},
 			Import: []assetbuild.Plugin{
 				fixtureModels{},
-				ImportScenes(ImportOptions{Input: []string{"test.scene.yaml"}}),
+				Scenes(SceneOptions{Input: []string{"test.scene.yaml"}}),
+				Materials(MaterialOptions{}),
 				StaticChunks(ChunkOptions{Size: size, Origin: [3]float32{-1, -2, -8}}),
 				LightmapUVs(UVOptions{Production: true, TexelsPerUnit: 4, MaxPageSize: 32, Padding: 2}),
 				ProductionBake(

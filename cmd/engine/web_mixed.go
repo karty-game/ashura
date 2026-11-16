@@ -101,7 +101,7 @@ func stageMixedWebDistribution(ctx context.Context, root, dist string, packages 
 		}
 
 		receipt.Applications = append(receipt.Applications, app)
-		samples = append(samples, gallerySample{Name: item.Name, Path: relativeWebPath(app.Path)})
+		samples = append(samples, gallerySample{Name: item.Name, Path: relativeWebPath(app.Path), Description: item.Description})
 	}
 
 	for _, group := range groups {

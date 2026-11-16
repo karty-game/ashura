@@ -10,8 +10,12 @@ and `.agents/` directories alone.
 - Private implementation lives under `internal/`, commands under `cmd/`, and
   maintained examples under `samples/`. Keep branding in `branding/`.
 - `spec/` is the maintained source for contracts, proposals and validation.
-  Update its index and relevant specifications when changing behavior. Do not
-  create a separate `docs/` tree or root `API.md`.
+  Update its index and relevant specifications when changing behavior.
+  User-facing asset pipeline guides live in `docs/asset-pipeline/`; keep them
+  aligned with plugin options and effective defaults. Group them as importers,
+  processors, generators and publishers; use domain prefixes such as `image-` or `model-`
+  in plugin filenames. Do not duplicate contracts
+  there or create a root `API.md`.
 - Unavoidable third-party native asset tools belong in the external tool/plugin
   distribution. See `spec/asset-tools.md` for module integration and release availability. Required
   mise installs pinned prebuilt packages; do not recreate a downloader, archive

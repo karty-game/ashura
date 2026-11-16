@@ -11,6 +11,7 @@ private implementation details; callers should not depend on their layout.
 | `uihost` | Plain UI host events and attachment interfaces; no controls, fonts or shaping implementation |
 | `*data`, `resourcedata` | Prepared runtime formats, bounded admission and resource ownership |
 | `modelbuild`, `levelbuild`, `levelpack`, `lightmapbuild`, `impostorbake`, `ssbump` | Offline asset preparation and publication support |
+| `meshopt` | Pinned offline WASM cache/fetch ordering and exact geometry cleanup; excluded from game runtimes |
 | `lightmapper` | Production scene, transport and reconstruction preparation; `pkg/lightmap/bake` owns in-process Go GPU execution |
 | `lightmapkernel` | Historical lightmap computation used by explicit compatibility APIs |
 | `xatlas` | Embedded WASM UV generation, Go overlap/collapse repair and bounded geometry/chart admission |

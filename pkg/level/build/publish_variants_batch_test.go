@@ -36,14 +36,22 @@ func (fixture separateNativeVariants) Plan(plan *assetbuild.Plan) error {
 }
 
 func variantFixtureProfiles() []PublishOptions {
-	publisher := PublishPortable(PortableOptions{Encoder: assetbuild.BlockCompressionOptions{}})
-
-	variants, ok := publisher.(variantPublisher)
-	if !ok {
-		panic("portable fixture does not select variants")
+	quality := 0
+	profile := func(name, family, representation string) PublishOptions {
+		return PublishOptions{
+			Variant: name, Representation: representation,
+			NativeTextures: &NativeTextureOptions{
+				Family: family, NativeAlbedo: true,
+				Encoder: assetbuild.BlockCompressionOptions{LDRQuality: &quality, SSBumpQuality: &quality},
+			},
+			AlbedoETC1S: &ETC1SOptions{Quality: 192},
+		}
 	}
 
-	return variants.profiles
+	return []PublishOptions{
+		profile("RGBBC", "bc", "rgb-diffuse-v1"), profile("RGBMobile", "etc2", "rgb-diffuse-v1"),
+		profile("RNMBC", "bc", "rnm-fit-v1"), profile("RNMMobile", "etc2", "rnm-fit-v1"),
+	}
 }
 
 func TestNativeVariantBatchRetainsEmptyLevelProfilesWithoutTools(t *testing.T) {
@@ -92,7 +100,8 @@ func TestPortableVariantBatchMatchesCompletePreparedPayloads(t *testing.T) {
 		}
 
 		config := fixtureConfig(syntheticBake())
-		config.Pipelines[0].Import = append(config.Pipelines[0].Import[:5], fixtureProductionMaps(), publisher)
+		config.Pipelines[0].Process = append(config.Pipelines[0].Process, fixtureProductionMaps())
+		config.Pipelines[0].Output = []assetbuild.Plugin{publisher}
 
 		options := assetbuild.Options{Project: project, Jobs: 4, NoCache: true}
 		if _, err := assetbuild.Build(t.Context(), config, options); err != nil {

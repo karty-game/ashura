@@ -1,13 +1,18 @@
 # Level asset plugins
 
+Use explicit `meshbuild.Cleanup()` after prepared model import and before scene
+import. Place `meshbuild.Optimize()` after `LightmapUVs` and before
+`ProductionBake` to order final seam geometry for vertex cache/fetch locality.
+Receiver references, UV1 and model hashes remain bound to the final mesh. See the
+[offline mesh module](../../mesh/build/README.md) for scope and portable tooling.
+
 For named pipelines, put `Scenes(SceneOptions{...})` after model/image imports in
 `Pipeline.Import`. Use `Materials(MaterialOptions{...})` in `Pipeline.Process` after
 resize, SSBump generation and mip filtering, followed by chunking, UVs and baking.
-Finally put `PublishPortable` in `Pipeline.Output`. Materials accepts processed
+Finally put `Publish` or `PublishVariants` in `Pipeline.Output`. Materials accepts processed
 image records directly; no intermediate `KTX2()` file publication is needed.
 See [Sponza's recipe](../../../samples/sponza/asset.config.go) and the
-[V5 recipe contract](../../../spec/asset-pipeline-v5.md). Existing flat recipes
-retain the combined `ImportScenes` convenience.
+[V5 recipe contract](../../../spec/asset-pipeline-v5.md).
 
 `LightmapUVs(UVOptions{Production: true, ...})` and `ProductionBake` select the
 new offline compute path. It supports physical RGB and calibrated RNM from one
@@ -22,8 +27,8 @@ configuration for cache invalidation. Final RNM requires `Verification`, all
 receivers and the actual material normal domain. Explicit previews retain
 verification diagnostics and are marked in the manifest.
 
-`samples/sponza/asset.config.go` is the maintained preview recipe and emits
-RGB/RNM BC and mobile native profiles.
+`samples/sponza/asset.config.go` is the maintained preview recipe and uses
+`PublishVariants` to emit only RNM BC and RNM mobile native profiles.
 
 For integrated preparation, follow `StaticChunks` with
 `ProductionBake(ProductionOptions{UVs: &UVOptions{TexelsPerUnit: 16,
@@ -66,9 +71,8 @@ NativeTextures and NativeHDR together. Mobile SSBump keeps exact linear RGBA8
 channels and authored mips in a canonical GPU-ready KTX container because the
 tested ETC2 coefficient encoders lose too much directional precision. Desktop
 SSBump remains BC7. No ASTC capability is assumed and no decoder is added.
-`PublishPortable` uses UASTC effort 0 for desktop SSBump encoding: it keeps the
-same BC7 size and format while spending less offline encoder time. Set
-`Encoder.SSBumpQuality` explicitly to select greater coefficient precision.
+Select `Encoder.SSBumpQuality` explicitly when trading build time against
+desktop relief precision. Sponza uses effort 0; raw publication defaults to 4.
 Device variants share identical page packaging, atlas and codec producers;
 their geometry, UVs, materials and delivery descriptors retain separate bounds.
 Native LDR variants prepare pages, atlases and normalized maps together, then
@@ -101,11 +105,12 @@ Pipelines: []assetbuild.Pipeline{{
     Input: []string{"models/**", "levels/**"},
     Import: []assetbuild.Plugin{
         modelbuild.PreparedGLB(),
-        levelbuild.ImportScenes(levelbuild.ImportOptions{
+        levelbuild.Scenes(levelbuild.SceneOptions{
             Input: []string{"levels/main.scene.yaml"},
         }),
     },
     Process: []assetbuild.Plugin{
+        levelbuild.Materials(levelbuild.MaterialOptions{}),
         levelbuild.StaticChunks(levelbuild.ChunkOptions{
             Size: [3]float32{32, 32, 32},
         }),
@@ -134,16 +139,16 @@ Pipelines: []assetbuild.Pipeline{{
 ```
 
 `PreparedGLB` exposes cached prepared-model slots without embedding/publishing
-all original models. Existing `modelbuild.GLB` remains compatible when original
-catalogs are also wanted. `ImportOptions.Modules` defaults to logic/render3d;
+all original models. Use `modelbuild.GLBWithOptions` when original
+embedded models are also wanted. `SceneOptions.Modules` defaults to logic/render3d;
 custom modules preserve their ordinary generated constructors and logical state.
 
-`ImportOptions.Spaces` maps node paths to logical space identities; descendants
+`SceneOptions.Spaces` maps node paths to logical space identities; descendants
 inherit the closest explicit assignment. This preserves ownership for overlapping
 spaces without inventing portal connections. `SSBump` maps model resource identity
 to exact original primitive name to a prepared SSBump resource identity. Place
-`Images`/`Resize`/`SSBump`/`Mipmaps`/`KTX2` before `ImportScenes` for authored
-height relief. Normal-derived relief is prepared offline where an explicit
+`Images` before scene import and `Resize`/`SSBump`/`Mipmaps` before `Materials`
+for authored height relief. `MaterialOptions.SSBump` owns these explicit bindings. Normal-derived relief is prepared offline where an explicit
 override is absent. Automatic derivation uses square power-of-two normal maps,
 a mip at most 512 pixels wide and the material's normal strength. Supply an
 explicit override for other normal-map profiles. Unknown primitive names in
@@ -271,10 +276,10 @@ mise exec -- go run ./cmd/engine assets generate ./samples/sponza
 
 The [Sponza sample](../../../samples/sponza/README.md) imports `assets/sponza.glb`
 and `sponza.scene.yaml`, then uses one occupied 32-unit cell at origin
-`[-16, -2, -8]`. Integrated production UVs retain 16 texels per unit, 512px pages,
+`[-16, -2, -8]`. Its separate production UV stage retains 8 texels per unit, 512px pages,
 padding 4 and geometric normals. It traces 32 samples and three bounces with
-compensated roulette depth 1, then applies strong .125-unit reconstruction with
-noise scale 64 and automatic complete-halo scheduling. RGB/RNM BC and mobile
+compensated roulette depth 1, then applies strong .25-unit reconstruction with
+noise scale 128 and automatic complete-halo scheduling. Only RNM BC and mobile
 profiles publish beneath `generated/public/levels/`, with descriptors in
 `generated/levels/`. UV and texture modules run embedded WASM libraries; no
 sample-specific tool script or executable configuration is required. The manifest remains a
@@ -291,7 +296,7 @@ or loading budget. See [the V2 pipeline contract](../../../spec/asset-pipeline-v
 
 ## Portable single-source level preparation
 
-`ImportOptions.SeparateMasked` separates masked parts of static mixed-material
+`SceneOptions.SeparateMasked` separates masked parts of static mixed-material
 models from opaque chunking/baking. It preserves their material/coverage payloads
 in independent world-space prepared models with identity placements. The
 manifest retains an independent object per source placement; model IDs include
@@ -299,12 +304,11 @@ content identity so identical payloads can share resources. Conflicting derived
 object IDs fail, and masked-only relief is not processed for the opaque bake.
 Without this option, the prior explicit opaque-only admission remains active.
 
-`PublishPortable(PortableOptions{MaxAtlasSize: 2048})` publishes RGBBC, RGBMobile,
-RNMBC and RNMMobile from a RGB+RNM production bake. Its default offline texture
-path uses embedded Basis libraries, with no KTX executable or package install.
-Standard `ProductionBake` uses the in-process Go executor and the native
-wgpu-native library. See
-[tool availability and CI qualification](../../../spec/asset-tools.md).
+Use `Publish` for one explicit profile or `PublishVariants` for several profiles
+from one bake. Their offline texture paths use embedded Basis libraries, with
+no KTX executable or package install. `ProductionBake` uses the in-process Go
+executor and native wgpu-native library. See
+[tool availability](../../../spec/asset-tools.md).
 
 The [Sponza project recipe](../../../samples/sponza/asset.config.go) demonstrates
 the complete stage declaration. Application code uses `level.Open` to own the

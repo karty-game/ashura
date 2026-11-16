@@ -23,7 +23,7 @@ func TestSeparateMaskedPartsPublishesCoverageOutsideOpaqueBake(t *testing.T) {
 	masked, textures := writeMixedMaskFixture(t, project)
 	config := fixtureConfig(syntheticBake())
 
-	config.Pipelines[0].Import[1] = ImportScenes(ImportOptions{Input: []string{"test.scene.yaml"}, SeparateMasked: true})
+	config.Pipelines[0].Import[1] = Scenes(SceneOptions{Input: []string{"test.scene.yaml"}, SeparateMasked: true})
 	if _, err := assetbuild.Build(
 		t.Context(),
 		config,

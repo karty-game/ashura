@@ -7,10 +7,10 @@ baker is described below. These are historical interactive APIs. Maintained
 offline asset builds use [the production API](bake/README.md), production UV
 preparation and the in-process Go WebGPU baker.
 
-Prepare inputs with `LightmapOptions{RNM: true, PrecomputeTransport: true,
-TransportSamples: 64}`. UVs, receiver rasterization, BVH, surface reflectance,
-environment visibility and patch transfers are build-only work. Runtime changes
-light values against that fixed geometry.
+These retained interactive APIs accept already prepared inputs with geometry,
+UVs, receivers and any required transport data. Runtime changes light values
+against that fixed geometry. Current asset recipes instead use the
+[level build pipeline](../level/build/README.md) to publish finished lighting.
 
 ```go
 baker, err := lightmap.NewRNM(app, inputs)
@@ -53,23 +53,21 @@ This package loads build-prepared lightmap inputs and computes direct diffuse
 illumination from one point source. Offline execution and runtime baking use the
 same complete WGSL file, `internal/lightmapkernel/wgsl/direct.wgsl`.
 
-The build-only `model/build.LightmappedGLB` plugin unwraps and remaps model
-geometry, prepares UV1 streams, a triangle BVH, receiver positions/normals and
-chart-local gutter references. See the [Sponza sample](../../samples/sponza/) for
-its recipe. The resulting `.klightmap` is bound to the exact prepared model's
-SHA-256. Loading verifies the version, complete header/payload checksum, array
-bounds, finite values, UV ranges, padding references and BVH tree/depth before
-declaring GPU resources. It performs no charting, geometry conversion, receiver
-rasterization or BVH construction.
+Prepared `.klightmap` inputs bind to the exact prepared model's SHA-256.
+Loading checks the version, complete header/payload checksum, arrays, UV ranges,
+gutter references and BVH before declaring GPU resources. It performs no
+charting, geometry conversion, receiver rasterization or BVH construction.
+Maintained offline lighting uses `levelbuild.LightmapUVs` and
+`levelbuild.ProductionBake`; see [level recipes](../level/build/README.md).
 
 Prepared inputs support atlas dimensions through 2048, at most 4096 primitive UV
 streams, 1,048,576 vertices/triangles/BVH nodes and 256 MiB total encoded bytes.
 The selected GPU must also admit each storage binding; a 2048-square receiver
 buffer alone occupies 128 MiB. Smaller pages are preferable for interactive
-experiments. The sample uses a single atlas rather than a chunk streaming system.
+experiments. This low-level API dispatches one complete atlas.
 
 ```go
-inputs, err := models.AssetsSponzaLightmap().Load()
+inputs, err := lightmap.Prepared("direct-light", preparedInputBytes).Load()
 // Handle err, then load the matching remapped model and UV streams.
 baker, err := lightmap.New(app, inputs)
 // Handle err. Resource declarations happen before app.Run.

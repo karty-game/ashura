@@ -7,7 +7,6 @@ package lightmapbuild
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -37,74 +36,6 @@ type Result struct {
 	Model, Lightmap                      []byte
 	GeometricNormals                     []byte
 	Width, Height, Charts, CoveredTexels int
-}
-
-// Prepare unwraps the complete placed model and prepares bounded GPU input bytes.
-func Prepare(ctx context.Context, data []byte, options Options) (Result, error) {
-	options, err := normalizeTransportOptions(options)
-	if err != nil {
-		return Result{}, err
-	}
-
-	model, err := modeldata.Decode(data)
-	if err != nil {
-		return Result{}, err
-	}
-
-	for _, part := range model.Parts {
-		if _, err := meshdata.FromOwned(part.Vertices, part.Indices); err != nil {
-			return Result{}, err
-		}
-	}
-
-	session, err := xatlas.OpenSession(ctx)
-	if err != nil {
-		return Result{}, err
-	}
-	defer func() { _ = session.Close() }()
-
-	atlas, err := session.Generate(ctx, model.Parts, options.Resolution, options.Padding)
-	if err != nil {
-		return Result{}, err
-	}
-
-	doc := lightmapdata.Document{Width: atlas.Width, Height: atlas.Height, UVs: make([][]byte, len(model.Parts))}
-	doc.UVs = remapModel(&model, atlas)
-
-	remapped, err := modeldata.Encode(model)
-	if err != nil {
-		return Result{}, err
-	}
-
-	doc.ModelSHA256 = sha256.Sum256(remapped)
-
-	var geometricNormals []byte
-	if err := prepareLighting(ctx, &doc, model, atlas, options, &geometricNormals); err != nil {
-		return Result{}, err
-	}
-
-	output, err := lightmapdata.Encode(doc)
-	if err != nil {
-		return Result{}, err
-	}
-
-	covered := 0
-
-	for offset := 12; offset < len(doc.Receivers); offset += 32 {
-		if readFloat(doc.Receivers[offset:]) != 0 {
-			covered++
-		}
-	}
-
-	return Result{
-		Model:            remapped,
-		Lightmap:         output,
-		GeometricNormals: geometricNormals,
-		Width:            int(atlas.Width),
-		Height:           int(atlas.Height),
-		Charts:           int(atlas.Charts),
-		CoveredTexels:    covered,
-	}, nil
 }
 
 type vec [3]float32

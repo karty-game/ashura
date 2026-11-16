@@ -37,7 +37,7 @@ func TestCardsConsumesCachedModelAndPublishesIndependentCatalog(t *testing.T) {
 	config := assetbuild.Config{Output: "generated",
 		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
 			Input:  []string{"assets/**"},
-			Import: []assetbuild.Plugin{modelbuild.GLB(), impostorbuild.Cards(settings)},
+			Import: []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{}), impostorbuild.Cards(settings)},
 		}},
 	}
 	options := assetbuild.Options{Project: project, Identity: "impostor-fixture@1"}
@@ -74,7 +74,7 @@ func TestCardsConsumesCachedModelAndPublishesIndependentCatalog(t *testing.T) {
 	}
 
 	settings.Resolution = 32
-	config.Pipelines[0].Import = []assetbuild.Plugin{modelbuild.GLB(), impostorbuild.Cards(settings)}
+	config.Pipelines[0].Import = []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{}), impostorbuild.Cards(settings)}
 
 	changed, err := assetbuild.Build(t.Context(), config, options)
 	if err != nil || changed.Executed != 1 || changed.Reused != 1 {

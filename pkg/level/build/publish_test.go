@@ -208,9 +208,8 @@ func TestPublicationCacheTracksOrderedMapBindingsAndScale(t *testing.T) {
 
 	project := writeFixture(t)
 	config := fixtureConfig(syntheticBake())
-	publisherIndex := len(config.Pipelines[0].Import) - 1
-	config.Pipelines[0].Import[publisherIndex] = publicationMetadata(1, false)
-	config.Pipelines[0].Import = append(config.Pipelines[0].Import, Publish(PublishOptions{}))
+	config.Pipelines[0].Process = append(config.Pipelines[0].Process, publicationMetadata(1, false))
+	metadataIndex := len(config.Pipelines[0].Process) - 1
 
 	options := assetbuild.Options{Project: project, Identity: "publication-metadata-cache"}
 	if _, err := assetbuild.Build(t.Context(), config, options); err != nil {
@@ -218,7 +217,7 @@ func TestPublicationCacheTracksOrderedMapBindingsAndScale(t *testing.T) {
 	}
 
 	first := findManifest(t, project).Chunks[0].Pages[0]
-	config.Pipelines[0].Import[publisherIndex] = publicationMetadata(2, true)
+	config.Pipelines[0].Process[metadataIndex] = publicationMetadata(2, true)
 
 	changed, err := assetbuild.Build(t.Context(), config, options)
 	if err != nil {

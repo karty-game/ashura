@@ -38,7 +38,7 @@ func TestRecipePreparesCachesCatalogAndPrunesRemovedModel(t *testing.T) {
 	config := assetbuild.Config{Output: "generated",
 		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
 			Input:  []string{"assets/**"},
-			Import: []assetbuild.Plugin{modelbuild.GLB()},
+			Import: []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{})},
 		}},
 	}
 	options := assetbuild.Options{Project: project, Identity: "model-fixture-tool-v1"}
@@ -128,7 +128,8 @@ func TestMixedImageAndModelRecipeBuildsDistinctPackages(t *testing.T) {
 		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
 			Input: []string{"assets/**"},
 			Import: []assetbuild.Plugin{
-				assetbuild.Images(), assetbuild.Mipmaps(), assetbuild.KTX2(), assetbuild.GoCatalog(), modelbuild.GLB(),
+				assetbuild.Images(), assetbuild.Mipmaps(), assetbuild.KTX2(), assetbuild.GoCatalog(),
+				modelbuild.GLBWithOptions(modelbuild.GLBOptions{}),
 			},
 		}},
 	}

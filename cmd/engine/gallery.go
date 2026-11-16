@@ -18,8 +18,9 @@ var errEmptyGallery = errors.New("sample gallery has no samples")
 var galleryHTML string
 
 type gallerySample struct {
-	Name string
-	Path string
+	Name        string
+	Path        string
+	Description string
 }
 
 func writeGallery(dist string, samples []gallerySample) error {

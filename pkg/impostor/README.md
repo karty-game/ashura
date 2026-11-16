@@ -35,7 +35,7 @@ return assetbuild.Config{
     Output: "generated",
     Pipelines: []assetbuild.Pipeline{{
         Name: "models", Input: []string{"assets/*.glb"},
-        Import: []assetbuild.Plugin{modelbuild.GLB()},
+        Import: []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{})},
         Process: []assetbuild.Plugin{impostorbuild.Cards(impostorbuild.Options{
             Mode: impostorbuild.Octahedral,
             Resolution: 256, FrameGrid: 7,

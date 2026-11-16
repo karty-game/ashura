@@ -35,7 +35,7 @@ func TestXatlasPreparedModelPreservesGeometryAndMaterialUVs(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	result, err := Prepare(ctx, input.Data, Options{Resolution: 128, Padding: 3})
+	result, err := prepareFixture(ctx, input.Data, Options{Resolution: 128, Padding: 3})
 	if err != nil {
 		t.Fatal(err)
 	}

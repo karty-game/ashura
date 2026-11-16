@@ -27,8 +27,8 @@ var (
 )
 
 type webPackage struct {
-	Name, ImportPath, RelativePath, BinaryName string
-	galleryOrder                               int
+	Name, Description, ImportPath, RelativePath, BinaryName string
+	galleryOrder                                            int
 }
 
 //nolint:tagliatelle // Match go list's external JSON field names exactly.
@@ -120,13 +120,13 @@ func localWebPackage(root string, item packageMetadata) (webPackage, error) {
 		letters[0] = unicode.ToUpper(letters[0])
 	}
 
-	title, order := repositorySamplePresentation(item.ImportPath)
+	title, description, order := repositorySamplePresentation(item.ImportPath)
 	if title == "" {
 		title = string(letters)
 	}
 
 	return webPackage{
-		Name: title, ImportPath: item.ImportPath, RelativePath: relative,
+		Name: title, Description: description, ImportPath: item.ImportPath, RelativePath: relative,
 		BinaryName: webBinaryName(item.ImportPath), galleryOrder: order,
 	}, nil
 }

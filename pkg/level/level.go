@@ -9,7 +9,6 @@ import (
 
 	"github.com/karty-game/karty-webgpu/internal/basistranscode"
 	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
 	"github.com/karty-game/karty-webgpu/pkg/model"
 	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
 	"github.com/karty-game/karty-webgpu/pkg/texture"
@@ -100,22 +99,8 @@ func readChunk(
 		resident:  resident,
 		imageInfo: make(map[string]imageMetadata),
 	}
-	for _, ref := range refs {
-		if info, found := resident[ref.SHA256]; found {
-			if info.size != ref.Size {
-				return nil, leveldata.ErrFormat
-			}
-
-			continue
-		}
-
-		data, readErr := resource.ReadVerified(ctx, base, resource.Asset{ID: chunk.ID, Path: ref.Path, Size: ref.Size, SHA256: ref.SHA256})
-		if readErr != nil {
-			return nil, fmt.Errorf("chunk %s: %w", chunk.ID, readErr)
-		}
-
-		result.verified[ref.SHA256] = data
-		result.files[ref.SHA256] = resourcedata.Bytes(data)
+	if err = result.readFiles(ctx, base, refs); err != nil {
+		return nil, err
 	}
 
 	if decoder != nil {

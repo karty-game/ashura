@@ -81,7 +81,7 @@ func stageWebDistribution(ctx context.Context, root, dist, pattern string, packa
 			return err
 		}
 
-		samples = append(samples, gallerySample{Name: item.Name, Path: relativeWebPath(path)})
+		samples = append(samples, gallerySample{Name: item.Name, Path: relativeWebPath(path), Description: item.Description})
 	}
 
 	if err := buildWebPackages(ctx, root, dist, packages, compiler); err != nil {

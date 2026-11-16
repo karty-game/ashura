@@ -13,15 +13,10 @@ import (
 	"github.com/karty-game/karty-webgpu/samples/sponza/generated/levels"
 )
 
-const rgbRepresentation = "RGB"
-
 type bakedPresentation struct {
-	app            *engine.App
-	world          *engine.World
-	baked          *level.Presentation
-	rgb, activeRGB bool
-	changed        func(string)
-	failures       sample.Errors
+	baked    *level.Presentation
+	changed  func(string)
+	failures sample.Errors
 }
 
 func createScene(app *engine.App) (*engine.World, func() error, error) {
@@ -30,12 +25,12 @@ func createScene(app *engine.App) (*engine.World, func() error, error) {
 		return nil, nil, err
 	}
 
-	presentation := &bakedPresentation{app: app, world: world}
-	if err = presentation.applyLighting(); err != nil {
+	presentation, err := openBakedScene(app, world)
+	if err != nil {
 		return nil, nil, err
 	}
 
-	navigation, err := showNavigation(app, selectView, func(rgb bool) { presentation.rgb = rgb })
+	navigation, err := showNavigation(app, selectView)
 	if err != nil {
 		return nil, nil, errors.Join(err, presentation.baked.Close())
 	}
@@ -60,42 +55,25 @@ func (presentation *bakedPresentation) update(delta time.Duration) error {
 		return err
 	}
 
-	if err := presentation.applyLighting(); err != nil {
-		return err
-	}
-
 	return presentation.baked.Update(delta)
 }
 
-// Lighting selection changes only the prepared profile. The standard level API
-// owns loading, cancellation, verified resource sharing and presentation lifetime.
-func (presentation *bakedPresentation) applyLighting() error {
-	if presentation.baked != nil {
-		if presentation.activeRGB == presentation.rgb {
-			return nil
-		}
+// The level API selects the supported GPU texture family for the fixed RNM scene
+// and owns prepared resource loading, sharing and presentation lifetime.
+func openBakedScene(app *engine.App, world *engine.World) (*bakedPresentation, error) {
+	presentation := &bakedPresentation{}
 
-		if err := presentation.baked.Close(); err != nil {
-			return err
-		}
-	}
-
-	profiles := level.TextureVariants{BC: levels.SponzaRNMBC(), Mobile: levels.SponzaRNMMobile()}
-	if presentation.rgb {
-		profiles = level.TextureVariants{BC: levels.SponzaRGBBC(), Mobile: levels.SponzaRGBMobile()}
-	}
-
-	opened, err := level.Open(context.Background(), presentation.app, presentation.world, level.OpenOptions{
-		Variants: profiles, Base: resource.ProjectBase("samples/sponza"), Select: level.WholeScene, StatusChanged: presentation.notify,
+	opened, err := level.Open(context.Background(), app, world, level.OpenOptions{
+		Variants: level.TextureVariants{BC: levels.SponzaRNMBC(), Mobile: levels.SponzaRNMMobile()},
+		Base:     resource.ProjectBase("samples/sponza"), Select: level.WholeScene, StatusChanged: presentation.notify,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	presentation.baked, presentation.activeRGB = opened, presentation.rgb
-	presentation.notify(opened.Status())
+	presentation.baked = opened
 
-	return nil
+	return presentation, nil
 }
 
 func (presentation *bakedPresentation) notify(status level.PresentationStatus) {
@@ -103,15 +81,9 @@ func (presentation *bakedPresentation) notify(status level.PresentationStatus) {
 		return
 	}
 
-	representation := "RNM"
-	if presentation.activeRGB {
-		representation = rgbRepresentation
-	}
-
 	presentation.changed(
 		fmt.Sprintf(
-			"%s lighting · %d/%d chunks ready",
-			representation,
+			"RNM lighting · %d/%d chunks ready",
 			status.LoadedChunks,
 			status.TotalChunks,
 		),

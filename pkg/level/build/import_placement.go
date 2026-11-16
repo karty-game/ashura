@@ -32,22 +32,6 @@ func (state *levelImportState) importPlacement(
 		Dynamic:   dynamic,
 		Asset:     artifact,
 	}
-	if state.sourceOnly {
-		return entry, nil
-	}
-
-	overrides, err := state.overrides(ctx, source)
-	if err != nil {
-		return placement{}, err
-	}
-
-	entry.SSBump = overrides
-	if !dynamic {
-		entry.SSBump, err = state.staticRelief(ctx, source, overrides)
-		if err != nil {
-			return placement{}, err
-		}
-	}
 
 	return entry, nil
 }

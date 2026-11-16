@@ -51,12 +51,15 @@ func fixtureConfig(hardware assetbuild.Plugin) assetbuild.Config {
 			Input: []string{"*.scene.yaml", "*.kmodel"},
 			Import: []assetbuild.Plugin{
 				fixtureModels{},
-				ImportScenes(ImportOptions{Input: []string{"test.scene.yaml"}}),
+				Scenes(SceneOptions{Input: []string{"test.scene.yaml"}}),
+			},
+			Process: []assetbuild.Plugin{
+				Materials(MaterialOptions{}),
 				StaticChunks(ChunkOptions{Size: [3]float32{1, 1, 1}}),
 				LightmapUVs(UVOptions{TexelsPerUnit: 4, MaxPageSize: 32, Padding: 2, TransportSamples: 16}),
 				hardware,
-				Publish(PublishOptions{}),
 			},
+			Output: []assetbuild.Plugin{Publish(PublishOptions{})},
 		}},
 	}
 }
@@ -410,7 +413,7 @@ func TestLevelDevelopmentPublishesDiscoverableBakeInputs(t *testing.T) {
 	project := writeFixture(t)
 	config := fixtureConfig(syntheticBake())
 
-	config.Pipelines[0].Import[len(config.Pipelines[0].Import)-1] = Publish(PublishOptions{Development: true})
+	config.Pipelines[0].Output[0] = Publish(PublishOptions{Development: true})
 	if _, err := assetbuild.Build(t.Context(), config, assetbuild.Options{Project: project, Identity: "developer-level"}); err != nil {
 		t.Fatal(err)
 	}

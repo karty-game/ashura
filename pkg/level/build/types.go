@@ -11,7 +11,6 @@ import (
 	"github.com/karty-game/karty-webgpu/internal/leveldata"
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
 	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
 )
 
 const (
@@ -28,21 +27,6 @@ const (
 
 // ErrInvalid identifies unsupported or inconsistent authored level inputs.
 var ErrInvalid = errors.New("invalid level bake pipeline")
-
-// ImportOptions adapts existing scene YAML and prefabs. Modules defaults to logic+render3d.
-// SSBump maps prepared model identity -> original primitive name -> prepared SSBump resource identity.
-// Spaces maps node paths to logical spaces; descendants inherit the nearest explicit assignment.
-type ImportOptions struct {
-	// SeparateMasked keeps static alpha-masked parts outside the opaque bake.
-	// Their independent prepared models contain world-space geometry and use an
-	// identity placement; masked shadows remain outside this opaque-bake contract.
-	SeparateMasked bool
-
-	Input   []string
-	Modules []scenebuild.Module
-	SSBump  map[string]map[string]string
-	Spaces  map[string]string
-}
 
 // ChunkOptions configures deterministic spatial partitioning within logical spaces.
 type ChunkOptions struct {

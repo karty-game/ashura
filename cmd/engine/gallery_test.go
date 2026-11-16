@@ -21,8 +21,8 @@ func TestGalleryWorksBehindPathPrefix(t *testing.T) {
 	const hostileName = `<script>alert("name")</script>`
 
 	samples := []gallerySample{
-		{Name: "Basic scene", Path: "samples/basic-scene/"},
-		{Name: hostileName, Path: "samples/other/"},
+		{Name: "Basic scene", Path: "samples/basic-scene/", Description: "A minimal scene with camera controls."},
+		{Name: hostileName, Path: "samples/other/", Description: hostileName},
 	}
 
 	writeWebFixtures(t, dist, map[string]string{

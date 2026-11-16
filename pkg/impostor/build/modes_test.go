@@ -88,7 +88,7 @@ func TestModeSwitchCachesCapturesWithoutRecompilingModel(t *testing.T) {
 	config := assetbuild.Config{Output: "generated",
 		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
 			Input:  []string{"assets/*.glb"},
-			Import: []assetbuild.Plugin{modelbuild.GLB(), plugin},
+			Import: []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{}), plugin},
 		}},
 	}
 	options := assetbuild.Options{Project: project, Identity: "mode-cache-fixture"}
@@ -105,7 +105,7 @@ func TestModeSwitchCachesCapturesWithoutRecompilingModel(t *testing.T) {
 
 	for _, mode := range []string{impostorbuild.Angular, impostorbuild.Octahedral} {
 		config.Pipelines[0].Import = []assetbuild.Plugin{
-			modelbuild.GLB(),
+			modelbuild.GLBWithOptions(modelbuild.GLBOptions{}),
 			impostorbuild.Cards(
 				impostorbuild.Options{Mode: mode, Include: []string{"assets/**"}, Resolution: 32, Padding: 2, MipLevels: 2},
 			),

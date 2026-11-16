@@ -229,6 +229,12 @@ func (plugin *uvPlugin) planUVIndex(child *assetbuild.Plan, resource assetbuild.
 
 			replaceResource(child, resource.ID, refs[0])
 
+			for index := range child.Resources {
+				if child.Resources[index].ID == resource.ID {
+					child.Resources[index].Process = processUVGeometry
+				}
+			}
+
 			return nil
 		},
 	})

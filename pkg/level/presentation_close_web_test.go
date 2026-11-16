@@ -6,6 +6,7 @@ package level
 import (
 	"context"
 	"errors"
+	"strconv"
 	"strings"
 	"syscall/js"
 	"testing"
@@ -22,21 +23,33 @@ func TestPresentationCloseInsideJSCallback(t *testing.T) {
 			name = "App.Close"
 		}
 
-		t.Run(name, func(t *testing.T) { testPresentationCloseCallback(t, appClose) })
+		t.Run(name, func(t *testing.T) {
+			t.Run("manifest", func(t *testing.T) { testPresentationCloseCallback(t, appClose, false) })
+			t.Run("parallel-chunk", func(t *testing.T) { testPresentationCloseCallback(t, appClose, true) })
+		})
 	}
 }
 
-func testPresentationCloseCallback(t *testing.T, appClose bool) {
+func testPresentationCloseCallback(t *testing.T, appClose, chunkRead bool) {
 	t.Helper()
 
-	fixture := js.Global().Get("Function").New(`
-const fixture = {started:false, settled:false};
+	expectedReads := 1
+	if chunkRead {
+		expectedReads = 8
+	}
+
+	fixture := js.Global().Get("Function").New("expected", `
+const fixture = {started:false, settled:false, count:0, finished:0, aborted:0};
 fixture.fetch = (url, options) => new Promise((resolve,reject) => {
-    fixture.started = true;
-    options.signal.addEventListener('abort', () => reject(new Error('aborted')), {once:true});
-}).finally(() => {fixture.settled = true});
+    fixture.count++;
+    fixture.started = fixture.count === expected;
+    options.signal.addEventListener('abort', () => {
+        fixture.aborted++;
+        reject(new Error('aborted'));
+    }, {once:true});
+}).finally(() => {fixture.finished++; fixture.settled = fixture.finished === expected});
 return fixture;
-`).Invoke()
+`).Invoke(expectedReads)
 	oldFetch := js.Global().Get("fetch")
 
 	js.Global().Set("fetch", fixture.Get("fetch"))
@@ -59,7 +72,13 @@ return fixture;
 
 	var readErr error
 
-	state.reads.Go(func() { _, readErr = resource.Read(ctx, "/fixture", asset) })
+	state.reads.Go(func() {
+		if chunkRead {
+			_, readErr = ReadChunk(ctx, "/fixture", pendingPresentationChunk())
+		} else {
+			_, readErr = resource.Read(ctx, "/fixture", asset)
+		}
+	})
 	waitPresentationFixture(t, fixture, "started")
 
 	returned := make(chan error, 1)
@@ -90,6 +109,30 @@ return fixture;
 	}
 
 	waitPresentationFixture(t, fixture, "settled")
+
+	if fixture.Get("count").Int() != expectedReads || fixture.Get("aborted").Int() != expectedReads {
+		t.Fatal("close did not abort every outstanding request", fixture.Get("count"), fixture.Get("aborted"))
+	}
+}
+
+func pendingPresentationChunk() Chunk {
+	var refs [8]Reference
+	for index := range refs {
+		identity := strconv.Itoa(index)
+		refs[index] = Reference{Path: "pending-" + identity + ".bin", Size: 1, SHA256: strings.Repeat(identity, 64)}
+	}
+
+	return Chunk{
+		ID: "pending-chunk", Space: "default", Max: [3]float32{1, 1, 1},
+		Pages: []Page{{
+			Geometry: refs[0], UV: refs[1], Maps: [3]Reference{refs[2], refs[3], refs[4]},
+			Width: 16, Height: 16, Scale: 1, Encoding: "rgbe8", Representation: RNMFit,
+			Materials: []Material{
+				{Name: "one", Color: [4]float32{1, 1, 1, 1}, Albedo: &refs[5], SSBump: &refs[6]},
+				{Name: "two", Color: [4]float32{1, 1, 1, 1}, Albedo: &refs[7], SSBump: &refs[6]},
+			},
+		}},
+	}
 }
 
 func waitPresentationFixture(t *testing.T, fixture js.Value, field string) {

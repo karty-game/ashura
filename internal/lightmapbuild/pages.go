@@ -264,19 +264,10 @@ func (preparer *Preparer) preparePage(
 	page xatlas.Page,
 	options PageOptions,
 ) (Result, error) {
-	model := modeldata.Document{
-		Source:   receivers.Source,
-		Textures: receivers.Textures,
-		Parts:    make([]modeldata.Part, len(page.PartIndices)),
-	}
-	for index, source := range page.PartIndices {
-		model.Parts[index] = receivers.Parts[source]
-	}
-
-	prunePageTextures(&model)
+	model, uvs, atlas := pageGeometry(receivers, page)
 
 	doc := lightmapdata.Document{Width: page.Width, Height: page.Height}
-	doc.UVs = remapModel(&model, page.Atlas)
+	doc.UVs = uvs
 
 	encodedModel, err := modeldata.Encode(model)
 	if err != nil {
@@ -295,7 +286,7 @@ func (preparer *Preparer) preparePage(
 		geometric = make([]vec, int(page.Width)*int(page.Height))
 	}
 
-	doc.Receivers, doc.Padding, doc.Frames, err = buildReceivers(ctx, model.Parts, page.Atlas, options.RNM, geometric)
+	doc.Receivers, doc.Padding, doc.Frames, err = buildReceivers(ctx, model.Parts, atlas, options.RNM, geometric)
 	if err != nil {
 		return Result{}, err
 	}

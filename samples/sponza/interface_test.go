@@ -28,9 +28,9 @@ func navigationApp(t *testing.T) *engine.App {
 func TestNavigationUsesRetainedControlsAndSharesDebugView(t *testing.T) {
 	t.Parallel()
 	app := navigationApp(t)
-	selected, rgb := -1, false
+	selected := -1
 
-	navigation, err := showNavigation(app, func(index int) { selected = index }, func(value bool) { rgb = value })
+	navigation, err := showNavigation(app, func(index int) { selected = index })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestNavigationUsesRetainedControlsAndSharesDebugView(t *testing.T) {
 		}
 	}
 
-	details := navigationControl(t, view, "Views and lighting")
+	details := navigationControl(t, view, "Views")
 	if result := view.Dispatch(ui.Event{Kind: ui.Activate, Target: details.ID()}); result.Err != nil {
 		t.Fatal(result.Err)
 	}
@@ -72,24 +72,17 @@ func TestNavigationUsesRetainedControlsAndSharesDebugView(t *testing.T) {
 		}
 	}
 
-	lighting := navigationControl(t, view, "Lighting")
-	view.SetFocus(lighting)
-
-	for _, key := range []string{"Enter", "End", "Enter"} {
-		if result := view.Dispatch(ui.Event{Kind: ui.KeyDown, Key: key}); result.Err != nil {
-			t.Fatal(result.Err)
+	for _, semantic := range view.Semantics() {
+		if semantic.Name == "Lighting" {
+			t.Fatal("navigation retained a lighting selector")
 		}
 	}
 
-	if !rgb || lighting.Selected() != "rgb" {
-		t.Fatal("lighting selection did not reach the sample")
-	}
-
-	if err := navigation.status.SetText("RGB · 1/1 chunks"); err != nil {
+	if err := navigation.status.SetText("RNM lighting · 1/1 chunks ready"); err != nil {
 		t.Fatal(err)
 	}
 
-	if navigation.status.Text() != "RGB · 1/1 chunks" {
+	if navigation.status.Text() != "RNM lighting · 1/1 chunks ready" {
 		t.Fatal("status did not update through retained text")
 	}
 
@@ -120,7 +113,7 @@ func navigationControl(t *testing.T, view *ui.View, name string) *ui.Node {
 	return nil
 }
 
-func TestLightingSwitchClosesOldPresentationAndKeepsWorld(t *testing.T) {
+func TestRNMPresentationKeepsCameraAndClosesWithApp(t *testing.T) {
 	t.Parallel()
 	app := navigationApp(t)
 	world := engine.NewWorld()
@@ -129,8 +122,8 @@ func TestLightingSwitchClosesOldPresentationAndKeepsWorld(t *testing.T) {
 	notifications := 0
 	text := ""
 
-	presentation := &bakedPresentation{app: app, world: world, changed: func(value string) { notifications++; text = value }}
-	if err := presentation.applyLighting(); err != nil {
+	presentation, err := openBakedScene(app, world)
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -140,32 +133,23 @@ func TestLightingSwitchClosesOldPresentationAndKeepsWorld(t *testing.T) {
 		}
 	}()
 
-	first := presentation.baked
+	opened := presentation.baked
+	presentation.changed = func(value string) { notifications++; text = value }
+	presentation.notify(opened.Status())
 
-	if notifications != 1 || !strings.HasPrefix(text, "RNM") {
+	if opened.Status().Closed || notifications != 1 || !strings.HasPrefix(text, "RNM") {
 		t.Fatal("initial prepared profile status missing", notifications, text)
 	}
 
-	presentation.rgb = true
-	if err := presentation.applyLighting(); err != nil {
+	if err := app.Close(); err != nil {
 		t.Fatal(err)
 	}
 
-	second := presentation.baked
-	if !first.Status().Closed || second.Status().Closed || presentation.world != world || presentation.app != app ||
-		world.Transform(
-			camera,
-		) != transform || world.Len() != 1 || !presentation.activeRGB || notifications != 2 || !strings.HasPrefix(text, "RGB") {
-		t.Fatal("lighting switch lost cleanup, camera/world ownership or progress-only status")
+	if !opened.Status().Closed || world.Transform(camera) != transform || world.Len() != 1 || notifications != 1 {
+		t.Fatal("App cleanup lost presentation lifetime, camera/world ownership or progress-only status")
 	}
 
-	if err := presentation.applyLighting(); err != nil || presentation.baked != second || notifications != 2 {
-		t.Fatal("unchanged lighting restarted the loader", err)
-	}
-
-	presentation.rgb = false
-	if err := presentation.applyLighting(); err != nil || !second.Status().Closed || presentation.activeRGB || notifications != 3 ||
-		!strings.HasPrefix(text, "RNM") {
-		t.Fatal("switching back did not close RGB and select RNM", err)
+	if err := presentation.update(time.Millisecond); err != nil || presentation.baked != opened || notifications != 1 {
+		t.Fatal("closed presentation restarted the loader or emitted status", err)
 	}
 }

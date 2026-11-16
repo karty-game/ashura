@@ -40,6 +40,8 @@ Explicit compiler selectors remain available for diagnostics and custom apps;
 asset recipes always run with host standard Go.
 
 Selecting a sample replaces the active view; only one scene runs at a time.
+The top bar explains what the selected sample showcases; the sidebar keeps its
+short name. Basic Scene's size description refers to gzipped WASM bytes.
 The **Open sample** link opens that sample in its own tab. Gallery selections are
 also represented in the URL hash, so a selected scene can be bookmarked.
 
@@ -90,6 +92,10 @@ only runs on `main` deploy. In the repository's **Settings → Pages**, select
 GitHub Pages must be available for the repository's visibility and GitHub plan.
 The HTTPS site works below the repository path without rewriting asset URLs.
 CI tests and compilation do not establish browser GPU execution or performance.
+
+Portable codec, UV and font regressions run in the ordinary Go test suite.
+Public tool download/installation probes are opt-in system qualification tests;
+there is no separate automatic asset-tool host matrix.
 
 CI restores each sample's `generated/cache/assets/v1/` action cache before asset
 preparation and saves it before the check gate, so a later test failure retains
@@ -226,7 +232,7 @@ to the curated order.
 | [Instancing](instancing/) | Five thousand moving cube instances following a two-dimensional wave, submitted with GPU instancing |
 | [Reflections](reflections/) | Offline panorama bake, placed box probe with parallax-corrected cubemap sampling, reflective floor, walls and ceiling |
 | [Compute texture](compute-texture/) | Embedded WGSL writes a material texture through declared compute resources and per-frame dispatch; Space pauses the pattern |
-| [Sponza](sponza/) | An offline-baked atrium with RNM/SSBump relief, restored cutouts, portable textures, retained navigation/lighting controls and free flight |
+| [Sponza](sponza/) | An offline-baked atrium with RNM/SSBump relief, restored cutouts, portable textures, retained navigation and free flight |
 
 A decals sample remains planned once projected decals have a supporting public
 API. New examples should exercise real library functionality.

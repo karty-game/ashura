@@ -14,7 +14,7 @@ type navigationUI struct {
 	remove func()
 }
 
-func showNavigation(app *engine.App, selectView func(int), selectLighting func(bool)) (*navigationUI, error) {
+func showNavigation(app *engine.App, selectView func(int)) (*navigationUI, error) {
 	view := uiapp.View(app)
 	if view == nil {
 		font, err := defaultfont.Load()
@@ -33,17 +33,13 @@ func showNavigation(app *engine.App, selectView func(int), selectLighting func(b
 	}
 
 	status := ui.NewText("")
-	lighting := ui.NewSelect("Lighting", []ui.Option{
-		{Key: "rnm", Label: "RNM / SSBump"}, {Key: "rgb", Label: rgbRepresentation},
-	}, "rnm", func(change ui.Change) { selectLighting(change.Text == "rgb") })
-	settings := sampleui.Details("Views and lighting",
+	settings := sampleui.Details("Views",
 		ui.Row(
 			ui.NewButton("Courtyard · 1", func() { selectView(courtyardView) }),
 			ui.NewButton("Gallery · 2", func() { selectView(galleryView) }),
 			ui.NewButton("Free flight · 3", func() { selectView(flightView) }),
 			ui.NewButton("Ceiling · B", func() { selectView(ceilingView) }),
 		).WithStyle(ui.Style{Wrap: true, Gap: 6}),
-		lighting,
 		ui.NewText("Drag to look · wheel/pinch to zoom · R resets · Flight: WASD, Space/Shift"),
 	)
 	controls := ui.Column(ui.NewText("Sponza").WithStyle(ui.Style{FontSize: 20}), status, settings, ui.NewText("© Frank Meinl, Crytek · Babylon.js Sponza").WithStyle(ui.Style{FontSize: 12})).

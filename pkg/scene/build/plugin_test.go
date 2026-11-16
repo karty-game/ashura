@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"
 	logicbuild "github.com/karty-game/karty-webgpu/pkg/scene/build/logic"
 )
 
@@ -36,8 +36,8 @@ func TestRecipeCachesReferencedPrefabsAndPreservesOutputsOnFailure(t *testing.T)
 		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
 			Input: []string{"*.scene.yaml"},
 			Import: []assetbuild.Plugin{
-				scenebuild.Scenes(
-					scenebuild.Options{Input: []string{"root.scene.yaml", "child.scene.yaml"}, Modules: logicbuild.Modules()},
+				levelbuild.Scenes(
+					levelbuild.SceneOptions{Input: []string{"root.scene.yaml", "child.scene.yaml"}, Modules: logicbuild.Modules()},
 				),
 			},
 		}},

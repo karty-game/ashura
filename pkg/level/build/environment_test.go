@@ -32,7 +32,7 @@ func TestImportPreservesAuthoredHemisphereEnvironment(t *testing.T) {
 				)
 			}
 
-			imported, err := importResolved(&assetbuild.Context{Context: t.Context()}, resolved, ImportOptions{}, nil, nil)
+			imported, err := importSceneSource(&assetbuild.Context{Context: t.Context()}, resolved, importOptions{}, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

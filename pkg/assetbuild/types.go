@@ -157,6 +157,10 @@ type Artifact struct {
 type Resource struct {
 	ID  string
 	Ref Ref
+	// Process adapts an operation to compound resource layouts owned by a module.
+	// It plans ordinary bounded/cacheable actions; it performs no processing itself.
+	// The callback is build-planning metadata and never part of an asset payload.
+	Process func(*Plan, Resource, string) (Ref, error) `json:"-"`
 }
 
 // ActionReport describes actual action execution or cache reuse.

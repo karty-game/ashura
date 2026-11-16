@@ -24,7 +24,9 @@ func TestIntegratedProductionPreparationMatchesSeparateArtifacts(t *testing.T) {
 		project := writeFixture(t)
 		config := fixtureConfig(syntheticBake())
 
-		config.Pipelines[0].Import = append(config.Pipelines[0].Import[:3], preparationCaptureFixture{integrated: integrated})
+		config.Pipelines[0].Process = append(config.Pipelines[0].Process[:2], preparationCaptureFixture{integrated: integrated})
+
+		config.Pipelines[0].Output = nil
 		if _, err := assetbuild.Build(t.Context(), config, assetbuild.Options{
 			Project: project, Identity: "integrated-preparation-equivalence", Jobs: 4, NoCache: true,
 		}); err != nil {

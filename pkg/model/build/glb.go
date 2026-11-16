@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/karty-game/karty-webgpu/internal/modeldata"
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
 )
 
@@ -22,10 +23,10 @@ const glbProcessor = "glb"
 
 const (
 	// PreparedSlot exposes the compiled model for later offline processors.
-	PreparedSlot = "model"
+	PreparedSlot = modeldata.PreparedSlot
 	// PreparedSchema identifies the GPU-ready static-model container family;
 	// its internal version admits opaque V1 and cutout V2 records.
-	PreparedSchema = "karty.static-model@1"
+	PreparedSchema = modeldata.PreparedSchema
 )
 
 var errCatalog = errors.New("GLB catalog declaration is invalid or collides")
@@ -37,16 +38,12 @@ type GLBOptions struct{ MaxTextureDimension int }
 
 type glbPlugin struct {
 	options      GLBOptions
-	lightmap     *LightmapOptions
 	preparedOnly bool
 }
 
-// GLB prepares selected .glb inputs and emits named declarations in the models/ subdirectory (package models). Each declaration returns model.Asset for its exact prepared embed.
-// The asset action cache tracks source bytes, processor revision and tool identity.
-func GLB() assetbuild.Plugin { return glbPlugin{} }
-
-// GLBWithOptions imports GPU-ready geometry and capped textures through the same
-// standard pipeline as GLB. Source files and geometry are never rewritten.
+// GLBWithOptions prepares static .glb geometry and embedded textures and publishes
+// named model.Asset declarations in the generated models package. A zero texture
+// cap retains authored resolution. Source files and geometry are never rewritten.
 func GLBWithOptions(options GLBOptions) assetbuild.Plugin { return glbPlugin{options: options} }
 
 func (glbPlugin) Name() string { return glbProcessor }
@@ -54,12 +51,6 @@ func (glbPlugin) Name() string { return glbProcessor }
 func (plugin glbPlugin) Plan(plan *assetbuild.Plan) error {
 	if plugin.options.MaxTextureDimension < 0 || plugin.options.MaxTextureDimension > 4096 {
 		return errCatalog
-	}
-
-	if plugin.lightmap != nil {
-		if err := validateLightmapOptions(*plugin.lightmap); err != nil {
-			return err
-		}
 	}
 
 	selected := make(map[string]bool)
@@ -102,7 +93,7 @@ func (plugin glbPlugin) Plan(plan *assetbuild.Plan) error {
 			continue
 		}
 
-		if err := addModel(plan, file, name, plugin.lightmap, plugin.options); err != nil {
+		if err := addModel(plan, file, name, plugin.options); err != nil {
 			return err
 		}
 	}
@@ -110,37 +101,17 @@ func (plugin glbPlugin) Plan(plan *assetbuild.Plan) error {
 	return nil
 }
 
-func addModel(plan *assetbuild.Plan, source, name string, lightmap *LightmapOptions, options GLBOptions) error {
-	outputs := []assetbuild.Slot{{Name: bundleSlot, Schema: "static-model-bundle@2"}, {Name: PreparedSlot, Schema: PreparedSchema}}
-
-	if lightmap != nil {
-		schema := LightmapSchema
-		if lightmap.RNM {
-			schema = RNMLightmapSchema
-			if lightmap.PrecomputeTransport {
-				schema = TransportLightmapSchema
-			}
-		}
-
-		outputs = append(outputs, assetbuild.Slot{Name: LightmapSlot, Schema: schema})
-	}
-
-	revision := "static-model-cutout-catalog@3"
-	if lightmap != nil {
-		revision = "static-model-cutout-lightmap@8-wasi1"
-	}
-
+func addModel(plan *assetbuild.Plan, source, name string, options GLBOptions) error {
 	refs, err := plan.Add(assetbuild.Action{
-		Parallel: lightmap == nil,
-		ID:       "glb/" + source, Processor: glbProcessor, Revision: revision,
+		Parallel: true,
+		ID:       "glb/" + source, Processor: glbProcessor, Revision: "static-model-cutout-catalog@3",
 		Options: struct {
 			Source, Name string
-			Lightmap     *LightmapOptions
 			Textures     GLBOptions
-		}{source, name, lightmap, options},
-		Outputs: outputs,
+		}{source, name, options},
+		Outputs: []assetbuild.Slot{{Name: bundleSlot, Schema: "static-model-bundle@2"}, {Name: PreparedSlot, Schema: PreparedSchema}},
 		Run: func(ctx *assetbuild.Context) (assetbuild.Result, error) {
-			return compileModelAction(ctx, source, name, lightmap, options)
+			return compileModelAction(ctx, source, name, options)
 		},
 	})
 	if err != nil {
@@ -150,9 +121,6 @@ func addModel(plan *assetbuild.Plan, source, name string, lightmap *LightmapOpti
 	plan.Publish(refs[0])
 
 	plan.Resources = append(plan.Resources, assetbuild.Resource{ID: source, Ref: refs[1]})
-	if lightmap != nil {
-		plan.Resources = append(plan.Resources, assetbuild.Resource{ID: source + "#lightmap", Ref: refs[2]})
-	}
 
 	return nil
 }

@@ -1,5 +1,8 @@
 # Project asset recipes
 
+Start with the [asset pipeline guide](../../docs/asset-pipeline/README.md) for
+plugin-by-plugin descriptions, settings, defaults and recipe examples.
+
 `assetbuild` is a host-only Go package. Projects compose build plugins in
 `asset.config.go`; the CLI runs that recipe for development generation and before
 compiling the game. Processing and source codecs stay outside native/browser
@@ -141,6 +144,12 @@ Explicit legacy Config recipes keep their original cache identities.
 
 ## Plugins
 
+The level pipeline uses the independent
+[mesh cleanup and optimization stages](../mesh/build/README.md). Put cleanup
+after prepared model import and before scene import; optimize after lightmap UV
+preparation and before baking. The level adapter keeps geometry and lighting
+data aligned. These offline steps add no mesh decoder to the game.
+
 | Plugin | Configuration and behavior |
 | --- | --- |
 | `Images()` | PNG/JPEG import; infer albedo, normal, height, AO, SSBump and reflection roles from names |
@@ -152,12 +161,10 @@ Explicit legacy Config recipes keep their original cache identities.
 | `Mipmaps()` | Linear-light albedo filtering, normalized normal filtering and linear AO/SSBump filtering |
 | `KTX2()` | RGBA8 KTX2 by default; explicit `KTX2Options` selects offline BC1/BC7 with the supplied mip levels |
 | `GoCatalog()` | Named embedded prepared KTX2 assets; page declarations and source regions for atlases |
-| `ui/build.Images()` | UI-ready RGBA pages and a typed catalog sharing automatically packed regions; no runtime source decoding |
+| `ui/build.Images()` | UI-ready RGBA pages and a typed catalog; consumes regions from an optional preceding Atlas stage; no runtime source decoding |
 | `ui/build.DefaultFont()` | Prepare and publish the qualified Go Regular atlas/metrics pair using Go and embedded msdfgen WASM |
-| `model/build.GLB()` | Flatten static GLB scenes into GPU-ready model resources and generated declarations |
+| `model/build.GLBWithOptions(GLBOptions{})` | Flatten static GLB scenes into GPU-ready model resources and generated declarations |
 | `impostor/build.Cards(Options{...})` | Capture prepared model resources into multi-view color/normal/depth cards and generated declarations |
-| `scene/build.Scenes(Options{...})` | Compile strict modular scene/prefab YAML into typed Go factories and publish the matching IDE schema |
-| `scene/build/delivery.Models()` | Publish preceding prepared model slots as external payloads and small Go descriptors |
 | `level/build` plugins | Resolve scenes, partition static geometry, unwrap density-controlled UV1, bake RNM and publish external chunk assets |
 | `model/build.PreparedGLB()` | Expose prepared models to level processors without embedding/publishing original model catalogs |
 
@@ -184,7 +191,7 @@ with no runtime decoder or automatic fallback. Direct offline callers can use
 
 Model, impostor and image resources can coexist in one recipe. Image processors
 preserve other resource schemas while rejecting image stages in the wrong order.
-Put `model/build.GLB()` before `impostor/build.Cards()`; the original model remains
+Put `model/build.GLBWithOptions(GLBOptions{})` before `impostor/build.Cards()`; the original model remains
 available alongside its impostor. See [the impostor guide](../impostor/README.md)
 for settings, runtime costs and supported materials.
 
@@ -352,7 +359,7 @@ before this stage; the image plugin filters them linearly. The same dimension,
 ray-work, cancellation and cache bounds apply. Height sources are consumed even
 with `KeepNormals`; they cannot be exported as runtime KTX2 textures.
 The [Sponza recipe](../../samples/sponza/asset.config.go) composes this path with
-the standard GLB, chunk, UV, production RGB/RNM bake and portable-publication
+the standard GLB, chunk, UV, production RNM bake and portable-publication
 modules. Its one source model retains opaque and masked parts; shared build
 modules perform separation and native texture preparation. The sample contains
 no source-processing tool directory or extra recipe package. This adds no
@@ -474,6 +481,13 @@ runner commits that graph only after the callback succeeds. IDs are unique withi
 capped at 32 levels and the complete graph at 65,536 action and expansion
 identities. Later expansions see resource changes from earlier
 ones in the same pipeline. All processing still finishes before the normal atomic publication.
+
+`Resource.Process` optionally lets a resource owner plan operations for compound
+records. Geometry stages call it with `mesh-cleanup` or `mesh-optimize`; the owner
+registers normal actions/expansions and returns the current or replacement Ref.
+Deferred discovery installs its replacement before the next recipe stage.
+The callback is build metadata, excluded from JSON and runtime assets. Its
+actions still declare their processor revisions, inputs, options and artifacts.
 
 Expansion callbacks perform cheap discovery on `Context.Input` manifests and
 verified `ReadArtifact` payloads reachable from those declared inputs. Source,

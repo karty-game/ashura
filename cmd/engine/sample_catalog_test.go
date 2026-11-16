@@ -40,7 +40,11 @@ func TestRepositoryGalleryOrderAndTitles(t *testing.T) {
 
 	samples := make([]gallerySample, len(packages))
 	for index, item := range packages {
-		samples[index] = gallerySample{Name: item.Name, Path: relativeWebPath(filepath.Join("apps", item.RelativePath))}
+		samples[index] = gallerySample{
+			Name:        item.Name,
+			Path:        relativeWebPath(filepath.Join("apps", item.RelativePath)),
+			Description: item.Description,
+		}
 	}
 
 	dist := t.TempDir()

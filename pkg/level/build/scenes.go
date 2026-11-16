@@ -27,7 +27,5 @@ type sceneSource struct {
 // baking relief or requiring encoded image resources. Follow with Materials
 // after image processing, then StaticChunks and the remaining level processors.
 func Scenes(options SceneOptions) assetbuild.Plugin {
-	return importPlugin{sourceOnly: true, options: ImportOptions{
-		Input: options.Input, Modules: options.Modules, Spaces: options.Spaces, SeparateMasked: options.SeparateMasked,
-	}}
+	return importPlugin{options: options}
 }

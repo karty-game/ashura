@@ -124,7 +124,7 @@ func TestRNMPreparationKeepsGeometryAndBuildsFrames(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	result, err := Prepare(ctx, input.Data, Options{Resolution: 128, Padding: 3, RNM: true})
+	result, err := prepareFixture(ctx, input.Data, Options{Resolution: 128, Padding: 3, RNM: true})
 	if err != nil {
 		t.Fatal(err)
 	}

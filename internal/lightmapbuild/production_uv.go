@@ -80,11 +80,7 @@ func (p *UVPreparer) Prepare(ctx context.Context, model modeldata.Document, opti
 // footprints. Production stores that page immediately, avoiding retention of a
 // complete group's receiver allocations just to remove duplicate clipping.
 func (p *UVPreparer) PrepareEach(ctx context.Context, model modeldata.Document, options PageOptions, consume func(UVPage) error) error {
-	if consume == nil {
-		return errGeometry
-	}
-
-	if ctx == nil || p == nil || p.atlas == nil {
+	if ctx == nil || p == nil || p.atlas == nil || consume == nil {
 		return errGeometry
 	}
 

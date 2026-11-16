@@ -31,7 +31,7 @@ UASTC, then exports BC7 or ASTC4x4. These independent numeric coefficients are n
 tangent normal vectors: no normal-map transform, resizing or mip generation is
 applied. `PrepareSSBumpUASTC` returns a validated intermediate;
 `SSBumpQuality: nil` preserves quality 4 and an explicit pointer selects effort
-0..4. `PublishPortable` explicitly chooses effort 0 for desktop SSBump. The
+0..4. The Sponza recipe explicitly chooses effort 0 for desktop SSBump. The
 planner can cache the intermediate once for multiple exports. Its identity
 includes source and relevant preparation options; explicit KTX override content
 and components are dependencies only when that override is selected. HDR effort

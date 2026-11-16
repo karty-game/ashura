@@ -114,6 +114,19 @@ resident images are neither downloaded nor decoded again. If they are evicted
 while the I/O task runs, `Begin` returns `ErrStaleRequest`; request the chunk again.
 Pending tasks pin acquired resources until completion or cancellation.
 
+`ReadChunk` and `ReadRequest.Read` fetch a selected chunk's missing dependencies
+concurrently: at most eight verified reads and 32 MiB of declared payload bytes
+in flight. A valid file larger than that window runs alone, retaining the
+128 MiB per-file limit. The existing 256 MiB distinct-file bound still limits
+the complete prepared chunk. These are payload bounds; browser buffers, digest
+work and allocator overhead add memory beyond the retained Go bytes.
+
+References and resident sizes are admitted before I/O, and repeated content is
+read once. Each response still passes exact size and SHA-256 verification.
+Cancellation or the first failed read cancels and joins every started worker;
+no partial prepared chunk reaches the App. This schedules existing I/O and
+checksums, without selecting more chunks or changing GPU upload scheduling.
+
 Each `Step` creates and uploads at most one prepared texture, or admits one
 geometry page. `App.PrepareTexture` uses the ordinary backend upload/cache before
 that image's first visible draw, preventing all image uploads from bunching at

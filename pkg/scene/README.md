@@ -83,24 +83,23 @@ domain bounds. Module generators are trusted build code.
 
 ## Build integration
 
-After prepared-resource producers in `asset.config.go`, register
-`scenebuild.Scenes(scenebuild.Options{Input: ... , Modules: ...})`. Import the host
-package as `scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"`. The
-included module lists are `scene/build/logic.Modules()` and
-`scene/build/render3d.Modules()`. See the [plugin integration tests](build/plugin_test.go).
+The maintained asset path is [level scene import](../level/build/README.md):
+place `levelbuild.Scenes` after prepared model import, process surface maps,
+then run `Materials`, chunking, UV preparation, baking and publication.
+It generates `scenes/<Name>_gen.go` and `scenes/scene.schema.json` below the
+recipe output directory. Gameplay constructors and static level data share the
+same authored YAML.
 
-The plugin publishes `<Package>/<Name>_gen.go` and `<Package>/scene.schema.json`
-under the recipe's output directory (`Package` defaults to `scenes`). Constructors
-are ordered by dependencies and expose typed component fields and a typed services
-struct. Resource properties are checked against preceding producers' slot schemas.
-Source dependencies, compiler changes and module configuration participate in the
-existing asset cache; invalid builds preserve the last published output.
+The host package `scene/build` exposes the shared `Compile`, `Resolve` and
+`Schema` functions. The logic and render3d module lists are available from
+`scene/build/logic` and `scene/build/render3d`; custom component modules remain
+supported through the [module API](build/types.go).
 
-Each module supplies a strict object schema, Go field type, explicit imports and
-services, typed reference/resource properties, and a Go factory expression
-returning `(T, error)`. This allows application components without adding runtime
-reflection or a universal component registry. See [the module API](build/types.go)
-and [the boolean module](build/logic/logic.go).
+Each module supplies a strict object schema, Go field type, explicit imports
+and services, typed reference/resource properties, and a Go factory expression
+returning `(T, error)`. Constructors are ordered by dependencies and expose typed
+fields and services without runtime reflection or a universal registry. See
+[compiler tests](build/compile_test.go) and the [boolean module](build/logic/logic.go).
 
 ## Lifetime, hooks and state
 
@@ -166,10 +165,9 @@ V1 rejects incompatible versions; explicit migration support remains future work
 
 ## External assets
 
-`scene/build/delivery.Models()` publishes prepared model bytes as immutable
-`public/models/<sha256>.kmodel` payloads plus small typed Go descriptors. Upstream
-producers must leave their model slots unembedded to obtain external-only delivery.
-The existing GLB plugin's embedded catalog behavior is unchanged.
+Level publication writes external geometry and independent model payloads with
+checksummed descriptors. [Level presentation](../level/README.md) owns their
+loading and lifetime. `GLBWithOptions` embeds standalone models directly.
 
 The CLI stages `generated/public/` into both single-sample and gallery browser
 distributions. It rejects symlinks, source scenes/Go and reserved web filenames.
@@ -203,8 +201,8 @@ the same composed transform used by generated factories and rejects shear.
 `render3d.model` accepts `isDynamic: true`; omission selects static geometry for
 the level bake pipeline. `render3d.point` accepts `bake: static` or
 `bake: dynamic`; omission preserves its existing live enabled-state behavior.
-Ordinary `Scenes()` compilation continues to generate ordinary model/light
-constructors; the level compiler consumes these build annotations explicitly.
+The shared `Compile` function can generate ordinary model/light constructors;
+the level compiler consumes these build annotations explicitly.
 
 Generated baked-level factories use `scene/render3d.NewBakedModel` to preserve
 logical model references whose presentation belongs to static chunks. Supplying

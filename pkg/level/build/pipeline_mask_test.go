@@ -47,7 +47,8 @@ func TestStaticMixedMaskModelFailsBeforeDiscardingCoverage(t *testing.T) {
 			Input: []string{"*.scene.yaml", "*.kmodel"},
 			Import: []assetbuild.Plugin{
 				fixtureModels{},
-				ImportScenes(ImportOptions{Input: []string{"test.scene.yaml"}}),
+				Scenes(SceneOptions{Input: []string{"test.scene.yaml"}}),
+				Materials(MaterialOptions{}),
 				StaticChunks(ChunkOptions{Size: [3]float32{1, 1, 1}}),
 			},
 		}},

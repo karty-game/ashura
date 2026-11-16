@@ -17,24 +17,24 @@ import (
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
 )
 
-func TestStagedMaterialsMatchCombinedImportWithoutStandaloneTextures(t *testing.T) {
+func TestStagedMaterialsMatchEncodedInputsWithoutStandaloneTextures(t *testing.T) {
 	t.Parallel()
-	legacyProject, stagedProject := writeFixture(t), writeFixture(t)
-	writeMixedMaskFixture(t, legacyProject)
+	encodedProject, stagedProject := writeFixture(t), writeFixture(t)
+	writeMixedMaskFixture(t, encodedProject)
 	writeMixedMaskFixture(t, stagedProject)
-	writeReliefFixture(t, legacyProject, 17)
+	writeReliefFixture(t, encodedProject, 17)
 	writeReliefFixture(t, stagedProject, 17)
 
-	legacy, staged := materialFixtureConfig(false), materialFixtureConfig(true)
-	for index, project := range []string{legacyProject, stagedProject} {
-		config := []assetbuild.Config{legacy, staged}[index]
+	encoded, staged := materialFixtureConfig(false), materialFixtureConfig(true)
+	for index, project := range []string{encodedProject, stagedProject} {
+		config := []assetbuild.Config{encoded, staged}[index]
 		if _, err := assetbuild.Build(t.Context(), config, assetbuild.Options{Project: project, Identity: "staged-materials"}); err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for _, directory := range []string{"public", "scenes"} {
-		before := materialOutputFiles(t, filepath.Join(legacyProject, "generated", directory))
+		before := materialOutputFiles(t, filepath.Join(encodedProject, "generated", directory))
 
 		after := materialOutputFiles(t, filepath.Join(stagedProject, "generated", directory))
 		if !reflect.DeepEqual(before, after) {
@@ -42,8 +42,8 @@ func TestStagedMaterialsMatchCombinedImportWithoutStandaloneTextures(t *testing.
 		}
 	}
 
-	if _, err := os.Stat(filepath.Join(legacyProject, "generated/floor-ssbump.ktx2")); err != nil {
-		t.Fatal("legacy fixture did not exercise standalone texture publication", err)
+	if _, err := os.Stat(filepath.Join(encodedProject, "generated/floor-ssbump.ktx2")); err != nil {
+		t.Fatal("encoded fixture did not exercise standalone texture publication", err)
 	}
 
 	if _, err := os.Stat(filepath.Join(stagedProject, "generated/floor-ssbump.ktx2")); !os.IsNotExist(err) {
@@ -120,39 +120,25 @@ func TestStagedMaterialsRejectMissingProcessingAndUnknownBindings(t *testing.T) 
 
 func materialFixtureConfig(staged bool) assetbuild.Config {
 	config := fixtureConfig(syntheticBake())
-	plugins := config.Pipelines[0].Import
 	config.Pipelines[0].Input = append(config.Pipelines[0].Input, "*.png")
-	bindings := map[string]map[string]string{"floor.glb": {"floor": "floor-height"}}
+	config.Pipelines[0].Import = []assetbuild.Plugin{
+		fixtureModels{}, assetbuild.Images(),
+		Scenes(SceneOptions{Input: []string{"test.scene.yaml"}, SeparateMasked: true}),
+	}
+
 	processing := []assetbuild.Plugin{
 		assetbuild.SSBump(assetbuild.SSBumpOptions{Rays: 16, Distance: 2, HeightScale: 3}),
 		assetbuild.Mipmaps(),
 	}
-
-	if staged {
-		config.Pipelines[0].Import = []assetbuild.Plugin{
-			fixtureModels{},
-			assetbuild.Images(),
-			Scenes(SceneOptions{Input: []string{"test.scene.yaml"}, SeparateMasked: true}),
-		}
-
-		config.Pipelines[0].Process = slices.Concat(
-			processing,
-			[]assetbuild.Plugin{Materials(MaterialOptions{SSBump: bindings})},
-			plugins[2:5],
-		)
-		config.Pipelines[0].Output = plugins[5:]
-
-		return config
+	if !staged {
+		processing = append(processing, assetbuild.KTX2())
 	}
 
-	config.Pipelines[0].Import = slices.Concat(
-		[]assetbuild.Plugin{fixtureModels{}, assetbuild.Images()},
+	bindings := map[string]map[string]string{"floor.glb": {"floor": "floor-height"}}
+	config.Pipelines[0].Process = slices.Concat(
 		processing,
-		[]assetbuild.Plugin{
-			assetbuild.KTX2(),
-			ImportScenes(ImportOptions{Input: []string{"test.scene.yaml"}, SeparateMasked: true, SSBump: bindings}),
-		},
-		plugins[2:],
+		[]assetbuild.Plugin{Materials(MaterialOptions{SSBump: bindings})},
+		config.Pipelines[0].Process[1:],
 	)
 
 	return config

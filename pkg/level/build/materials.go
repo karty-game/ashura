@@ -18,10 +18,10 @@ type MaterialOptions struct {
 // Materials prepares the imported scene's material bindings after image
 // processing. It accepts role-aware images or legacy prepared KTX2 resources.
 // Intermediate texture containers stay in the build cache; this does not
-// publish standalone image files. Final delivery belongs to Publish/PublishPortable.
+// publish standalone image files. Final delivery belongs to Publish/PublishVariants.
 func Materials(options MaterialOptions) assetbuild.Plugin {
 	return stage{name: "materials", schema: sceneSourceSchema, run: func(plan *assetbuild.Plan, resource assetbuild.Resource) error {
-		resources, schemas, _, err := levelResources(plan)
+		resources, schemas, err := levelResources(plan)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ func Materials(options MaterialOptions) assetbuild.Plugin {
 func prepareSceneMaterials(ctx *assetbuild.Context, source *sceneSource, options MaterialOptions,
 	resources map[string]assetbuild.Resource, schemas map[string]string) error {
 	state := levelImportState{
-		options:   ImportOptions{SSBump: options.SSBump, SeparateMasked: source.SeparateMasked},
+		options:   importOptions{SSBump: options.SSBump, SeparateMasked: source.SeparateMasked},
 		resources: resources, schemas: schemas,
 		models: make(map[string]assetbuild.Artifact), textures: make(map[string]assetbuild.Artifact),
 		documents: make(map[string]modeldata.Document), materials: make(map[string]map[string]assetbuild.Artifact),

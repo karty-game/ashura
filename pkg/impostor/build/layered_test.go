@@ -61,7 +61,7 @@ func TestLayeredPublicBakeAndCachedIntervalBudget(t *testing.T) {
 
 	for _, test := range []struct{ intervals, executed, reused int }{{2, 2, 0}, {2, 0, 2}, {4, 1, 1}, {2, 0, 2}} {
 		config.Pipelines[0].Import = []assetbuild.Plugin{
-			modelbuild.GLB(),
+			modelbuild.GLBWithOptions(modelbuild.GLBOptions{}),
 			impostorbuild.Cards(impostorbuild.Options{Mode: impostorbuild.Layered, Resolution: 32, MaxIntervals: test.intervals}),
 		}
 

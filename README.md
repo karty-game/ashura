@@ -10,34 +10,59 @@ A Go-first WebGPU engine built around one mantra:
 
 - **Browser and native Linux rendering** with a shared Go API and WebGPU backend.
 - **3D scenes** with meshes, instancing, materials, lights, shadows and prepared reflection maps.
-- **Retained 2D sprites** with prepared atlases, transforms, clipping, tint and opacity.
-- **Retained UI** with layout, controls, text editing, motion and virtual lists. Keyboard operation and semantic metadata are supported; platform screen-reader bridges are not implemented.
-- **Offline asset preparation** for models, textures, atlases, lighting and reflection maps.
-- **GPU compute** with WGSL and explicit buffers.
+- **2D sprites** with prepared atlases, transforms, clipping, tint and opacity.
+- **UI Library** with layout, controls, text editing, motion and virtual lists. Keyboard operation and semantic metadata are supported; platform screen-reader bridges are not implemented.
+- **Offline asset preparation** advanced and customizable asset pipeline to prepare models, textures, atlases, lighting and reflection maps.
+- **Go First** No CGO, compile your Game with Go or Tinygo.
 
-## Try it
+## Getting Started
 
-[mise 2026.11.5 or newer](https://mise.jdx.dev/installing-mise.html) is required
-for development on Windows, macOS and Linux. It installs the pinned Go and
-development tools. UV generation, texture codecs and font preparation use embedded WASM libraries
-through Go. Remaining native dependencies use checksum-pinned prebuilt packages
-through mise; users do not need GCC, Clang, Cargo or a separate tool installer.
-TinyGo has official binaries for Linux amd64/arm64, macOS arm64 and Windows
-amd64. Mise also installs checksum-pinned upstream Binaryen 133 on Windows,
-as required by [TinyGo's Windows WebAssembly compiler](https://tinygo.org/getting-started/install/windows/).
+```go
+package main
 
-```sh
-mise install
-mise run start
+import (
+	"github.com/karty-game/karty-webgpu/pkg/camera"
+	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/karty-webgpu/pkg/engine/features"
+	"github.com/karty-game/karty-webgpu/pkg/light"
+	"github.com/karty-game/karty-webgpu/pkg/material"
+	"github.com/karty-game/karty-webgpu/pkg/mesh"
+)
+
+func main() {
+    // Initialize Engine
+	app := engine.NewApp(engine.AppConfig{Title: "Cube", CanvasID: "game"})
+	defer app.Close()
+	if err := app.Register(features.Standard()); err != nil {
+		panic(err)
+	}
+
+	world := engine.NewWorld()
+
+    // Create Orbit Camera
+	projection, orbit := camera.Orbit()
+	orbit.Distance = 3
+	world.Add(engine.DefaultTransform(), projection, orbit)
+	world.Add(light.DefaultHemisphere("sky"))
+
+    // Create Cube
+	pose := engine.DefaultTransform()
+	pose.Rotation = engine.Vector3{X: .4, Y: .6}
+	world.Add(mesh.NewBox("cube", mesh.BoxOptions{}), pose, material.DefaultStandard())
+
+    // Render
+	if err := app.Run(world); err != nil {
+		panic(err)
+	}
+}
 ```
-
-[API guide](pkg/engine/README.md) · [Samples](samples/README.md) · [First scene](samples/basic-scene/) · [UI Components](samples/ui/) · [Asset recipes](pkg/assetbuild/README.md) · [Specifications](spec/README.md)
 
 ## Repository layout
 
 - `pkg/`: public Go packages.
 - `internal/`: private rendering, platform and preparation implementation; see the [subsystem map](internal/README.md).
 - `cmd/engine/`: the build, asset and preview CLI; `samples/`: runnable examples and source assets.
+- `docs/asset-pipeline/`: plugin usage, settings and defaults.
 - `spec/`: maintained contracts, proposals and validation; `branding/`: artwork.
 
 Use `mise run check` for the complete source gate and `mise exec -- <command>`

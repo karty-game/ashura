@@ -2,7 +2,7 @@
 
 Sponza demonstrates the standard offline level asset pipeline: load a GLB,
 prepare materials, separate cutouts, partition opaque geometry, unwrap lightmap
-UVs, trace RGB/RNM lighting, reconstruct it and publish portable GPU textures.
+UVs, trace RNM lighting, reconstruct it and publish portable GPU textures.
 The game opens the generated descriptors through `level.Open`, which owns
 prepared chunk and independent-model loading, sharing and cleanup.
 
@@ -71,9 +71,9 @@ profile directly; there is no runtime image decoding or recompression.
 The shared `resource.ProjectBase` API selects that native path or the browser
 export's relative public root. The sample needs no platform-selection files.
 
-## Views and lighting
+## Views
 
-Expand **Views and lighting** for the retained camera buttons and lighting selector.
+Expand **Views** for the retained camera buttons.
 The initial panel shows only the scene title and loading status; diagnostics
 start collapsed. Keyboard shortcuts work with the panel collapsed.
 
@@ -84,14 +84,19 @@ descends. The retained UI buttons provide the same views on browser and native. 
 Navigation remains active while prepared resources load; there is no collision
 or gravity.
 
-RNM with SSBump relief is the default. The retained **Lighting** dropdown selects
-RNM or RGB on both platforms. A change cancels and joins the previous asset
-reads, releases its scene resources and loads the selected prepared profile
-through `level.Open`. The World and camera controllers remain attached.
-Only the selected profile/device family is fetched; selecting the current mode
-keeps its resources. Browser query parameters no longer select lighting.
+The scene always uses RNM with SSBump relief on browser and native.
+`level.Open` selects the prepared BC or mobile texture family for the device
+and owns its loading and cleanup. Camera changes retain that presentation;
+there is no lighting selector or RGB sample profile.
 
-The camera buttons, lighting selection, chunk status, help and attribution use
+The shared level reader overlaps up to eight missing chunk-file downloads and
+their checksum verification, within a 32 MiB active payload window. The browser
+can multiplex these requests over HTTP/2 when the server supports it. Asset
+admission and GPU uploads retain their bounded App-loop steps, so camera and UI
+updates continue while resources arrive. The independent cutout model loads
+alongside the chunk; no whole-world preload or runtime texture conversion is added.
+
+The camera buttons, chunk status, help and attribution use
 `pkg/ui` and its prepared default font. The nonmodal, scrollable panel shares the
 App's View with diagnostics and adapts to the viewport. Status changes only on
 loading events. There are no sample DOM controls or `syscall/js` imports.
@@ -109,13 +114,21 @@ for asset credits, sources and adaptations.
 and `Output` plugin lists. Its inputs include the model, relief images and scene
 because material and scene processing depends on those model records. They are
 imported first; resize, relief, mips,
-material binding, chunking, UVs and lighting follow. `PublishPortable` handles
-final GPU encoding and publication. No standalone intermediate KTX2 copies are
-published. Authored settings and material-to-relief bindings live below the
-main sequence in the same file; preparation algorithms belong to the shared
+material binding, chunking, UVs and lighting follow. `PublishVariants` handles
+final GPU encoding and publication for the two RNM device profiles. No standalone
+intermediate KTX2 copies are published. Authored settings and material-to-relief
+bindings live below the main sequence in the same file; preparation algorithms belong to the shared
 modules. Its standard `//go:build ignore` marker isolates the host recipe from
 the game executable; sample runtime and tests use no platform build directives.
 `sponza.scene.yaml` declares the model and static courtyard lamp.
+
+The recipe runs explicit, independent geometry stages: `meshbuild.Cleanup()`
+before scene import/xatlas, then `meshbuild.Optimize()` after `LightmapUVs` and
+before `ProductionBake`. The latter orders final seam vertices and triangles for
+GPU cache/fetch locality, remaps UV1/receiver references and updates model digests.
+Material/UV seams, receiver footprints, texel density and bake settings are preserved;
+no simplification, quantization or load-time mesh decoding is introduced. See
+the [mesh build module](../../pkg/mesh/build/README.md).
 `Scenes(SeparateMasked: true)` retains opaque surfaces in the bake and
 publishes masked surfaces as independent, world-space prepared models. Cutout
 opacity, material cutoff, original UVs and indices survive. They remain visible
@@ -134,25 +147,27 @@ device, packet and worker-memory limits (`MaximumHalo: 0`); support is never
 truncated to fit a receiver quota. The calibrated fit uses exact directional
 moments and no lookup table.
 
-`PublishPortable` prepares both RGB and RNM profiles from that same bake. Desktop
-uses BC7 lightmaps/relief and BC1 albedos. Mobile uses ETC2 RGB lightmaps/albedos
+`PublishVariants` publishes only `RNMBC` and `RNMMobile` from that bake. Desktop
+uses BC7 RNM lightmaps/relief and BC1 albedos. Mobile uses ETC2 RGB lightmaps/albedos
 and exact linear RGBA8 relief; those level payloads need no optional BC/ASTC
 support. ETC1S is an offline albedo encoding intermediate. The game uploads native GPU payloads and
 requires no codec/transcoder download, source decoding or runtime repacking.
 
-Both desktop profiles already store SSBump relief in BC7, preserving the authored
+The desktop profile stores SSBump relief in BC7, preserving the authored
 dimensions and mip chain. The remaining RGBA8 relief belongs to the portable
-mobile profiles: BC7 requires the optional BC texture-compression feature, and
+mobile profile: BC7 requires the optional BC texture-compression feature, and
 the tested ETC2 encoders introduced excessive directional response error. See
 the [coefficient comparison](../../spec/baked-level-v7.md#bounded-quality-evidence-and-limits).
 
 The output is ignored `generated/`: typed `levels/` descriptors, compiled scene
 metadata and `public/levels/` payloads. The normal CLI stages only that active
-publication. Historical comparison outputs elsewhere under `generated/` are
-not part of the exported sample. The complete exported sample has a
-45,000,000-byte budget, including its standard-Go WASM, host files and all four published
-RGB/RNM device profiles. Count logical file lengths across the whole export;
+publication. The complete exported sample has a 45,000,000-byte budget,
+including its standard-Go WASM, host files and both published RNM device
+profiles. Count logical file lengths across the whole export;
 filesystem compression and selecting only one profile do not reduce that total.
+The verified standard-Go export totals 38,260,422 bytes across 83 files. Removing
+the RGB profiles saves 3,271,666 published asset bytes; the retained RNM files
+are byte-identical. This includes both RNM device families and every host file.
 See [lightmapper design](../../spec/lightmap.md),
 [portable delivery](../../spec/baked-level-v7.md) and
 [validation evidence](../../spec/validation.md).

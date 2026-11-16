@@ -6,6 +6,7 @@ import (
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
 	levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"
 	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"
 	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
 )
 
@@ -17,6 +18,7 @@ func main() {
 				Name: "world", Input: []string{"assets/sponza.glb", "assets/relief/*.png", "sponza.scene.yaml"},
 				Import: []assetbuild.Plugin{
 					modelbuild.PreparedGLB(),
+					meshbuild.Cleanup(),
 					assetbuild.Images(),
 					levelbuild.Scenes(levelbuild.SceneOptions{Input: []string{"sponza.scene.yaml"}, SeparateMasked: true}),
 				},
@@ -25,15 +27,45 @@ func main() {
 					assetbuild.SSBump(assetbuild.SSBumpOptions{Include: []string{"*-height"}, HeightScale: 3, Rays: 128, Distance: 16}),
 					assetbuild.Mipmaps(),
 					levelbuild.Materials(reliefBindings()),
-					levelbuild.StaticChunks(levelbuild.ChunkOptions{Size: [3]float32{32, 32, 32}, Origin: [3]float32{-16, -2, -8}}),
+					levelbuild.StaticChunks(levelbuild.ChunkOptions{
+						Size:   [3]float32{32, 32, 32},
+						Origin: [3]float32{-16, -2, -8},
+					}),
+					levelbuild.LightmapUVs(
+						levelbuild.UVOptions{
+							Production:               true,
+							TexelsPerUnit:            8,
+							MaxPageSize:              512,
+							Padding:                  4,
+							PreserveGeometricNormals: true,
+						},
+					),
+					meshbuild.Optimize(),
 					levelbuild.ProductionBake(lightingSettings()),
 				},
 				Output: []assetbuild.Plugin{
-					levelbuild.PublishPortable(levelbuild.PortableOptions{MaxAtlasSize: 1024}),
+					rnmPublication(),
 				},
 			}},
 		}
 	})
+}
+
+// Publish only RNM, with the same portable codec settings for both GPU families.
+func rnmPublication() assetbuild.Plugin {
+	quality := 0
+	profile := func(variant, family string) levelbuild.PublishOptions {
+		return levelbuild.PublishOptions{
+			Variant: variant, Representation: "rnm-fit-v1", MaxAtlasSize: 1024,
+			NativeTextures: &levelbuild.NativeTextureOptions{
+				Family: family, NativeAlbedo: true,
+				Encoder: assetbuild.BlockCompressionOptions{LDRQuality: &quality, SSBumpQuality: &quality},
+			},
+			AlbedoETC1S: &levelbuild.ETC1SOptions{Quality: 192},
+		}
+	}
+
+	return levelbuild.PublishVariants(profile("RNMBC", "bc"), profile("RNMMobile", "etc2"))
 }
 
 // Authored material bindings are separate from the processing sequence.
@@ -57,12 +89,9 @@ func reliefBindings() levelbuild.MaterialOptions {
 // This sample's selected quality preset: 32 samples, three bounces, strong smoothing.
 func lightingSettings() levelbuild.ProductionOptions {
 	return levelbuild.ProductionOptions{
-		UVs: &levelbuild.UVOptions{
-			TexelsPerUnit: 8, MaxPageSize: 512, Padding: 4, PreserveGeometricNormals: true,
-		},
 		Worker: bake.WorkerOptions{MemoryBytes: 512 << 20},
 		Sampling: bake.Options{
-			Outputs: bake.OutputRGB | bake.OutputRNM,
+			Outputs: bake.OutputRNM,
 			Samples: 32,
 			Bounces: 3,
 			Seed:    29,

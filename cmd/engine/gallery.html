@@ -18,7 +18,7 @@
     a:focus-visible { outline: 2px solid #86c6ff; outline-offset: 2px; }
     main { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
     header { min-height: 3.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1.25rem; border-bottom: 1px solid #343945; }
-    h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+    header p { margin: 0; min-width: 0; font-size: .95rem; line-height: 1.5; }
     header a { color: #a8d8ff; font-size: .85rem; white-space: nowrap; }
     iframe { width: 100%; height: 100%; border: 0; background: #17191f; }
     @media (max-width: 720px) {
@@ -37,15 +37,13 @@
     <h1>Ashura samples</h1>
     <p>{{len .}} scenes to explore</p>
     <nav aria-label="Samples">
-      {{range .}}<a href="./{{.Path}}" target="sample-preview" data-sample-path="{{.Path}}">{{.Name}}</a>
+      {{range .}}<a href="./{{.Path}}" target="sample-preview" data-sample-description="{{.Description}}" data-sample-path="{{.Path}}">{{.Name}}</a>
       {{end}}
     </nav>
   </aside>
   <main>
     <header>
-      <div>
-        <h2 id="sample-title">{{(index . 0).Name}}</h2>
-      </div>
+      <p id="sample-description" aria-live="polite">{{with (index . 0).Description}}{{.}}{{else}}{{(index . 0).Name}}{{end}}</p>
       <a id="open-sample" href="./{{(index . 0).Path}}" target="_blank" rel="noopener noreferrer">Open sample ↗</a>
     </header>
     <iframe id="sample-preview" name="sample-preview" title="Sample preview" allowfullscreen></iframe>
@@ -53,7 +51,7 @@
   <script>
     const links = Array.from(document.querySelectorAll("nav a"));
     const preview = document.getElementById("sample-preview");
-    const title = document.getElementById("sample-title");
+    const description = document.getElementById("sample-description");
     const openSample = document.getElementById("open-sample");
 
     function selectedLink() {
@@ -69,7 +67,7 @@
         if (item === link) item.setAttribute("aria-current", "page");
         else item.removeAttribute("aria-current");
       }
-      title.textContent = name;
+      description.textContent = link.dataset.sampleDescription || name;
       document.title = name + " — Ashura samples";
       openSample.href = link.getAttribute("href");
       preview.title = name;

@@ -1,6 +1,6 @@
 # Static GLB model profile
 
-GLB is an authoring format. The build-only `model/build.GLB()` asset plugin
+GLB is an authoring format. The build-only `model/build.GLBWithOptions` asset plugin
 prepares GPU-ready geometry/textures and named generated declarations. Games
 import `model`, not the build package. A recipe uses:
 
@@ -9,7 +9,7 @@ assetbuild.Config{
     Output: "generated",
     Pipelines: []assetbuild.Pipeline{{
         Name: "models", Input: []string{"assets/**"},
-        Import: []assetbuild.Plugin{modelbuild.GLB()},
+        Import: []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{})},
     }},
 }
 ```
@@ -108,25 +108,16 @@ No external-resource path is opened. Explicit source/output symlinks and parent
 symlinks are rejected; failed compilation preserves existing prepared outputs.
 Prepared bytes/catalogs stay ignored and rebuild from source assets.
 
-## Prepared lightmap UVs
+## Baked level geometry
 
-Use build-only `modelbuild.LightmappedGLB(modelbuild.LightmapOptions{Resolution:1024, Padding:2})`
-to emit a remapped model and a matching `.klightmap` declaration. The build
-module calls embedded xatlas WASM through Go/wazero; ordinary recipes need no
-compiler, executable path or separate tool installation. Go repairs invalid
-charts before complete geometry, density and receiver admission. The former
-`LightmapOptions.Compiler` and `Executable` fields have been removed. UV
-preparation always uses the embedded library. See
-[UV preparation](../../spec/asset-tools.md#embedded-xatlas-preparation) and
-[the current decision](../../spec/decisions/0015-portable-offline-libraries.md).
+Level recipes import models with `modelbuild.PreparedGLB()`, then prepare
+materials, chunks and secondary lighting coordinates with
+[level build plugins](../level/build/README.md). UV generation uses embedded
+xatlas WASM; games load the published geometry and finished lightmaps.
 
-Load the generated lightmap inputs with `models.AssetsSponzaLightmap().Load()`, then call
-`models.AssetsSponza().LoadLightmapped(app, inputs)`. Admission checks the exact
-model digest and every secondary UV stream before creating textures. UV1 uploads
-as a separate immutable vertex stream; the ordinary model@1 vertex ABI stays 32 bytes.
-Lighting values are supplied separately through Standard's linear lightmap
-texture and decoding scale. See [lightmap slice](../../spec/lightmap-v1.md).
-
+`Model.LoadLightmapped` remains a low-level consumer for existing matching model
+and UV payloads. It validates the model digest and secondary UV streams before
+uploading them. Maintained level recipes use the complete level pipeline.
 
 ## Presenting existing prepared ranges
 
@@ -143,11 +134,19 @@ and `Unload` still performs lifetime admission. The baked-level presenter uses
 this API to expose at most eight prebuilt material ranges per update while
 keeping logical scene ownership independent of presentation.
 
+## Offline geometry optimization
+
+The maintained level path imports `PreparedGLB`, applies
+[mesh cleanup](../mesh/build/README.md) before `levelbuild.Scenes`, prepares
+materials/chunks/UVs, then optimizes the final mesh before `ProductionBake`.
+The level publisher owns final geometry and lightmap delivery. See the
+[Sponza recipe](../../samples/sponza/asset.config.go).
+
 ## Demo texture profiles
 
 Offline recipes can cap embedded model images without altering source GLBs or
 geometry. Use `modelbuild.GLBWithOptions(modelbuild.GLBOptions{MaxTextureDimension: 512})`
-instead of `GLB()`. The cap preserves aspect ratio, never upscales, and precedes
+to cap source image sizes. The cap preserves aspect ratio, never upscales, and precedes
 role-aware mip generation. Albedo filtering uses linear light; normal maps are
 renormalized. Zero keeps authored dimensions; supported caps are 1 through 4096.
 The option participates in asset caching. Both a full model and an impostor baked

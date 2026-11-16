@@ -118,7 +118,7 @@ func TestPreparedGLBTransportSurvivesRoundTrip(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
 	defer cancel()
 
-	result, err := Prepare(
+	result, err := prepareFixture(
 		ctx,
 		input.Data,
 		Options{
