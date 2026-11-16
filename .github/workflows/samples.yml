@@ -45,6 +45,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('mise.toml', 'go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Check formatting and native/browser source lint
+        run: mise run check-source
       - name: Install software Vulkan for explicit functional asset builds
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvulkan1 mesa-vulkan-drivers
       - name: Select the native CPU Vulkan adapter
@@ -70,8 +72,6 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-sample-assets-v1-${{ hashFiles('mise.toml', 'go.mod', 'go.sum') }}-${{ hashFiles('pkg/**', 'internal/**', 'samples/**/asset.config.go', 'samples/**/assets/**', 'samples/**/*.yaml') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-sample-assets-v1-${{ hashFiles('mise.toml', 'go.mod', 'go.sum') }}-
-      - name: Check impostor export budget before full preparation
-        run: mise exec -- go run ./cmd/engine build web ./samples/impostors --compiler=go --output "$RUNNER_TEMP/impostors-budget"
       - name: Prepare sample assets
         run: mise run assets
       - name: Save prepared asset action cache before validation
@@ -81,10 +81,11 @@ jobs:
           path: samples/*/generated/cache/assets/v1
           # Use the restore key captured before generated files existed.
           key: ${{ steps.sample-assets.outputs.cache-primary-key }}
-      - name: Run formatting, lint, tests and target builds
+      - name: Lint prepared samples, then run tests and builds in parallel
         # go test ./... includes the TinyGo and mixed-runtime export regressions.
         run: mise run check-prepared
       - name: Export sample gallery
+        # The export enforces every sample's complete-file budget, including Impostors.
         run: mise run build-samples
       - name: Upload GitHub Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

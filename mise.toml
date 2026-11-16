@@ -69,13 +69,23 @@ run = "golangci-lint fmt --diff"
 
 [tasks.lint-go]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Run the configured Go linters"
-run = "golangci-lint run ./..."
+description = "Lint native engine, libraries and tools before sample preparation"
+run = "golangci-lint run ./cmd/... ./internal/... ./pkg/..."
 
 [tasks.lint-web]
 env = { CGO_ENABLED = "0", GOOS = "js", GOARCH = "wasm" }
-description = "Lint browser/WASM packages"
-run = "golangci-lint run ./..."
+description = "Lint browser/WASM engine, libraries and tools before sample preparation"
+run = "golangci-lint run ./cmd/... ./internal/... ./pkg/..."
+
+[tasks.lint-samples-go]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Lint native samples after their catalogs have been prepared"
+run = "golangci-lint run ./samples/..."
+
+[tasks.lint-samples-web]
+env = { CGO_ENABLED = "0", GOOS = "js", GOARCH = "wasm" }
+description = "Lint browser/WASM samples after their catalogs have been prepared"
+run = "golangci-lint run ./samples/..."
 
 [tasks.test]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
@@ -136,20 +146,42 @@ run = "go build -o ./dist/build/web/ ./..."
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
 description = "Run formatting, lint, tests and both target builds"
 run = [
+  "mise run check-source",
   "mise run assets",
   "mise run check-prepared",
 ]
 
-[tasks.check-prepared]
+[tasks.check-source]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
-description = "Run the complete source gate after assets have been prepared"
+description = "Check formatting and engine/library lint before preparing sample assets"
 run = [
   "mise run check-fmt",
   "mise run lint-go",
   "mise run lint-web",
+]
+
+[tasks.check-prepared]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "After check-source and asset preparation, lint samples, test and build both targets"
+run = [
+  "mise run lint-samples-go",
+  "mise run lint-samples-web",
+  "mise run --jobs 2 check-tests ::: check-builds",
+]
+
+[tasks.check-tests]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Run native, Go/WASM and TinyGo tests in order"
+run = [
   "mise run test",
   "mise run test-wasm-allocations",
   "mise run test-tinygo-allocations",
+]
+
+[tasks.check-builds]
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+description = "Build native and browser targets in order"
+run = [
   "mise run build-native",
   "mise run build-web",
 ]

@@ -42,7 +42,7 @@ func showNavigation(app *engine.App, selectView func(int)) (*navigationUI, error
 		).WithStyle(ui.Style{Wrap: true, Gap: 6}),
 		ui.NewText("Drag to look · wheel/pinch to zoom · R resets · Flight: WASD, Space/Shift"),
 	)
-	controls := ui.Column(ui.NewText("Sponza").WithStyle(ui.Style{FontSize: 20}), status, settings, ui.NewText("© Frank Meinl, Crytek · Babylon.js Sponza").WithStyle(ui.Style{FontSize: 12})).
+	controls := ui.Column(ui.NewText("Sponza").WithStyle(ui.Style{FontSize: 20}), status, settings, ui.NewText("© Frank Meinl, Crytek · Sponza").WithStyle(ui.Style{FontSize: 12})).
 		WithLabel("Sponza views and baked lighting", "Camera controls and prepared lighting status").
 		WithStyle(ui.Style{Padding: 12, Gap: 8, Radius: 12, Fill: ui.DarkTheme().Surface, Scroll: true})
 

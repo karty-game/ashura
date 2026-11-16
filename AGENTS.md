@@ -52,6 +52,15 @@ and `.agents/` directories alone.
 
 ## Toolchain and validation
 
+Keep CI focused and fast. Add validation steps, gates, jobs or matrices only
+when explicitly requested or approved by the user. One-off investigations,
+temporary regressions and diagnostic exports stay local in ignored `tmp/` or
+`spikes/`; do not promote them into CI automatically. Avoid duplicate asset
+preparation and exports; use the existing checks and verified caches.
+Run whole-tree formatting and native/browser engine/library lint before asset
+preparation. Sample type lint follows preparation because samples import their
+generated catalogs. Keep those lint scopes separate to avoid checking them twice.
+
 Mise >=2026.11.5 is required. Use it directly from the repository root: `mise run <task>` for maintained
 tasks and `mise exec -- <command>` for focused commands. Do not add toolchain
 wrappers. Use the pinned standard Go compiler for native builds and offline asset recipes.

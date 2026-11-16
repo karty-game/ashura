@@ -58,22 +58,3 @@ func main() {
 	}
 }
 ```
-
-## Repository layout
-
-- `pkg/`: public Go packages.
-- `internal/`: private rendering, platform and preparation implementation; see the [subsystem map](internal/README.md).
-- `cmd/engine/`: the build, asset and preview CLI; `samples/`: runnable examples and source assets.
-- `docs/asset-pipeline/`: plugin usage, settings and defaults.
-- `spec/`: maintained contracts, proposals and validation; `branding/`: artwork.
-
-Use `mise run check` for the complete source gate and `mise exec -- <command>`
-for focused commands. Read [contributor instructions](AGENTS.md) before changing
-library code. [Offline libraries and tools](spec/asset-tools.md) describes the
-portable UV/codec/font modules, upstream native GPU library and remaining native
-dependencies. Lightmap baking runs in Go using the same binding as
-native rendering; it has no separate worker executable or release.
-
-Source code is available under the [MIT license](LICENSE). Bundled artwork,
-models, fonts and other third-party components retain their own notices;
-sample-specific attribution lives in each sample README's copyright annex.
