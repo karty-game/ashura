@@ -30,9 +30,9 @@ var errImages = errors.New("invalid 2D image catalog")
 // ImagesOptions selects offline page formats without changing dimensions,
 // atlas layout or alpha semantics. Zero values preserve raw RGBA8 output.
 type ImagesOptions struct {
-	// OpaqueFormat selects RGBA8, BC1 or BC7 for pages whose alpha is all 255.
+	// OpaqueFormat selects RGBA8, BC1, BC7, ETC2RGB or ETC2RGBA for pages whose alpha is all 255.
 	OpaqueFormat texture.Format
-	// AlphaFormat selects RGBA8 or BC7 for pages with any nonopaque alpha.
+	// AlphaFormat selects RGBA8, BC7 or ETC2RGBA for pages with any nonopaque alpha.
 	AlphaFormat texture.Format
 	Compression assetbuild.BlockCompressionOptions
 }
@@ -46,7 +46,7 @@ type imagesPlugin struct {
 // images. Put it after assetbuild.Images and optional Resize/Atlas stages, without
 // KTX2 or GoCatalog. Each generated Load call admits each page once, then shares
 // it across named ImageAsset regions. Source codecs and atlas packing stay offline.
-// With no options it publishes raw RGBA8. Optional BC1/BC7 encoding runs offline.
+// With no options it publishes raw RGBA8. Optional BC/ETC2 encoding runs offline.
 func Images(options ...ImagesOptions) assetbuild.Plugin {
 	plugin := imagesPlugin{}
 	if len(options) > 1 {
@@ -179,7 +179,11 @@ func pageFilename(name string, format texture.Format) string {
 		extension = ".bc1"
 	case texture.BC7:
 		extension = ".bc7"
-	case texture.RGBA8, texture.ETC2RGB, texture.BC6H, texture.ETC2RGBA, texture.ASTC4x4:
+	case texture.ETC2RGB:
+		extension = ".etc2rgb"
+	case texture.ETC2RGBA:
+		extension = ".etc2rgba"
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
 		// Option admission prevents unsupported compressed formats reaching publication.
 	}
 
@@ -187,8 +191,10 @@ func pageFilename(name string, format texture.Format) string {
 }
 
 func validateImagesOptions(options ImagesOptions) error {
-	if options.OpaqueFormat != texture.RGBA8 && options.OpaqueFormat != texture.BC1 && options.OpaqueFormat != texture.BC7 ||
-		options.AlphaFormat != texture.RGBA8 && options.AlphaFormat != texture.BC7 || options.Compression.Timeout < 0 {
+	if options.OpaqueFormat != texture.RGBA8 && options.OpaqueFormat != texture.BC1 && options.OpaqueFormat != texture.BC7 &&
+		options.OpaqueFormat != texture.ETC2RGB && options.OpaqueFormat != texture.ETC2RGBA ||
+		options.AlphaFormat != texture.RGBA8 && options.AlphaFormat != texture.BC7 &&
+			options.AlphaFormat != texture.ETC2RGBA || options.Compression.Timeout < 0 {
 		return fmt.Errorf("unsupported 2D page format or compression timeout: %w", errImages)
 	}
 
@@ -234,10 +240,20 @@ func preparePage(
 	}
 
 	var encoded []byte
-	if format == texture.BC1 {
+
+	switch format {
+	case texture.BC1:
 		encoded, err = assetbuild.CompressBC1(ctx, source, options)
-	} else {
+	case texture.BC7:
 		encoded, err = assetbuild.CompressBC7(ctx, source, options)
+	case texture.ETC2RGB:
+		encoded, err = assetbuild.CompressETC2RGB(ctx, source, options)
+	case texture.ETC2RGBA:
+		encoded, err = assetbuild.CompressETC2RGBA(ctx, source, options)
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
+		return nil, errImages
+	default:
+		return nil, errImages
 	}
 
 	if err != nil {

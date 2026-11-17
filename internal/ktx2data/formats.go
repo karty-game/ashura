@@ -12,7 +12,7 @@ func payloadFormat(format uint32) texturedata.Format {
 		return texturedata.BC7
 	case vkETC2RGB, vkETC2RGBSRGB:
 		return texturedata.ETC2RGB
-	case vkETC2RGBA:
+	case vkETC2RGBA, vkETC2RGBASRGB:
 		return texturedata.ETC2RGBA
 	case vkASTC4x4:
 		return texturedata.ASTC4x4
@@ -24,7 +24,8 @@ func payloadFormat(format uint32) texturedata.Format {
 func blockFormat(format uint32) bool { return payloadFormat(format) != texturedata.RGBA8 }
 
 func srgbFormat(format uint32) bool {
-	return format == vkRGBA8SRGB || format == vkBC1SRGB || format == vkBC1RGBASRGB || format == vkBC7SRGB || format == vkETC2RGBSRGB
+	return format == vkRGBA8SRGB || format == vkBC1SRGB || format == vkBC1RGBASRGB || format == vkBC7SRGB || format == vkETC2RGBSRGB ||
+		format == vkETC2RGBASRGB
 }
 
 // BC1Alpha identifies the punchthrough profile of a container already admitted
@@ -42,7 +43,7 @@ func BC1Alpha(encoded []byte) bool {
 
 //nolint:mnd // Native Khronos DFD sizes include the fixed header and one or two 16-byte samples.
 func descriptorLength(format uint32) uint64 {
-	if format == vkETC2RGBA {
+	if format == vkETC2RGBA || format == vkETC2RGBASRGB {
 		return 60
 	}
 

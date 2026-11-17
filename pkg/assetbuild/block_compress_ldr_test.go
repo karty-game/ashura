@@ -17,14 +17,14 @@ func TestLDRNativeFormatsRetainTransferAndBlockBounds(t *testing.T) {
 	t.Parallel()
 
 	for _, space := range []texture.ColorSpace{texture.Linear, texture.SRGB} {
-		for _, target := range []texture.Format{texture.BC1, texture.BC7, texture.ETC2RGB} {
+		for _, target := range []texture.Format{texture.BC1, texture.BC7, texture.ETC2RGB, texture.ETC2RGBA} {
 			format, err := ldrNativeTarget(target, space)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			blockBytes := 8
-			if target == texture.BC7 {
+			if target == texture.BC7 || target == texture.ETC2RGBA {
 				blockBytes = 16
 			}
 
@@ -94,6 +94,10 @@ func TestLDRStagesRejectBeforeEncodingAndPreserveCancellation(t *testing.T) {
 		t.Fatal("transparency reached encoder", err)
 	}
 
+	if _, err := CompressETC2RGB(t.Context(), transparent, options); !errors.Is(err, errBlockCompression) {
+		t.Fatal("opaque ETC2 compression dropped source alpha", err)
+	}
+
 	for _, shape := range [][2]int{{1, 1}, {7, 5}} {
 		if _, err := PrepareOpaqueLDRUASTC(
 			t.Context(),
@@ -131,6 +135,10 @@ func TestLDRStagesRejectBeforeEncodingAndPreserveCancellation(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
+
+	if _, err := CompressETC2RGB(ctx, transparent, options); !errors.Is(err, context.Canceled) {
+		t.Fatal("opaque ETC2 compression lost cancellation", err)
+	}
 
 	for _, space := range []texture.ColorSpace{texture.Linear, texture.SRGB} {
 		if _, err := PrepareOpaqueLDRUASTC(

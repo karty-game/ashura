@@ -15,16 +15,19 @@ func validBlockDescriptor(data []byte, format uint32) bool {
 	model, plane, bits, channel, upper := blockDescriptorProfile(format)
 
 	transfer := byte(1)
+	alpha := byte(15)
+
 	if srgbFormat(format) {
 		transfer = 2
+		alpha = 31 // KHR_DF_SAMPLE_DATATYPE_LINEAR | ALPHA.
 	}
 
 	if !validBlockLayout(data, model, plane, transfer) {
 		return false
 	}
 
-	if format == vkETC2RGBA {
-		return validBlockSample(data[28:44], 0, bits, 15, upper) &&
+	if format == vkETC2RGBA || format == vkETC2RGBASRGB {
+		return validBlockSample(data[28:44], 0, bits, alpha, upper) &&
 			validBlockSample(data[44:60], 64, bits, channel, upper)
 	}
 
@@ -42,7 +45,7 @@ func blockDescriptorProfile(format uint32) (model, plane, bits, channel byte, up
 		return 133, 16, 127, 128, 0x3f800000
 	case vkETC2RGB, vkETC2RGBSRGB:
 		return 161, 8, 63, 2, 0xffffffff
-	case vkETC2RGBA:
+	case vkETC2RGBA, vkETC2RGBASRGB:
 		return 161, 16, 63, 2, 0xffffffff
 	case vkASTC4x4:
 		return 162, 16, 127, 0, 0xffffffff

@@ -8,17 +8,18 @@ import (
 )
 
 const (
-	blockVKBC1         uint32 = 131
-	blockVKBC1SRGB     uint32 = 132
-	blockVKBC1RGBA     uint32 = 133
-	blockVKBC1RGBASRGB uint32 = 134
-	blockVKBC6H        uint32 = 143
-	blockVKBC7         uint32 = 145
-	blockVKBC7SRGB     uint32 = 146
-	blockVKETC2RGB     uint32 = 147
-	blockVKETC2RGBSRGB uint32 = 148
-	blockVKETC2RGBA    uint32 = 151
-	blockVKASTC4x4     uint32 = 157
+	blockVKBC1          uint32 = 131
+	blockVKBC1SRGB      uint32 = 132
+	blockVKBC1RGBA      uint32 = 133
+	blockVKBC1RGBASRGB  uint32 = 134
+	blockVKBC6H         uint32 = 143
+	blockVKBC7          uint32 = 145
+	blockVKBC7SRGB      uint32 = 146
+	blockVKETC2RGB      uint32 = 147
+	blockVKETC2RGBSRGB  uint32 = 148
+	blockVKETC2RGBA     uint32 = 151
+	blockVKETC2RGBASRGB uint32 = 152
+	blockVKASTC4x4      uint32 = 157
 )
 
 func writeNativeBlockKTX(format uint32, width, height int, levels [][]byte) []byte {
@@ -92,8 +93,12 @@ func nativeBlockDescriptor(format uint32) []byte {
 		model, blockBytes, kind = 161, 8, 2
 	case blockVKETC2RGBSRGB:
 		model, transfer, blockBytes, kind = 161, 2, 8, 2
-	case blockVKETC2RGBA:
+	case blockVKETC2RGBA, blockVKETC2RGBASRGB:
 		size, model, kind = 60, 161, 15
+
+		if format == blockVKETC2RGBASRGB {
+			transfer, kind = 2, 31 // Alpha is linear within the sRGB container.
+		}
 	case blockVKASTC4x4:
 		model = 162
 	}
@@ -107,7 +112,7 @@ func nativeBlockDescriptor(format uint32) []byte {
 	descriptor[30], descriptor[31] = blockBytes*8-1, kind
 	binary.LittleEndian.PutUint32(descriptor[40:], upper)
 
-	if format == blockVKETC2RGBA {
+	if format == blockVKETC2RGBA || format == blockVKETC2RGBASRGB {
 		descriptor[30] = 63
 		binary.LittleEndian.PutUint16(descriptor[44:], 64)
 		descriptor[46], descriptor[47] = 63, 2

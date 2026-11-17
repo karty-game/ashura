@@ -102,7 +102,8 @@ func writeCatalogImports(code *strings.Builder, formats []texture.Format) {
 
 	code.WriteString("\nimport (\n_ \"embed\"\n\"github.com/karty-game/karty-webgpu/pkg/draw2d\"\n")
 
-	if slices.Contains(formats, texture.BC1) || slices.Contains(formats, texture.BC7) {
+	if slices.Contains(formats, texture.BC1) || slices.Contains(formats, texture.BC7) ||
+		slices.Contains(formats, texture.ETC2RGB) || slices.Contains(formats, texture.ETC2RGBA) {
 		code.WriteString("\"github.com/karty-game/karty-webgpu/pkg/texture\"\n")
 	}
 
@@ -113,9 +114,21 @@ func writeCatalogPage(code *strings.Builder, index int, image assetbuild.Image, 
 	if format == texture.RGBA8 {
 		_, _ = fmt.Fprintf(code, "page%d,err:=draw2d.NewImage(%d,%d,imagePage%d)\n", index, image.Width, image.Height, index)
 	} else {
-		name := "BC1"
-		if format == texture.BC7 {
+		var name string
+
+		switch format {
+		case texture.BC1:
+			name = "BC1"
+		case texture.BC7:
 			name = "BC7"
+		case texture.ETC2RGB:
+			name = "ETC2RGB"
+		case texture.ETC2RGBA:
+			name = "ETC2RGBA"
+		case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
+			panic("invalid admitted sprite format")
+		default:
+			panic("invalid admitted sprite format")
 		}
 
 		_, _ = fmt.Fprintf(

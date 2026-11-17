@@ -50,8 +50,12 @@ type expedition struct {
 	paused, flat, scanned, spaceHeld, dirty                                      bool
 }
 
-func newExpedition(app *engine.App, images assets.Catalog) *expedition {
-	study := &expedition{app: app, screen: app.Screen2D(), images: images, sonarX: .67, sonarY: .43, dirty: true, frameIndex: -1}
+func newExpedition(app *engine.App) *expedition {
+	return &expedition{app: app, screen: app.Screen2D(), sonarX: .67, sonarY: .43, dirty: true, frameIndex: -1}
+}
+
+func (study *expedition) createSprites(images assets.Catalog) error {
+	study.images = images
 	layer := study.screen
 	study.background = layer.NewSprite(images.Background)
 	study.farReef = layer.NewSprite(images.SpritesReef).SetOrder(10).SetTint(.12, .45, .5).SetOpacity(.45)
@@ -75,7 +79,9 @@ func newExpedition(app *engine.App, images assets.Catalog) *expedition {
 		study.frame[index] = layer.NewSprite(images.SpritesWhite).SetOrder(70).SetTint(.4, .9, .8).SetOpacity(.65).SetVisible(false)
 	}
 
-	return study
+	study.setPalette(0)
+
+	return study.updateReadout()
 }
 
 func (study *expedition) addParticles() {

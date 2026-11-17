@@ -80,15 +80,18 @@ spritebuild.Images(spritebuild.ImagesOptions{
 Import `github.com/karty-game/karty-webgpu/pkg/texture` in the recipe. The output
 stage checks every page's alpha offline: fully opaque pages use `OpaqueFormat`,
 and pages with any nonopaque alpha use `AlphaFormat`. Opaque pages accept RGBA8,
-BC1 or BC7; alpha pages accept RGBA8 or BC7 to retain smooth transparency. Zero
+BC1, BC7, ETC2RGB or ETC2RGBA; alpha pages accept RGBA8, BC7 or ETC2RGBA to retain
+smooth transparency. Zero
 values keep the existing RGBA8 output. `Compression` sets the embedded codec's
 quality and per-page timeout.
 
 Compressed page dimensions must be multiples of four; unsupported dimensions
 fail the build rather than resizing artwork. Source dimensions, atlas regions,
 padding and image coordinates remain unchanged. The output publishes native
-`pages/*.bc1` or `pages/*.bc7` blocks and generates `NewPreparedImage` admission
+`pages/*.bc1`, `*.bc7`, `*.etc2rgb` or `*.etc2rgba` blocks and generates `NewPreparedImage` admission
 calls. Loading copies those GPU-ready blocks without decoding, repacking or mip
-generation. The device must enable BC support; unsupported devices reject these
-pages rather than performing a runtime fallback. Use the default RGBA8 output
-when targeting devices without that feature.
+generation. The device must enable the selected compression family; unsupported
+devices reject those pages. For a mixed desktop/mobile application, publish BC
+and ETC2 catalogs in separate pipeline directories and load only the supported
+one after device creation. Sprites2D uses this pattern. The default RGBA8 output
+works without either optional compression family.

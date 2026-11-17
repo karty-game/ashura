@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"image/color"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
@@ -56,6 +57,26 @@ func TestCompressedSpritePagesPreserveDimensionsAndReuseBuild(t *testing.T) {
 	}
 
 	runGeneratedSpriteCatalog(t, root, compressedRuntimeTest)
+
+	pageOptions.OpaqueFormat = texture.ETC2RGB
+
+	pageOptions.AlphaFormat = texture.ETC2RGBA
+	if _, err := assetbuild.Build(t.Context(), compressedSpriteConfig(pageOptions), options); err != nil {
+		t.Fatal("prepare mobile sprite pages", err)
+	}
+
+	if len(readFile(t, filepath.Join(output, "pages/Background.etc2rgb"))) != 32 ||
+		len(readFile(t, filepath.Join(output, "pages/Glow.etc2rgba"))) != 64 {
+		t.Fatal("mobile page storage changed dimensions or alpha format")
+	}
+
+	runGeneratedSpriteCatalog(t, root, strings.Replace(compressedRuntimeTest,
+		"[]texture.Format{texture.BC7, texture.BC7}", "[]texture.Format{texture.ETC2RGB, texture.ETC2RGBA}", 1))
+
+	report, err = assetbuild.Build(t.Context(), compressedSpriteConfig(pageOptions), options)
+	if err != nil || report.Executed != 0 || report.Written != 0 {
+		t.Fatal("warm mobile build repeated preparation", report, err)
+	}
 }
 
 func TestCompressedSpritePagesRejectMisalignedSourceAndInvalidFormats(t *testing.T) {
@@ -68,6 +89,7 @@ func TestCompressedSpritePagesRejectMisalignedSourceAndInvalidFormats(t *testing
 	}{
 		{"misaligned", 3, spritebuild.ImagesOptions{OpaqueFormat: texture.BC1}},
 		{"alpha-bc1", 4, spritebuild.ImagesOptions{AlphaFormat: texture.BC1}},
+		{"alpha-etc2rgb", 4, spritebuild.ImagesOptions{AlphaFormat: texture.ETC2RGB}},
 		{"unsupported", 4, spritebuild.ImagesOptions{OpaqueFormat: texture.BC6H}},
 	} {
 		t.Run(fixture.name, func(t *testing.T) {
@@ -109,9 +131,12 @@ func TestCompressedCatalog(t *testing.T) {
     screen.NewSprite(images.Glow)
     frame := screen.Frame(32,32)
     if len(frame.Batches) != 2 { t.Fatal("distinct compressed pages lost", len(frame.Batches)) }
-    for _, batch := range frame.Batches {
+    formats := []texture.Format{texture.BC7, texture.BC7}
+    for index, batch := range frame.Batches {
         page := batch.Texture
-        if page.Width != 8 || page.Height != 8 || page.Format != texture.BC7 || len(page.Pixels) != 64 {
+        expectedBytes := 64
+        if formats[index] == texture.ETC2RGB { expectedBytes = 32 }
+        if page.Width != 8 || page.Height != 8 || page.Format != formats[index] || len(page.Pixels) != expectedBytes {
             t.Fatal("compressed page metadata or payload changed")
         }
     }

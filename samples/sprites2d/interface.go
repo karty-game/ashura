@@ -57,10 +57,6 @@ func (study *expedition) createInterface() error {
 		return err
 	}
 
-	if err := study.updateReadout(); err != nil {
-		return err
-	}
-
 	return uiapp.Attach(study.app, view)
 }
 
@@ -105,8 +101,6 @@ func (study *expedition) controls() *ui.Node {
 
 		study.setPalette(index)
 	})
-
-	study.setPalette(0)
 
 	return ui.Column(
 		ui.Row(ui.NewText("Controls").WithStyle(ui.Style{Grow: 1, FontSize: 11}),

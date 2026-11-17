@@ -68,7 +68,7 @@ func transcodeBasisBlocks(ctx context.Context, data []byte, info blockUASTCInfo,
 		target = 6
 	case blockVKASTC4x4:
 		target = 10
-	case blockVKETC2RGBA:
+	case blockVKETC2RGBA, blockVKETC2RGBASRGB:
 		target = 1
 	case blockVKETC2RGB, blockVKETC2RGBSRGB:
 		target = 0

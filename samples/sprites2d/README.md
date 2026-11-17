@@ -46,9 +46,10 @@ Original PNG artwork lives in [assets/](assets/). The standard recipe
 imports those sources with `Images`, packs the `sprites/**` images with `Atlas`,
 and publishes with `draw2d/build.Images`. The ocean background stays standalone.
 There is no sample artwork generator or separate preparation command.
-The recipe encodes the opaque 1280×800 background as BC1 and the 2048×1024
-sprite atlas as BC7, preserving smooth alpha, source resolution and atlas layout.
-These native payloads require a device with BC texture-compression support.
+The recipe encodes the opaque 1280×800 background as BC1/ETC2RGB and the
+2048×1024 sprite atlas as BC7/ETC2RGBA, preserving smooth alpha, source resolution
+and atlas layout. The selected native payloads require the corresponding
+device compression feature.
 
 The bubble is 32×32, kelp is 48×160 with its root at `(24,160)`, and the pebble
 is 40×24. Those source dimensions and pivots are part of the authored composition.
@@ -60,8 +61,13 @@ mise exec -- go run ./cmd/engine assets generate --project ./samples/sprites2d
 mise exec -- go run ./cmd/engine assets build --project ./samples/sprites2d
 ```
 
-Prepared BC pages and named catalog code remain ignored. `assets.Load()` runs
-once; PNG decoding, packing, gutter extrusion and compression are build work.
+Prepared BC and ETC2 pages and named catalog code remain ignored. The recipe
+publishes desktop BC1/BC7 and mobile ETC2RGB/ETC2RGBA catalogs with identical
+dimensions and source rectangles. On the first update, after device creation,
+the sample queries `App.CompressedAlbedoFormat()` once and loads only that
+catalog. Devices without BC or ETC2 are rejected explicitly. PNG decoding,
+packing, gutter extrusion and compression are build work; there is no runtime
+transcoding. Both variants count toward the complete sample export budget.
 Fish, plankton, bubbles, kelp, pebbles, rings and markers are fixed-size pools.
 Kelp sways slowly around fixed roots with independent current phases; bubble
 sizes and rise rates vary by depth.

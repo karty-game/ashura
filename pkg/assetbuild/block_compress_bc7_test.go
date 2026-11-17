@@ -11,6 +11,7 @@ import (
 
 	"github.com/karty-game/karty-webgpu/internal/ktx2data"
 	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/karty-webgpu/pkg/texture"
 )
 
 func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
@@ -19,6 +20,19 @@ func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
 
 	ctx, closeCodec := buildCodecContext(t.Context())
 	defer func() { _ = closeCodec() }()
+
+	for _, target := range []texture.Format{texture.BC7, texture.ETC2RGBA} {
+		checkAlphaLDRMips(t, ctx, target)
+	}
+}
+
+func checkAlphaLDRMips(t *testing.T, ctx context.Context, target texture.Format) {
+	t.Helper()
+
+	compress := CompressBC7
+	if target == texture.ETC2RGBA {
+		compress = CompressETC2RGBA
+	}
 
 	for _, space := range []texturedata.ColorSpace{texturedata.Linear, texturedata.SRGB} {
 		levels := bc1CodecTestMips(false)
@@ -31,13 +45,13 @@ func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
 		source := bc1CodecTestSource(t, levels, space)
 		before := bytes.Clone(source)
 
-		encoded, err := CompressBC7(ctx, source, BlockCompressionOptions{})
+		encoded, err := compress(ctx, source, BlockCompressionOptions{})
 		if err != nil {
-			t.Fatal("BC7 encoding", space, err)
+			t.Fatal("alpha LDR encoding", space, err)
 		}
 
 		decoded, err := ktx2data.Decode(encoded)
-		if err != nil || decoded.Format != texturedata.BC7 || decoded.ColorSpace != space ||
+		if err != nil || decoded.Format != target || decoded.ColorSpace != space ||
 			decoded.Width != 12 || decoded.Height != 12 || len(decoded.Levels) != len(levels) {
 			t.Fatal("BC7 authored dimensions, transfer or mips changed", decoded, err)
 		}
@@ -53,14 +67,14 @@ func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
 			t.Fatal("BC7 source mutated or mip payloads not smallest-first")
 		}
 
-		opaque, err := CompressBC7(ctx, bc1CodecTestSource(t, bc1CodecTestMips(false), space), BlockCompressionOptions{})
+		opaque, err := compress(ctx, bc1CodecTestSource(t, bc1CodecTestMips(false), space), BlockCompressionOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		opaqueData, err := ktx2data.Decode(opaque)
 		if err != nil || bytes.Equal(decoded.Levels[0], opaqueData.Levels[0]) {
-			t.Fatal("fractional alpha was discarded before BC7 encoding", err)
+			t.Fatal("fractional alpha was discarded before alpha LDR encoding", err)
 		}
 	}
 }
@@ -68,23 +82,25 @@ func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
 func TestCompressBC7RejectsInputAndPreservesCancellation(t *testing.T) {
 	t.Parallel()
 
-	for _, input := range [][]byte{nil, []byte("not KTX2"), ldrTestTexture(3, 4, [4]byte{1, 2, 3, 4}, texturedata.Linear)} {
-		if _, err := CompressBC7(t.Context(), input, BlockCompressionOptions{}); !errors.Is(err, errBlockCompression) {
-			t.Fatal("invalid BC7 source admitted", err)
+	for _, compress := range []func(context.Context, []byte, BlockCompressionOptions) ([]byte, error){CompressBC7, CompressETC2RGBA} {
+		for _, input := range [][]byte{nil, []byte("not KTX2"), ldrTestTexture(3, 4, [4]byte{1, 2, 3, 4}, texturedata.Linear)} {
+			if _, err := compress(t.Context(), input, BlockCompressionOptions{}); !errors.Is(err, errBlockCompression) {
+				t.Fatal("invalid BC7 source admitted", err)
+			}
 		}
-	}
 
-	valid := ldrTestTexture(4, 4, [4]byte{1, 2, 3, 4}, texturedata.SRGB)
-	for _, quality := range []int{-1, 5} {
-		if _, err := CompressBC7(t.Context(), valid, BlockCompressionOptions{LDRQuality: &quality}); !errors.Is(err, errBlockCompression) {
-			t.Fatal("invalid BC7 quality admitted", err)
+		valid := ldrTestTexture(4, 4, [4]byte{1, 2, 3, 4}, texturedata.SRGB)
+		for _, quality := range []int{-1, 5} {
+			if _, err := compress(t.Context(), valid, BlockCompressionOptions{LDRQuality: &quality}); !errors.Is(err, errBlockCompression) {
+				t.Fatal("invalid BC7 quality admitted", err)
+			}
 		}
-	}
 
-	ctx, cancel := context.WithCancel(t.Context())
-	cancel()
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
 
-	if _, err := CompressBC7(ctx, valid, BlockCompressionOptions{}); !errors.Is(err, context.Canceled) {
-		t.Fatal("BC7 lost cancellation", err)
+		if _, err := compress(ctx, valid, BlockCompressionOptions{}); !errors.Is(err, context.Canceled) {
+			t.Fatal("BC7 lost cancellation", err)
+		}
 	}
 }

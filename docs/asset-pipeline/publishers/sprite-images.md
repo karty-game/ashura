@@ -5,7 +5,8 @@
 `spritebuild.Images()` publishes a typed catalog of `*draw2d.Image` handles and
 GPU-ready pages. Use it for sprites, with optional shared atlas pages.
 The generated catalog embeds those pages. Choose RGBA8 for broad device
-support, BC1 for fully opaque pages, or BC7 for compressed pages with alpha.
+support, BC1/ETC2RGB for fully opaque pages, or BC7/ETC2RGBA for compressed
+pages with alpha. BC and ETC2 require their respective device features.
 Offline compression uses [Basis Universal](https://github.com/BinomialLLC/basis_universal).
 
 Import `spritebuild "github.com/karty-game/karty-webgpu/pkg/draw2d/build"` and,
@@ -17,9 +18,9 @@ Pass no arguments or one `spritebuild.ImagesOptions` record.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `OpaqueFormat` | `texture.RGBA8` | Pages whose alpha is entirely 255. Accepts RGBA8, BC1 or BC7. |
-| `AlphaFormat` | `texture.RGBA8` | Pages containing any translucent texel. Accepts RGBA8 or BC7. |
-| `Compression.LDRQuality` | `nil`: BC1 effort 0, BC7 effort 2 | Optional pointer to encoder effort 0–4. |
+| `OpaqueFormat` | `texture.RGBA8` | Pages whose alpha is entirely 255. Accepts RGBA8, BC1, BC7, ETC2RGB or ETC2RGBA. |
+| `AlphaFormat` | `texture.RGBA8` | Pages containing any translucent texel. Accepts RGBA8, BC7 or ETC2RGBA. |
+| `Compression.LDRQuality` | `nil`: BC1/ETC2RGB effort 0, BC7/ETC2RGBA effort 2 | Optional pointer to encoder effort 0–4. |
 | `Compression.Timeout` | `0`: 2 minutes | Timeout for one compressed page. |
 
 `Compression` is `assetbuild.BlockCompressionOptions`; its SSBump/RGBE/HDR
@@ -42,13 +43,19 @@ Put this pipeline in the [recipe wrapper](../getting-started.md#prepare-some-tex
 ```
 
 Use `spritebuild.Images()` for uncompressed portable RGBA8 output. Compressed
-pages require device BC support and dimensions divisible by four; invalid
+pages require device support for their compression family and dimensions divisible by four; invalid
 dimensions fail rather than resizing the artwork. No runtime format fallback
 is performed. Add [Atlas](../processors/image-atlas.md) to `Process` for shared pages, optionally
 preceded by [Resize](../processors/image-resize.md). Sources must be albedo with exactly one level;
 omit `Mipmaps`, `KTX2` and `GoCatalog`.
 
-The output contains `assets.go`, `pages/*.{rgba,bc1,bc7}` as selected, and
+For mobile ETC2 devices, select `OpaqueFormat: texture.ETC2RGB` and
+`AlphaFormat: texture.ETC2RGBA`. Publish desktop and mobile catalogs in separate
+pipeline `Directory` values and select one after `App.Run` opens the device,
+using `App.CompressedAlbedoFormat()`. See the Sprites2D recipe and startup for
+an example; the generated `Load()` never selects or converts formats itself.
+
+The output contains `assets.go`, `pages/*.{rgba,bc1,bc7,etc2rgb,etc2rgba}` as selected, and
 `atlas.json` for packed regions. With `Config.Output: "generated"`, import
 your project's `generated/sprites` package and call `Load()` once per asset
 lifetime. Use a generated field with `app.Screen2D().NewSprite(images.Icon)`;

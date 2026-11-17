@@ -189,6 +189,14 @@ with no runtime decoder or automatic fallback. Direct offline callers can use
 `CompressBC1` or `CompressBC7` on prepared RGBA8 KTX2. BC7 defaults to effort 2;
 `Compression.LDRQuality` can explicitly select 0..4.
 
+For native mobile alpha pages, `CompressETC2RGBA` preserves all four channels
+with the same quality and deadline bounds as `CompressBC7`. For opaque mobile
+pages, use `CompressETC2RGB`, or share `PrepareOpaqueLDRUASTC` intermediates and
+call `TranscodeLDRNative` with `texture.ETC2RGB`. Both direct compressors bound
+encoding and transcoding with one total deadline. `TranscodeLDRNative` also accepts `texture.ETC2RGBA` to retain
+alpha from a prepared UASTC intermediate. These are offline operations; the
+application must select a prepared format supported by the active device.
+
 Model, impostor and image resources can coexist in one recipe. Image processors
 preserve other resource schemas while rejecting image stages in the wrong order.
 Put `model/build.GLBWithOptions(GLBOptions{})` before `impostor/build.Cards()`; the original model remains

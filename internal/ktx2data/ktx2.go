@@ -29,6 +29,7 @@ const (
 	vkETC2RGB      = 147
 	vkETC2RGBSRGB  = 148
 	vkETC2RGBA     = 151
+	vkETC2RGBASRGB = 152
 	vkASTC4x4      = 157
 )
 
@@ -126,7 +127,7 @@ func readHeader(encoded []byte) (format, width, height, levels uint32, err error
 func supportedFormat(format uint32) bool {
 	switch format {
 	case vkRGBA8, vkRGBA8SRGB, vkBC1, vkBC1SRGB, vkBC1RGBA, vkBC1RGBASRGB,
-		vkBC6H, vkBC7, vkBC7SRGB, vkETC2RGB, vkETC2RGBSRGB, vkETC2RGBA, vkASTC4x4:
+		vkBC6H, vkBC7, vkBC7SRGB, vkETC2RGB, vkETC2RGBSRGB, vkETC2RGBA, vkETC2RGBASRGB, vkASTC4x4:
 		return true
 	default:
 		return false

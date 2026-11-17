@@ -30,7 +30,7 @@ func PrepareOpaqueLDRUASTC(ctx context.Context, source []byte, options BlockComp
 }
 
 // TranscodeLDRNative exports LDR UASTC or bounded opaque sRGB ETC1S to native BC1,
-// BC7 or ETC2RGB, preserving its linear/sRGB transfer and authored mip chain.
+// BC7, ETC2RGB or ETC2RGBA, preserving its transfer and authored mip chain.
 // RGB targets discard unused numeric alpha; color inputs should use the opaque
 // preparer. Applications load native blocks without a Basis decoder.
 func TranscodeLDRNative(ctx context.Context, prepared []byte, target texture.Format, options BlockCompressionOptions) ([]byte, error) {
@@ -92,7 +92,12 @@ func ldrNativeTarget(target texture.Format, space texture.ColorSpace) (uint32, e
 		if space == texture.SRGB {
 			format = blockVKETC2RGBSRGB
 		}
-	case texture.RGBA8, texture.BC6H, texture.ETC2RGBA, texture.ASTC4x4:
+	case texture.ETC2RGBA:
+		format = blockVKETC2RGBA
+		if space == texture.SRGB {
+			format = blockVKETC2RGBASRGB
+		}
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
 		return 0, errBlockCompression
 	default:
 		return 0, errBlockCompression

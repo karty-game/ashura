@@ -47,6 +47,7 @@ func TestNativeBlocksAdmitWithoutDecoding(t *testing.T) {
 		{"ETC2 RGB sRGB", etc2RGBSRGB, texturedata.ETC2RGB, 4, texturedata.SRGB},
 		{"ETC2 RGB linear", etc2RGBLinear, texturedata.ETC2RGB, 4, texturedata.Linear},
 		{"ETC2 RGBA linear", etc2RGBALinear, texturedata.ETC2RGBA, 4, texturedata.Linear},
+		{"ETC2 RGBA sRGB", etc2RGBASRGBFixture(), texturedata.ETC2RGBA, 4, texturedata.SRGB},
 		{"ASTC4x4 linear", astc4x4Linear, texturedata.ASTC4x4, 4, texturedata.Linear},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -83,6 +84,7 @@ func TestNativeBlocksAdmitWithoutDecoding(t *testing.T) {
 				func(b []byte) { binary.LittleEndian.PutUint64(b[88:], 65) },
 				func(b []byte) { offset := binary.LittleEndian.Uint32(b[48:]); b[offset+14] ^= 3 },
 				func(b []byte) { offset := binary.LittleEndian.Uint32(b[48:]); b[offset+20] = 0 },
+				func(b []byte) { offset := binary.LittleEndian.Uint32(b[48:]); b[offset+31] ^= 16 },
 			} {
 				damaged := append([]byte(nil), test.data...)
 				mutate(damaged)
@@ -101,6 +103,17 @@ func bc7SRGBFixture() []byte {
 	binary.LittleEndian.PutUint32(data[12:], 146)
 	descriptor := binary.LittleEndian.Uint32(data[48:])
 	data[descriptor+14] = 2
+
+	return data
+}
+
+func etc2RGBASRGBFixture() []byte {
+	data := append([]byte(nil), etc2RGBALinear...)
+	binary.LittleEndian.PutUint32(data[12:], 152)
+
+	descriptor := binary.LittleEndian.Uint32(data[48:])
+	data[descriptor+14] = 2
+	data[descriptor+31] = 31 // Alpha stays linear with sRGB RGB transfer.
 
 	return data
 }

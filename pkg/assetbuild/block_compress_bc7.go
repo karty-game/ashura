@@ -15,6 +15,10 @@ import (
 // LDRQuality selects effort 0..4; nil selects 2 to bound offline preparation cost.
 // No normal-map transform, resizing, mip generation or runtime decoder is used.
 func CompressBC7(ctx context.Context, source []byte, options BlockCompressionOptions) ([]byte, error) {
+	return compressAlphaLDR(ctx, source, texture.BC7, options)
+}
+
+func compressAlphaLDR(ctx context.Context, source []byte, target texture.Format, options BlockCompressionOptions) ([]byte, error) {
 	bounded, cancel, err := blockContext(ctx, options.Timeout)
 	if err != nil {
 		return nil, err
@@ -39,5 +43,5 @@ func CompressBC7(ctx context.Context, source []byte, options BlockCompressionOpt
 		return nil, err
 	}
 
-	return TranscodeLDRNative(bounded, prepared, texture.BC7, options)
+	return TranscodeLDRNative(bounded, prepared, target, options)
 }

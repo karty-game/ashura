@@ -6,9 +6,52 @@ import (
 	"time"
 
 	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/karty-webgpu/pkg/texture"
 	"github.com/karty-game/karty-webgpu/pkg/ui"
 	"github.com/karty-game/karty-webgpu/samples/sprites2d/generated/assets"
 )
+
+func TestExpeditionDeviceCatalogKeepsOnlySelectedPageFormats(t *testing.T) {
+	t.Parallel()
+
+	for _, profile := range []struct {
+		device, background, sprites texture.Format
+	}{
+		{texture.BC1, texture.BC1, texture.BC7},
+		{texture.ETC2RGB, texture.ETC2RGB, texture.ETC2RGBA},
+	} {
+		images, err := loadImages(profile.device)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		app := engine.NewApp(engine.AppConfig{})
+		screen := app.Screen2D()
+		screen.NewSprite(images.Background)
+		screen.NewSprite(images.SpritesJelly0)
+		screen.NewSprite(images.SpritesJelly1)
+
+		frame := screen.Frame(1280, 800)
+
+		formats := map[texture.Format]int{profile.background: 1, profile.sprites: 1}
+		for _, page := range frame.Textures {
+			formats[page.Format]--
+		}
+
+		if len(frame.Textures) != 2 || formats[profile.background] != 0 || formats[profile.sprites] != 0 ||
+			images.Background.Width() != 1280 || images.Background.Height() != 800 || images.SpritesJelly0.Width() != 400 {
+			t.Fatal("device selection changed page sharing, dimensions or formats", profile, frame.Textures)
+		}
+
+		if err := app.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if _, err := loadImages(texture.RGBA8); err == nil {
+		t.Fatal("device without either compression family selected unsupported artwork")
+	}
+}
 
 func expeditionFixture(t *testing.T) *expedition {
 	t.Helper()
@@ -26,8 +69,12 @@ func expeditionFixture(t *testing.T) *expedition {
 		t.Fatal(err)
 	}
 
-	study := newExpedition(app, images)
+	study := newExpedition(app)
 	if err := study.createInterface(); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := study.createSprites(images); err != nil {
 		t.Fatal(err)
 	}
 
