@@ -6,8 +6,8 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func TestDrawMaterialsBindsSharedShadowOnlyForPipelineChanges(t *testing.T) {
@@ -18,7 +18,7 @@ func TestDrawMaterialsBindsSharedShadowOnlyForPipelineChanges(t *testing.T) {
 
 	for _, draw := range driver.draws {
 		entry := driver.materials[draw.call.ID]
-		entry.state.Update(draw.call, frame)
+		entry.state.Update(draw.call)
 	}
 
 	for range 2 {

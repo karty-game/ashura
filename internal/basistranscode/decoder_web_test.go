@@ -7,7 +7,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func TestWorkerCompressedBlocksAndLifetime(t *testing.T) {

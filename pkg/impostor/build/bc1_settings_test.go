@@ -6,8 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	impostorbuild "github.com/karty-game/karty-webgpu/pkg/impostor/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	impostorbuild "github.com/karty-game/ashura/pkg/impostor/build"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestBC1AtlasAlignmentRejectsBeforePlanOrModelAdmission(t *testing.T) {
@@ -46,10 +47,25 @@ func TestBC1AtlasAlignmentPreservesLayeredAndSelectedSampleSettings(t *testing.T
 	for _, options := range []impostorbuild.Options{
 		{Mode: impostorbuild.Layered},
 		{Mode: impostorbuild.Octahedral, Resolution: 128, FrameGrid: 7, Padding: 8, MipLevels: 3},
+		{Mode: impostorbuild.Octahedral, Resolution: 64, FrameGrid: 7, Padding: 8, MipLevels: 3, AtlasFormat: texture.ETC2RGBA},
 		{},
 	} {
 		if err := impostorbuild.Cards(options).Plan(&assetbuild.Plan{}); err != nil {
 			t.Fatal("valid capture settings were rejected", options, err)
+		}
+	}
+}
+
+func TestImpostorAtlasFormatRejectsBeforeModelAdmission(t *testing.T) {
+	t.Parallel()
+
+	for _, options := range []impostorbuild.Options{
+		{AtlasFormat: texture.ETC2RGB},
+		{AtlasFormat: texture.BC7},
+		{Mode: impostorbuild.Layered, AtlasFormat: texture.ETC2RGBA},
+	} {
+		if err := impostorbuild.Cards(options).Plan(&assetbuild.Plan{}); err == nil {
+			t.Fatal("invalid atlas storage reached model admission", options)
 		}
 	}
 }

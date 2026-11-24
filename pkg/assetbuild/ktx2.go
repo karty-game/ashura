@@ -11,25 +11,36 @@ import (
 	"path"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // KTX2Options selects offline native texture storage without changing source
 // dimensions or authored mips. Zero Format retains RGBA8. UsageFormats overrides
 // Format for a declared image role, such as UsageAlbedo or UsageNormal.
-// BC1 has one-bit alpha (threshold 128); use BC7 for smooth transparency.
+// BC1 has one-bit alpha (threshold 128); BC7 and ETC2RGBA preserve smooth alpha.
+// UsageSSBump may select ASTC4x4 with independent linear RGB coefficients.
 type KTX2Options struct {
 	Format       texture.Format
 	UsageFormats map[string]texture.Format
 	Compression  BlockCompressionOptions
 }
 
-type ktxPlugin struct{ options []KTX2Options }
+type ktxPlugin struct {
+	options []KTX2Options
+	mobile  *KTX2Options
+}
 
 // KTX2 encodes image resources using their authored mip chains. With no options
-// it writes RGBA8; one options value may explicitly select offline BC1 or BC7.
+// it writes RGBA8; one options value may select offline BC1, BC7 or ETC2 blocks.
 // Put Mipmaps before it to generate additional levels.
 func KTX2(options ...KTX2Options) Plugin { return ktxPlugin{options: options} }
+
+// KTX2Variants publishes both profiles from the same prepared images. A
+// different mobile format adds a file under mobile/ and an accessor with the
+// Mobile suffix. Both profiles use the primary asset when their formats match.
+func KTX2Variants(primary, mobile KTX2Options) Plugin {
+	return ktxPlugin{options: []KTX2Options{primary}, mobile: &mobile}
+}
 
 func (ktxPlugin) Name() string { return "ktx2" }
 
@@ -37,6 +48,19 @@ func (plugin ktxPlugin) Plan(plan *Plan) error {
 	options, err := normalizedKTX2Options(plugin.options)
 	if err != nil {
 		return err
+	}
+
+	var actionOptions any = options
+
+	var mobile *KTX2Options
+	if plugin.mobile != nil {
+		normalized, err := normalizedKTX2Options([]KTX2Options{*plugin.mobile})
+		if err != nil {
+			return err
+		}
+
+		mobile = &normalized
+		actionOptions = struct{ Primary, Mobile KTX2Options }{options, normalized}
 	}
 
 	for index, resource := range plan.Resources {
@@ -52,7 +76,7 @@ func (plugin ktxPlugin) Plan(plan *Plan) error {
 		refs, err := plan.Add(Action{
 			Parallel: true,
 			ID:       imageActionID(plan, "ktx2/"+resource.ID), Processor: "ktx2", Revision: "native-blocks@2",
-			Options: options, Inputs: []Ref{resource.Ref},
+			Options: actionOptions, Inputs: []Ref{resource.Ref},
 			Outputs: []Slot{
 				{Name: imageDataSlot, Schema: PreparedSetSchema},
 				{Name: imageCatalogSlot, Schema: "karty.image-catalog@1"},
@@ -64,7 +88,7 @@ func (plugin ktxPlugin) Plan(plan *Plan) error {
 					return nil, inputErr
 				}
 
-				return prepareImageSet(ctx, set, options)
+				return prepareImageSet(ctx, set, options, mobile)
 			},
 		})
 		if err != nil {
@@ -72,13 +96,14 @@ func (plugin ktxPlugin) Plan(plan *Plan) error {
 		}
 
 		plan.Resources[index].Ref = refs[0]
+		plan.carryInspectedImages(resource.Ref, refs[1])
 		plan.Publish(refs[2])
 	}
 
 	return nil
 }
 
-func prepareImageSet(ctx context.Context, set ImageSet, options KTX2Options) (Result, error) {
+func prepareImageSet(ctx context.Context, set ImageSet, options KTX2Options, mobile *KTX2Options) (Result, error) {
 	prepared := PreparedSet{Regions: set.Regions}
 	metadata := PreparedSet{Regions: set.Regions}
 	files := make(Bundle)
@@ -89,41 +114,36 @@ func prepareImageSet(ctx context.Context, set ImageSet, options KTX2Options) (Re
 			return nil, err
 		}
 
-		format := options.Format
-		if selected, exists := options.UsageFormats[value.Usage]; exists {
-			format = selected
-		}
+		primaryFormat := imageFormat(options, value.Usage)
 
-		switch format {
-		case texture.RGBA8:
-		case texture.BC1:
-			data, err = CompressBC1(ctx, data, options.Compression)
-		case texture.BC7:
-			data, err = CompressBC7(ctx, data, options.Compression)
-		case texture.ETC2RGB, texture.BC6H, texture.ETC2RGBA, texture.ASTC4x4:
-			return nil, errBlockCompression
-		default:
-			return nil, errBlockCompression
-		}
-
+		entry, err := prepareImageVariant(ctx, value, data, primaryFormat, options, false)
 		if err != nil {
-			return nil, fmt.Errorf("compress texture %q: %w", value.Source, err)
+			return nil, err
 		}
 
-		output := textureOutput(value.Source)
-		if strings.ContainsAny(output, "*?[\\") {
-			return nil, fmt.Errorf("texture %q embed path: %w", output, errImageRecord)
+		if err := addPreparedImage(entry, &metadata, files); err != nil {
+			return nil, err
 		}
 
-		if _, exists := files[output]; exists {
-			return nil, fmt.Errorf("duplicate texture output %q: %w", output, errImageRecord)
-		}
-
-		entry := PreparedImage{Name: value.Name, Source: value.Source, Usage: value.Usage, Output: output, Data: data}
 		prepared.Images = append(prepared.Images, entry)
-		entry.Data = nil
-		metadata.Images = append(metadata.Images, entry)
-		files[output] = data
+
+		if mobile == nil {
+			continue
+		}
+
+		mobileFormat := imageFormat(*mobile, value.Usage)
+		if mobileFormat == primaryFormat {
+			continue
+		}
+
+		entry, err = prepareImageVariant(ctx, value, data, mobileFormat, *mobile, true)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := addPreparedImage(entry, &metadata, files); err != nil {
+			return nil, err
+		}
 	}
 
 	data, err := json.Marshal(prepared)
@@ -144,6 +164,75 @@ func prepareImageSet(ctx context.Context, set ImageSet, options KTX2Options) (Re
 	return Result{imageDataSlot: data, imageCatalogSlot: meta, imageFilesSlot: payloads}, nil
 }
 
+func imageFormat(options KTX2Options, usage string) texture.Format {
+	if format, exists := options.UsageFormats[usage]; exists {
+		return format
+	}
+
+	return options.Format
+}
+
+func prepareImageVariant(
+	ctx context.Context, image Image, source []byte, format texture.Format, options KTX2Options, mobile bool,
+) (PreparedImage, error) {
+	name, output := image.Name, textureOutput(image.Source)
+	if mobile {
+		name += "Mobile"
+		output = "mobile/" + output
+	}
+
+	data, err := compressPreparedImage(ctx, source, image.Usage, format, options.Compression)
+	if err != nil {
+		return PreparedImage{}, fmt.Errorf("compress texture %q: %w", output, err)
+	}
+
+	return PreparedImage{Name: name, Source: image.Source, Usage: image.Usage, Output: output, Data: data}, nil
+}
+
+func addPreparedImage(entry PreparedImage, metadata *PreparedSet, files Bundle) error {
+	if strings.ContainsAny(entry.Output, "*?[\\") {
+		return fmt.Errorf("texture %q embed path: %w", entry.Output, errImageRecord)
+	}
+
+	if _, exists := files[entry.Output]; exists {
+		return fmt.Errorf("duplicate texture output %q: %w", entry.Output, errImageRecord)
+	}
+
+	files[entry.Output] = entry.Data
+	entry.Data = nil
+	metadata.Images = append(metadata.Images, entry)
+
+	return nil
+}
+
+func compressPreparedImage(
+	ctx context.Context,
+	data []byte,
+	usage string,
+	format texture.Format,
+	options BlockCompressionOptions,
+) ([]byte, error) {
+	switch format {
+	case texture.RGBA8:
+		return data, nil
+	case texture.BC1:
+		return CompressBC1(ctx, data, options)
+	case texture.BC7:
+		return CompressBC7(ctx, data, options)
+	case texture.ETC2RGB:
+		return CompressETC2RGB(ctx, data, options)
+	case texture.ETC2RGBA:
+		return CompressETC2RGBA(ctx, data, options)
+	case texture.ASTC4x4:
+		if usage == UsageSSBump {
+			return CompressSSBumpASTC(ctx, data, options)
+		}
+	case texture.BC6H, texture.ASTC6x6:
+	}
+
+	return nil, errBlockCompression
+}
+
 func normalizedKTX2Options(values []KTX2Options) (KTX2Options, error) {
 	if len(values) > 1 {
 		return KTX2Options{}, errBlockCompression
@@ -157,7 +246,8 @@ func normalizedKTX2Options(values []KTX2Options) (KTX2Options, error) {
 	options.UsageFormats = maps.Clone(options.UsageFormats)
 
 	validFormat := func(format texture.Format) bool {
-		return format == texture.RGBA8 || format == texture.BC1 || format == texture.BC7
+		return format == texture.RGBA8 || format == texture.BC1 || format == texture.BC7 ||
+			format == texture.ETC2RGB || format == texture.ETC2RGBA
 	}
 	if !validFormat(options.Format) || options.Compression.Timeout < 0 {
 		return KTX2Options{}, errBlockCompression
@@ -168,7 +258,7 @@ func normalizedKTX2Options(values []KTX2Options) (KTX2Options, error) {
 	}
 
 	for usage, format := range options.UsageFormats {
-		if !validUsage(usage) || usage == UsageHeight || !validFormat(format) {
+		if !validUsage(usage) || usage == UsageHeight || (!validFormat(format) && (usage != UsageSSBump || format != texture.ASTC4x4)) {
 			return KTX2Options{}, errBlockCompression
 		}
 	}

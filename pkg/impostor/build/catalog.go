@@ -15,7 +15,7 @@ package impostors
 
 import (
  _ "embed"
- "github.com/karty-game/karty-webgpu/pkg/impostor"
+ "github.com/karty-game/ashura/pkg/impostor"
 )
 
 //go:embed %s

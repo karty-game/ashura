@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func TestOpaquePreparedBytesRetainV1(t *testing.T) {

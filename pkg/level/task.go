@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 // ErrLoadPending means the task has not completed all texture/page steps.

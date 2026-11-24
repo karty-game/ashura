@@ -1,9 +1,9 @@
 package render3d
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/scene"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/scene"
 )
 
 // Add attaches a render component with root-owned cleanup and no asset preparation.

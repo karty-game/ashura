@@ -3,8 +3,8 @@
 package levelbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // The V7 path retains the same shared ETC1S producer, then writes externally

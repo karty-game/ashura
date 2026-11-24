@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // BlockCompressionOptions configures offline texture encoding through embedded

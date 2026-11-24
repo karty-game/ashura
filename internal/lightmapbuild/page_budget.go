@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/xatlas"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/xatlas"
 )
 
 // Preflight every page before tracing any of them. Pixel coverage is bounded by

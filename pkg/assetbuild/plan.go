@@ -27,6 +27,7 @@ type Plan struct {
 	steps       []planStep
 	expanding   bool
 	cleanups    []func() error
+	inspection  *pipelineInspection
 }
 
 // Add registers an action and returns references in its declared output order.
@@ -131,7 +132,12 @@ func (plan *Plan) Glob(pattern string) ([]string, error) {
 		}
 	}
 
-	return globFiles(plan.Project, pattern)
+	files, err := globFiles(plan.Project, pattern)
+	if err == nil && plan.inspection != nil {
+		plan.inspection.globs[pattern] = slices.Clone(files)
+	}
+
+	return files, err
 }
 
 // ReadFile reads an immutable planning input. Include derived values in action options.

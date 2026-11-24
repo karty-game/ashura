@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 	"golang.org/x/image/font/gofont/goregular"
 )
 

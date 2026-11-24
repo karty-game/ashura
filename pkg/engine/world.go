@@ -36,6 +36,7 @@ type World struct {
 	cameras        []Entity
 	frame          frameStorage
 	bindings       map[Entity]*entityBindings
+	decals         *worldDecals
 }
 
 // NewWorld creates an empty ECS world.
@@ -132,6 +133,11 @@ func (world *World) Remove(entity Entity) bool {
 
 	delete(world.entities, entity)
 	delete(world.componentOrder, entity)
+
+	if entry := world.bindings[entity]; entry != nil && entry.decalProjector != nil {
+		world.bindDecal(entity, nil)
+	}
+
 	delete(world.bindings, entity)
 	world.updateCameraBinding(entity, nil)
 	delete(world.frame.batches, entity.index)

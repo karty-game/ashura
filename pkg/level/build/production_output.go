@@ -3,8 +3,8 @@
 package levelbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func selectPublishedRepresentation(page pageRecord, representation string) (pageRecord, error) {

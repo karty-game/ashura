@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/resourcedata"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type Manifest = leveldata.Document
@@ -20,6 +20,8 @@ type Page = leveldata.Page
 type Material = leveldata.Material
 type Object = leveldata.Object
 type Reference = leveldata.Ref
+type ChunkBundle = leveldata.ChunkBundle
+type BundleEntry = leveldata.BundleEntry
 
 const (
 	RGBDiffuse = leveldata.RGBDiffuse
@@ -44,8 +46,7 @@ func Read(ctx context.Context, base string, asset resource.Asset) (Manifest, err
 // It owns no App resources and can be passed from an I/O task to the App loop.
 type PreparedChunk struct {
 	chunk     Chunk
-	files     map[string][]byte
-	verified  map[string]*resource.Payload
+	payloads  map[string]*resource.Payload
 	pages     []preparedPage
 	images    map[string]texture.Data
 	resident  map[string]imageMetadata
@@ -55,7 +56,6 @@ type PreparedChunk struct {
 type preparedPage struct {
 	description Page
 	layout      *leveldata.UVLayout
-	geometry    []byte
 	asset       model.Asset
 }
 
@@ -63,66 +63,71 @@ type preparedPage struct {
 // Duplicate references share bytes and container metadata. No source asset is
 // decoded, geometry transformed, texture repacked or GPU resource created.
 func ReadChunk(ctx context.Context, base string, chunk Chunk) (*PreparedChunk, error) {
-	return readChunk(ctx, base, chunk, nil, nil, texture.RGBA8)
-}
-
-func readChunk(
-	ctx context.Context,
-	base string,
-	chunk Chunk,
-	resident map[string]imageMetadata,
-	decoder basistranscode.Decoder,
-	format texture.Format,
-) (*PreparedChunk, error) {
 	if ctx == nil {
 		return nil, leveldata.ErrFormat
 	}
 
-	if err := leveldata.ValidateChunk(chunk); err != nil {
-		return nil, err
-	}
-
-	if err := validateDeviceProfile(chunk, format, decoder != nil); err != nil {
-		return nil, err
-	}
-
-	refs, err := leveldata.ChunkReferences(chunk)
+	request, err := newReadRequest(chunk, texture.RGBA8, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &PreparedChunk{
-		chunk:     cloneChunk(chunk),
-		files:     make(map[string][]byte),
-		verified:  make(map[string]*resource.Payload),
-		images:    make(map[string]texture.Data),
-		resident:  resident,
-		imageInfo: make(map[string]imageMetadata),
+	return request.Read(ctx, base)
+}
+
+// Read fetches only dependencies absent from the App-loop residency snapshot.
+// Cached images need neither HTTP/file reads nor KTX metadata decoding. Begin
+// checks the snapshot against current residency before acquiring any handles.
+func (request *ReadRequest) Read(ctx context.Context, base string) (*PreparedChunk, error) {
+	if ctx == nil || request == nil || request.refs == nil {
+		return nil, leveldata.ErrFormat
 	}
-	if err = result.readFiles(ctx, base, refs); err != nil {
+
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
-	if decoder != nil {
-		if err = result.transcodeAlbedos(ctx, decoder, format); err != nil {
-			return nil, fmt.Errorf("chunk %s: %w", chunk.ID, err)
+	result := &PreparedChunk{
+		chunk:     request.chunk,
+		payloads:  make(map[string]*resource.Payload, len(request.refs)),
+		images:    make(map[string]texture.Data),
+		resident:  request.resident,
+		imageInfo: make(map[string]imageMetadata),
+	}
+	if err := result.readFiles(ctx, base, request.refs); err != nil {
+		return nil, err
+	}
+
+	if request.decoder != nil {
+		if err := result.transcodeAlbedos(ctx, request.decoder, request.format); err != nil {
+			return nil, fmt.Errorf("chunk %s: %w", request.chunk.ID, err)
 		}
 	}
 
-	if err = result.admit(); err != nil {
-		return nil, fmt.Errorf("chunk %s: %w", chunk.ID, err)
+	if err := result.admit(); err != nil {
+		return nil, fmt.Errorf("chunk %s: %w", request.chunk.ID, err)
 	}
 
-	if err = ctx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
 	return result, nil
 }
 
+func (prepared *PreparedChunk) payloadBytes(key string) []byte {
+	return resourcedata.Bytes(prepared.payloads[key])
+}
+
 func cloneChunk(value Chunk) Chunk {
 	result := value
+
 	result.Sources = slices.Clone(value.Sources)
+	if value.Bundle != nil {
+		bundle := *value.Bundle
+		bundle.Entries = slices.Clone(value.Bundle.Entries)
+		result.Bundle = &bundle
+	}
 
 	result.Pages = slices.Clone(value.Pages)
 	for index := range result.Pages {

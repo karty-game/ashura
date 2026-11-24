@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 type testCompressionFeatures map[wgpu.FeatureName]bool
@@ -77,6 +77,8 @@ func TestNativePreparedTextureFormats(t *testing.T) {
 			gputypes.TextureFormatETC2RGBA8Unorm, gputypes.TextureFormatETC2RGBA8UnormSrgb},
 		{"ASTC4x4", texturedata.ASTC4x4, wgpu.FeatureNameTextureCompressionASTC,
 			gputypes.TextureFormatASTC4x4Unorm, gputypes.TextureFormatASTC4x4UnormSrgb},
+		{"ASTC6x6", texturedata.ASTC6x6, wgpu.FeatureNameTextureCompressionASTC,
+			gputypes.TextureFormatASTC6x6Unorm, gputypes.TextureFormatASTC6x6UnormSrgb},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -154,10 +156,11 @@ func TestNativeCompressedPreparationReusesCache(t *testing.T) {
 func nativePreparedTexture(t *testing.T, encoding texturedata.Format, colorSpace texturedata.ColorSpace) *texturedata.Texture {
 	t.Helper()
 
-	rowBytes, rows := texturedata.Layout(encoding, 4, 4)
+	side := texturedata.BlockDimension(encoding)
+	rowBytes, rows := texturedata.Layout(encoding, side, side)
 
 	image, err := texturedata.FromOwned(texturedata.Data{
-		Width: 4, Height: 4, Format: encoding, ColorSpace: colorSpace, Levels: [][]byte{make([]byte, rowBytes*rows)},
+		Width: side, Height: side, Format: encoding, ColorSpace: colorSpace, Levels: [][]byte{make([]byte, rowBytes*rows)},
 	})
 	if err != nil {
 		t.Fatal(err)

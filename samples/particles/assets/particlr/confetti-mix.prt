@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 13,
+  "meta": {
+    "name": "Confetti mix",
+    "createdWith": "particlr@0.x",
+    "notes": "A whole confetti shower from one palette-tinted layer."
+  },
+  "duration": 2.5,
+  "looping": true,
+  "seed": 46,
+  "params": [],
+  "layers": [
+    {
+      "id": "paper",
+      "name": "paper",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "square",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [
+          {
+            "time": 0,
+            "count": 44,
+            "spread": 0.4,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1
+          },
+          {
+            "time": 0.25,
+            "count": 20,
+            "spread": 0.3,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1
+          }
+        ],
+        "delay": 0,
+        "prewarm": false,
+        "maxParticles": 80
+      },
+      "shape": {
+        "kind": "edge",
+        "length": 300,
+        "emitFrom": "surface"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 1.6,
+          "max": 2.4
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 20,
+          "max": 60
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 6,
+          "max": 12
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -360,
+          "max": 360
+        }
+      },
+      "overLifetime": {
+        "size": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.85
+            }
+          ]
+        },
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            {
+              "t": 0.85,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            {
+              "t": 1,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 120
+            },
+            {
+              "t": 0.5,
+              "v": -120
+            },
+            {
+              "t": 1,
+              "v": 120
+            }
+          ]
+        },
+        "velocity": {
+          "gravity": {
+            "x": 0,
+            "y": 120
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "curve",
+            "keys": [
+              {
+                "t": 0,
+                "v": 0.3
+              },
+              {
+                "t": 0.4,
+                "v": 1.6,
+                "ease": "easeOut"
+              },
+              {
+                "t": 1,
+                "v": 2.2
+              }
+            ]
+          },
+          "speedMultiplier": null,
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 20
+        },
+        "frequency": 0.015,
+        "scrollSpeed": 0.2,
+        "octaves": 1
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": {
+        "mode": "palette",
+        "colors": [
+          {
+            "r": 1,
+            "g": 0.33,
+            "b": 0.33,
+            "a": 1
+          },
+          {
+            "r": 0.33,
+            "g": 0.67,
+            "b": 1,
+            "a": 1
+          },
+          {
+            "r": 1,
+            "g": 0.82,
+            "b": 0.3,
+            "a": 1
+          },
+          {
+            "r": 0.4,
+            "g": 0.8,
+            "b": 0.4,
+            "a": 1
+          },
+          {
+            "r": 1,
+            "g": 0.47,
+            "b": 0.8,
+            "a": 1
+          },
+          {
+            "r": 1,
+            "g": 0.6,
+            "b": 0.27,
+            "a": 1
+          }
+        ]
+      },
+      "randomFlip": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    }
+  ]
+}

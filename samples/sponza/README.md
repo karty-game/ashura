@@ -1,5 +1,11 @@
 # Sponza
 
+The sample publishes each chunk's geometry, UVs and RNM lightmaps as one stored
+ZIP for the selected desktop or mobile profile. Material textures remain shared
+external resources, so neighboring chunks can reuse them. Packing happens in
+the asset recipe; loading verifies and views the prepared payloads without
+decompressing or converting them.
+
 Sponza demonstrates the standard offline level asset pipeline: load a GLB,
 prepare materials, separate cutouts, partition opaque geometry, unwrap lightmap
 UVs, trace RNM lighting, reconstruct it and publish portable GPU textures.
@@ -36,9 +42,8 @@ and texture encoding. No sample tool directory, source-conversion program,
 JavaScript codec runner or manually selected executable is part of the project.
 GPU baking runs in Go through the shared WebGPU binding; mise installs its
 checksum-pinned upstream wgpu-native library when needed. UV and texture
-preparation no longer depend on separate Karty native tool releases.
-[Dependency availability and host qualification limits](../../spec/asset-tools.md)
-remain distinct from actual hardware execution.
+preparation use embedded offline libraries. See the
+[asset pipeline tool requirements](../../docs/asset-pipeline/tools.md).
 
 On Linux, install the system Vulkan loader and your GPU's Vulkan driver before
 baking. For AMD/Intel on Debian or Ubuntu:
@@ -155,56 +160,21 @@ requires no codec/transcoder download, source decoding or runtime repacking.
 
 The desktop profile stores SSBump relief in BC7, preserving the authored
 dimensions and mip chain. The remaining RGBA8 relief belongs to the portable
-mobile profile: BC7 requires the optional BC texture-compression feature, and
-the tested ETC2 encoders introduced excessive directional response error. See
-the [coefficient comparison](../../spec/baked-level-v7.md#bounded-quality-evidence-and-limits).
+mobile profile. BC7 requires the optional BC texture-compression feature, and
+the tested ETC2 encoders introduced excessive directional response error.
 
-The output is ignored `generated/`: typed `levels/` descriptors, compiled scene
-metadata and `public/levels/` payloads. The normal CLI stages only that active
-publication. The complete exported sample has a 45,000,000-byte budget,
-including its standard-Go WASM, host files and both published RNM device
-profiles. Count logical file lengths across the whole export;
-filesystem compression and selecting only one profile do not reduce that total.
-The verified standard-Go export totals 38,260,422 bytes across 83 files. Removing
-the RGB profiles saves 3,271,666 published asset bytes; the retained RNM files
-are byte-identical. This includes both RNM device families and every host file.
-See [lightmapper design](../../spec/lightmap.md),
-[portable delivery](../../spec/baked-level-v7.md) and
-[validation evidence](../../spec/validation.md).
+The ignored `generated/` directory holds typed descriptors, compiled scene
+metadata and public payloads. The BC and mobile material textures and chunk
+packs live under `public/texture-profiles/bc/` and
+`public/texture-profiles/mobile/`. Manifests and independent dynamic models
+remain under `public/levels/`. The 45,000,000-byte budget applies to each
+profile and includes WASM, its profile files and all common files. The
+gallery total includes both profiles. All measurements use logical file lengths.
+See [production lightmap baking](../../pkg/lightmap/bake/README.md) and
+[prepared level publication](../../pkg/level/build/README.md).
 
 ## Copyright annex
 
-**Crytek Sponza**, © 2010 Frank Meinl / Crytek, is inspired by Marko Dabrovic's
-original Sponza (2002). Asset notices below are separate from the repository's
-[MIT source-code license](../../LICENSE). No endorsement by the original authors
-is implied.
-
-The model and diffuse textures come from Babylon.js's
-[Sponza Dynamic Shadows demo](https://www.babylonjs.com/Demos/SponzaDynamicShadows/)
-and its [source scene](https://www.babylonjs.com/Scenes/SponzaDynamicShadows/SponzaDynamicShadows.babylon).
-Babylon maintainers confirmed reuse permission in their
-[October 2022 discussion](https://forum.babylonjs.com/t/whats-the-license-on-the-sponzadynamicshadows-scene/34399).
-The archive license below applies to the relief sources; it is not asserted as
-the license of Babylon's separate adaptation.
-
-Karty's offline adaptation flattens translations, converts Z and texture V
-conventions, indexes position/normal/UV tuples and merges compatible materials.
-Opaque diffuse JPEG bytes are preserved; chain and foliage diffuse/mask JPEGs
-are combined into RGBA PNGs with alpha cutoff 0.5. Collision proxies, sky,
-embers, the moving lamp marker and existing AO/lighting textures are excluded.
-The consolidated GLB preserves the prior opaque/cutout geometry and image buffers.
-
-Nine unmodified height maps come from Morgan McGuire's
-[Computer Graphics Archive](https://casual-effects.com/data/),
-[Crytek Sponza download](https://casual-effects.com/g3d/data10/common/model/crytek_sponza/sponza.zip),
-whose [model entry](https://casual-effects.com/g3d/data10/common/model/crytek_sponza/info.js)
-declares [Creative Commons Attribution 3.0 Unported](https://creativecommons.org/licenses/by/3.0/legalcode).
-McGuire's July 14, 2011 modifications corrected the Crytek OBJ export, derived
-height maps from normals using `normal2bump.cpp`, combined diffuse/mask textures,
-cleaned masks, supplied `gi_flag.tga` and separated the untextured atrium banner.
-The retained height-map sources are `lion_bump.png`, `background_bump.png`,
-`sponza_arch_bump.png`, `spnza_bricks_a_bump.png`, `sponza_column_a_bump.png`,
-`sponza_column_b_bump.png`, `sponza_column_c_bump.png`, `vase_bump.png` and
-`vase_round_bump.png`, renamed to `*-height.png` roles here.
-`floor-height.png` is Karty-authored. SSBump generation is an offline Karty
-adaptation; the generated coefficients are not Valve-exported assets.
+The [Sponza asset credits](assets/CREDITS.md) document licenses, sources and
+adaptations for the model, textures and relief maps. The web export includes
+the same credits.

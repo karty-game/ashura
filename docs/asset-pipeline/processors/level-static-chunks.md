@@ -10,7 +10,7 @@ Each logical space is partitioned independently. The lighting bake still sees
 all geometry in that space: a distant wall can cast a shadow or bounce light
 into another chunk. Splitting the geometry does not split the lighting world.
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`.
 Place this plugin in `Pipeline.Process` after [Materials](level-materials.md),
 before UV preparation or integrated baking.
 

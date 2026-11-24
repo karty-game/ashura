@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func chartShowcase(update func(string), check func(error)) *ui.Node {

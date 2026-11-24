@@ -12,12 +12,12 @@ import (
 	"github.com/Zyko0/go-sdl3/bin/binsdl"
 	"github.com/Zyko0/go-sdl3/sdl"
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 var (
@@ -29,10 +29,7 @@ var (
 	errEmptySurfaceFrame  = errors.New("WebGPU returned an empty surface texture")
 )
 
-const (
-	float32Size          = 4
-	allSampleMask uint32 = 0xFFFFFFFF
-)
+const allSampleMask uint32 = 0xFFFFFFFF
 
 type sdlLibrary interface {
 	Unload()
@@ -42,6 +39,7 @@ type sdlLibrary interface {
 type Driver struct {
 	uiBridge       nativeUIBridge
 	spriteBridge   spriteBackend
+	particleBridge particleBackend
 	shadowBridge   shadowBackend
 	computeBridge  computeBackendInterface
 	pointShadow    *gpuPointShadow
@@ -58,8 +56,13 @@ type Driver struct {
 	colorView            *wgpu.TextureView
 	textures             map[*texturedata.Texture]gpuTexture
 	geometry             render.GeometryCache[gpuGeometry]
+	opaqueOrder          render.OpaqueOrder
 	instances            map[uint32]*gpuInstances
 	materials            map[uint32]*gpuMaterial
+	frameUniform         *wgpu.Buffer
+	clusteredLights      *gpuClusteredLights
+	decals               *gpuDecals
+	frameUniformState    render.FrameUniformState
 	impostorViews        map[*impostordata.Document]*gpuImpostor
 	impostorSampler      *wgpu.Sampler
 	white, flat, whiteAO *texturedata.Texture
@@ -285,7 +288,7 @@ func presentFrame(driver *Driver, frame render.Frame, renderable bool) error {
 	driver.metrics.Step(diagnostics.PreparePhase)
 
 	if !renderable || driver.width == 0 || driver.height == 0 {
-		if err := driver.submitComputeOnly(frame.Compute); err != nil {
+		if err := driver.submitComputeOnly(frame); err != nil {
 			return err
 		}
 
@@ -315,7 +318,7 @@ func present(driver *Driver, frame render.Frame) error {
 	texture, _, err := driver.surface.GetCurrentTexture()
 	if err != nil {
 		if errors.Is(err, wgpu.ErrSurfaceNeedsReconfigure) || errors.Is(err, wgpu.ErrSurfaceLost) {
-			if err := driver.submitComputeOnly(frame.Compute); err != nil {
+			if err := driver.submitComputeOnly(frame); err != nil {
 				return err
 			}
 
@@ -348,9 +351,13 @@ func present(driver *Driver, frame render.Frame) error {
 		return err
 	}
 
+	if err := driver.simulateParticles(encoder, frame.Particles); err != nil {
+		return err
+	}
+
 	driver.metrics.Step(diagnostics.ComputePhase)
 
-	if err := driver.recordPointShadow(encoder, frame); err != nil {
+	if err := driver.recordLighting(encoder, frame); err != nil {
 		return err
 	}
 
@@ -358,7 +365,19 @@ func present(driver *Driver, frame render.Frame) error {
 		return err
 	}
 
+	if err := drawOverlays(driver, encoder, view, frame); err != nil {
+		return err
+	}
+
+	return submitAndPresent(driver, encoder, texture)
+}
+
+func drawOverlays(driver *Driver, encoder *wgpu.CommandEncoder, view *wgpu.TextureView, frame render.Frame) error {
 	if err := driver.drawSprites(encoder, view); err != nil {
+		return err
+	}
+
+	if err := driver.drawParticles(encoder, view); err != nil {
 		return err
 	}
 
@@ -370,7 +389,7 @@ func present(driver *Driver, frame render.Frame) error {
 		}
 	}
 
-	return submitAndPresent(driver, encoder, texture)
+	return nil
 }
 
 func submitAndPresent(driver *Driver, encoder *wgpu.CommandEncoder, texture *wgpu.SurfaceTexture) error {
@@ -402,6 +421,7 @@ func (driver *Driver) Close() error {
 
 	driver.closed = true
 	driver.closeSprites()
+	driver.closeParticles()
 
 	if driver.uiBridge != nil {
 		driver.uiBridge.Close()
@@ -410,6 +430,11 @@ func (driver *Driver) Close() error {
 
 	driver.releaseCompute()
 	driver.releaseMaterials()
+
+	if driver.clusteredLights != nil {
+		driver.clusteredLights.release()
+		driver.clusteredLights = nil
+	}
 
 	if driver.shadowBridge != nil {
 		driver.shadowBridge.Close()

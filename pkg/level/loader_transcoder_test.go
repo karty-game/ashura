@@ -7,8 +7,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var errUnexpectedTranscode = errors.New("native payload unexpectedly requested runtime transcoding")

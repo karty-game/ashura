@@ -1,14 +1,12 @@
 package level
 
 import (
-	"encoding/hex"
-
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 func (prepared *PreparedChunk) admit() error {
@@ -25,20 +23,18 @@ func (prepared *PreparedChunk) admit() error {
 }
 
 func (prepared *PreparedChunk) admitPage(page Page) (preparedPage, error) {
-	geometry := prepared.files[page.Geometry.SHA256]
-
-	document, err := modeldata.Decode(geometry)
+	geometry, err := modeldata.DecodeVerified(prepared.payloads[page.Geometry.SHA256])
 	if err != nil {
 		return preparedPage{}, err
 	}
 
-	layout, err := leveldata.AdmitUVOwned(prepared.files[page.UV.SHA256])
+	layout, err := leveldata.AdmitUVOwned(prepared.payloadBytes(page.UV.SHA256))
 	if err != nil {
 		return preparedPage{}, err
 	}
 
-	digest := layout.ModelDigest()
-	if hex.EncodeToString(digest[:]) != page.Geometry.SHA256 || len(document.Textures) != 0 || len(document.Parts) != len(page.Materials) ||
+	document := geometry.Document()
+	if layout.ModelDigest() != geometry.Digest() || len(document.Textures) != 0 || len(document.Parts) != len(page.Materials) ||
 		layout.PartCount() != len(page.Materials) {
 		return preparedPage{}, leveldata.ErrFormat
 	}
@@ -70,8 +66,7 @@ func (prepared *PreparedChunk) admitPage(page Page) (preparedPage, error) {
 		}
 	}
 
-	return preparedPage{description: page, layout: layout, geometry: geometry,
-		asset: model.Verified(prepared.chunk.ID, prepared.verified[page.Geometry.SHA256])}, nil
+	return preparedPage{description: page, layout: layout, asset: model.Admitted(prepared.chunk.ID, geometry)}, nil
 }
 
 func (prepared *PreparedChunk) admitMaterialImages(source Material, storage string) error {
@@ -90,16 +85,7 @@ func (prepared *PreparedChunk) admitMaterialImages(source Material, storage stri
 			return err
 		}
 
-		expected := texture.RGBA8
-
-		switch storage {
-		case nativeHDRStorage, leveldata.StorageBC1LDR, leveldata.StorageBC7LDR:
-			expected = texture.BC7
-		case mobileStorage:
-			expected = texture.ASTC4x4
-		}
-
-		if prepared.imageInfo[source.SSBump.SHA256].format != expected {
+		if prepared.imageInfo[source.SSBump.SHA256].format != ssbumpFormat(storage) {
 			return leveldata.ErrFormat
 		}
 	}
@@ -143,7 +129,7 @@ func (prepared *PreparedChunk) readImageMetadata(ref Reference) (imageMetadata, 
 		return metadata(data, ref.Size), nil
 	}
 
-	data, err := ktx2.Decode(prepared.files[ref.SHA256])
+	data, err := ktx2.Decode(prepared.payloadBytes(ref.SHA256))
 	if err != nil {
 		return imageMetadata{}, err
 	}

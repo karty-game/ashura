@@ -16,7 +16,7 @@ const (
 	defaultSampleLimit   int64 = 20_000_000
 	impostorsSampleLimit int64 = 35_000_000
 	sponzaSampleLimit    int64 = 45_000_000
-	repositorySamples          = "github.com/karty-game/karty-webgpu/samples/"
+	repositorySamples          = "github.com/karty-game/ashura/samples/"
 )
 
 var errBudget = errors.New("sample export exceeds its complete-file budget")
@@ -27,6 +27,7 @@ type sampleSize struct {
 	limit        int64
 	wasm, assets int64
 	hasWasm      bool
+	profiles     map[string]int64
 }
 type gallerySize struct {
 	samples       []sampleSize
@@ -34,9 +35,9 @@ type gallerySize struct {
 	files         int
 }
 
-// Count logical lengths of every file. A sample includes its entire subtree;
-// shared host/compiler files count against every sample as well as once in the site.
-// No exclusions, sparse-filesystem accounting or compressed transfer sizes apply.
+// Count every logical file length. Each platform includes all common sample
+// files, its external texture profile and shared host/compiler files. The site
+// total includes all profiles, without compressed-transfer or sparse-file discounts.
 func inspectWebExport(root string, packages []webPackage) (gallerySize, error) {
 	var report gallerySize
 
@@ -154,6 +155,13 @@ func (report *gallerySize) countFile(root, path string, entry fs.DirEntry) error
 			sample.hasWasm = true
 		} else {
 			sample.assets += length
+			if profile, ok := platformAssetProfile(within); ok {
+				if sample.profiles == nil {
+					sample.profiles = make(map[string]int64)
+				}
+
+				sample.profiles[profile] += length
+			}
 		}
 	}
 
@@ -166,10 +174,20 @@ func (report *gallerySize) countFile(root, path string, entry fs.DirEntry) error
 	return nil
 }
 
+func platformAssetProfile(path string) (string, bool) {
+	for _, profile := range []string{"bc", "mobile"} {
+		if strings.HasPrefix(path, "texture-profiles/"+profile+"/") {
+			return profile, true
+		}
+	}
+
+	return "", false
+}
+
 func printReport(writer io.Writer, report gallerySize) error {
 	if _, err := fmt.Fprintln(
 		writer,
-		"Sample bytes: WASM + every asset/host file + shared runtime; decimal limits, no compression allowance.",
+		"Sample bytes per platform: WASM + common files + selected texture profile + shared runtime; logical lengths, decimal limits.",
 	); err != nil {
 		return err
 	}
@@ -177,22 +195,44 @@ func printReport(writer io.Writer, report gallerySize) error {
 	var failures []error
 
 	for _, sample := range report.samples {
-		total := sample.wasm + sample.assets + report.shared
-		if _, err := fmt.Fprintf(
-			writer,
-			"%-20s wasm=%d assets=%d shared=%d total=%d limit=%d\n",
-			sample.name,
-			sample.wasm,
-			sample.assets,
-			report.shared,
-			total,
-			sample.limit,
-		); err != nil {
-			return err
+		profiles := []string{""}
+		if len(sample.profiles) != 0 {
+			profiles = []string{"bc", "mobile"}
 		}
 
-		if total > sample.limit {
-			failures = append(failures, fmt.Errorf("%s: %d > %d bytes: %w", sample.name, total, sample.limit, errBudget))
+		for _, profile := range profiles {
+			assets := sample.assets
+			if profile != "" {
+				for _, size := range sample.profiles {
+					assets -= size
+				}
+
+				assets += sample.profiles[profile]
+			}
+
+			total := sample.wasm + assets + report.shared
+
+			name := sample.name
+			if profile != "" {
+				name += "/" + profile
+			}
+
+			if _, err := fmt.Fprintf(
+				writer,
+				"%-20s wasm=%d assets=%d shared=%d total=%d limit=%d\n",
+				name,
+				sample.wasm,
+				assets,
+				report.shared,
+				total,
+				sample.limit,
+			); err != nil {
+				return err
+			}
+
+			if total > sample.limit {
+				failures = append(failures, fmt.Errorf("%s: %d > %d bytes: %w", name, total, sample.limit, errBudget))
+			}
 		}
 	}
 

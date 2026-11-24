@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/level"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
-	"github.com/karty-game/karty-webgpu/samples/sponza/generated/levels"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/level"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/samples/internal/sample"
+	"github.com/karty-game/ashura/samples/sponza/generated/levels"
 )
 
 type bakedPresentation struct {

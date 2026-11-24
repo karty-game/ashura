@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 func TestAssetPreviewOptions(t *testing.T) {
@@ -61,8 +61,8 @@ func TestAssetRecipeCLI(t *testing.T) {
 	t.Setenv("CXX", filepath.Join(project, "must-not-run-cxx"))
 
 	recipe := strings.Replace(recipeFixture,
-		`import "github.com/karty-game/karty-webgpu/pkg/assetbuild"`,
-		`import (_ "example.test/assets/hostguard"; "github.com/karty-game/karty-webgpu/pkg/assetbuild")`, 1)
+		`import "github.com/karty-game/ashura/pkg/assetbuild"`,
+		`import (_ "example.test/assets/hostguard"; "github.com/karty-game/ashura/pkg/assetbuild")`, 1)
 	writeWebFixtures(t, project, map[string]string{
 		assetConfigFile:      recipe,
 		"hostguard/guard.go": "//go:build !cgo && !js && !wasm_recipe_must_ignore_target_tags\n\npackage hostguard\n",
@@ -186,9 +186,9 @@ func assetRecipeFixture(t *testing.T) string {
 		t.Fatal(err)
 	}
 
-	module := strings.Replace(string(sourceModule), "module github.com/karty-game/karty-webgpu", "module example.test/assets", 1) +
+	module := strings.Replace(string(sourceModule), "module github.com/karty-game/ashura", "module example.test/assets", 1) +
 		fmt.Sprintf(
-			"\nrequire github.com/karty-game/karty-webgpu v0.0.0\nreplace github.com/karty-game/karty-webgpu => %s\n",
+			"\nrequire github.com/karty-game/ashura v0.0.0\nreplace github.com/karty-game/ashura => %s\n",
 			strconv.Quote(root),
 		)
 	writeWebFixtures(t, project, map[string]string{"go.mod": module, "go.sum": string(sums), assetConfigFile: recipeFixture})
@@ -217,7 +217,7 @@ const recipeFixture = `//go:build ignore
 
 package main
 
-import "github.com/karty-game/karty-webgpu/pkg/assetbuild"
+import "github.com/karty-game/ashura/pkg/assetbuild"
 
 func main() {
     assetbuild.Main(func(env assetbuild.Environment) assetbuild.Config {
@@ -354,8 +354,8 @@ func assertRecipeUnchanged(t *testing.T, project string, expected map[string][]b
 //nolint:paralleltest // The recipe inherits a clean native compiler environment.
 func TestAssetRecipeCanImportInProcessBakerWithoutNativeTool(t *testing.T) {
 	project := assetRecipeFixture(t)
-	recipe := strings.Replace(recipeFixture, `import "github.com/karty-game/karty-webgpu/pkg/assetbuild"`,
-		`import (_ "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"; "github.com/karty-game/karty-webgpu/pkg/assetbuild")`, 1)
+	recipe := strings.Replace(recipeFixture, `import "github.com/karty-game/ashura/pkg/assetbuild"`,
+		`import (_ "github.com/karty-game/ashura/pkg/lightmap/bake"; "github.com/karty-game/ashura/pkg/assetbuild")`, 1)
 	writeWebFixtures(t, project, map[string]string{assetConfigFile: recipe})
 
 	var output bytes.Buffer

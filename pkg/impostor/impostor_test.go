@@ -8,10 +8,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
 )
 
 func fixtureAsset(t *testing.T) []byte {

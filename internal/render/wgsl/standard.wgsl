@@ -4,16 +4,19 @@ struct Light {
     ground: vec4f,
 }
 struct StandardUniforms {
-    viewProjection: mat4x4f,
-    camera: vec4f,
     tint: vec4f,
     parameters: vec4f,
     occlusion: vec4f,
     probeOrigin: vec4f,
     probeMinimum: vec4f,
     probeMaximum: vec4f,
+}
+struct FrameUniforms {
+    viewProjection: mat4x4f,
+    camera: vec4f,
     lights: array<Light, 8>,
 }
+@group(0) @binding(8) var<uniform> sceneFrame: FrameUniforms;
 @group(0) @binding(0) var<uniform> material: StandardUniforms;
 @group(0) @binding(1) var surfaceSampler: sampler;
 @group(0) @binding(2) var albedoMap: texture_2d<f32>;
@@ -22,41 +25,6 @@ struct StandardUniforms {
 @group(0) @binding(5) var reflectionMap: texture_2d<f32>;
 @group(0) @binding(6) var lightmapMap: texture_2d<f32>;
 @group(0) @binding(7) var lightmapSampler: sampler;
-
-struct PointShadow { positionRange: vec4f, settings: vec4f, }
-@group(1) @binding(0) var<uniform> pointShadow: PointShadow;
-@group(1) @binding(1) var shadowSampler: sampler_comparison;
-@group(1) @binding(2) var shadowMap: texture_depth_cube;
-
-// Each PCF tap compares against the receiver plane at that tap's direction.
-// Comparing every tap with the center depth makes sloped surfaces shadow
-// themselves. A texel-sized slope allowance covers the bilinear filter footprint.
-fn pointVisibility(point: vec3f, geometricNormal: vec3f) -> f32 {
-    if pointShadow.settings.y == 0.0 { return 1.0; }
-    let offset = point - pointShadow.positionRange.xyz;
-    let distance = length(offset);
-    if distance <= 1e-5 || distance >= pointShadow.positionRange.w { return 1.0; }
-    let direction = offset / distance;
-    let axis = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(direction.y) > 0.95);
-    let tangent = normalize(cross(direction, axis));
-    let bitangent = cross(direction, tangent);
-    let step = 2.0 / f32(textureDimensions(shadowMap).x);
-    let planeDistance = dot(geometricNormal, offset);
-    var visibility = 0.0;
-    for (var y = -1; y <= 1; y++) {
-        for (var x = -1; x <= 1; x++) {
-            let sampleDirection = normalize(direction + (tangent * f32(x) + bitangent * f32(y)) * step);
-            let cosine = dot(geometricNormal, sampleDirection);
-            let safeCosine = select(-max(abs(cosine), 0.05), max(abs(cosine), 0.05), cosine >= 0.0);
-            let receiverDistance = max(planeDistance / safeCosine, 0.0);
-            let slope = sqrt(max(1.0 - cosine * cosine, 0.0)) / max(abs(cosine), 0.05);
-            let bias = pointShadow.settings.x + receiverDistance * step * min(slope, 8.0);
-            let reference = (receiverDistance - bias) / pointShadow.positionRange.w;
-            visibility += textureSampleCompareLevel(shadowMap, shadowSampler, sampleDirection, reference);
-        }
-    }
-    return visibility / 9.0;
-}
 
 struct VertexOutput {
     @builtin(position) position: vec4f,
@@ -96,7 +64,7 @@ fn vs_main(
     var output: VertexOutput;
     let model = mat4x4f(model0, model1, model2, model3);
     let world = model * vec4f(position, 1.0);
-    output.position = material.viewProjection * world;
+    output.position = sceneFrame.viewProjection * world;
     output.worldPosition = world.xyz;
     let localNormal = select(normal, vec3f(0.0, 1.0, 0.0), dot(normal, normal) < 1e-10);
     output.normal = inverseTranspose(model) * localNormal;
@@ -185,7 +153,6 @@ fn sampleDiffuseRGBE(uv: vec2f) -> vec3f {
 fn standardLighting(input: VertexOutput, frame: mat3x3f, sampled: vec3f, base: vec3f, frontFacing: bool) -> vec3f {
     // Use the triangle plane rather than smooth or normal-mapped shading normals
     // for receiver-depth correction, including curved silhouettes and back faces.
-    let shadowNormal = safeNormalize(cross(dpdx(input.worldPosition), dpdy(input.worldPosition)));
     let decoded = sampled * 2.0 - vec3f(1.0);
     // Zero strength disables mapping for every normal map, including tangent
     // normals with zero/negative Z. Retaining that sampled Z could erase or flip
@@ -197,15 +164,15 @@ fn standardLighting(input: VertexOutput, frame: mat3x3f, sampled: vec3f, base: v
     // would retain the mapped tangent components in the wrong hemisphere.
     let faceSign = select(-1.0, 1.0, frontFacing);
     let normal = safeNormalize(frame * mapped) * faceSign;
-    let view = safeNormalize(material.camera.xyz - input.worldPosition);
+    let view = safeNormalize(sceneFrame.camera.xyz - input.worldPosition);
     let roughness = clamp(material.parameters.x, 0.0, 1.0);
     let occlusion = mix(1.0, textureSample(aoMap, surfaceSampler, input.uv).r, clamp(material.occlusion.x, 0.0, 1.0));
     var ambientLight = vec3f(0.02);
     if material.probeOrigin.w >= 2.0 { ambientLight = vec3f(0.0); }
     var diffuseLight = vec3f(0.0);
     var specularLight = vec3f(0.0);
-    for (var index = 0u; index < u32(material.camera.w); index++) {
-        let light = material.lights[index];
+    for (var index = 0u; index < u32(sceneFrame.camera.w); index++) {
+        let light = sceneFrame.lights[index];
         let direction = safeNormalize(light.direction.xyz);
         if light.direction.w == 1.0 {
             let blend = clamp(dot(normal, direction) * 0.5 + 0.5, 0.0, 1.0);
@@ -219,7 +186,7 @@ fn standardLighting(input: VertexOutput, frame: mat3x3f, sampled: vec3f, base: v
                 towardLight = safeNormalize(delta);
                 let falloff = max(1.0 - distanceSquared / (light.ground.x * light.ground.x), 0.0);
                 attenuation = falloff * falloff;
-                if light.ground.y > 0.0 { attenuation *= pointVisibility(input.worldPosition, shadowNormal); }
+                if light.ground.y > 0.0 { attenuation *= pointVisibility(input.worldPosition); }
             }
             let diffuse = max(dot(normal, towardLight), 0.0);
             let halfway = safeNormalize(towardLight + view);
@@ -248,8 +215,9 @@ fn surfaceColor(input: VertexOutput, frontFacing: bool) -> vec4f {
         return vec4f(input.lightmapUV, checker, albedo.a);
     }
     let base = albedo.rgb * material.tint.rgb;
+    let shadedBase = base;
     let normal = textureSample(normalMap, surfaceSampler, input.uv).rgb;
-    let lit = max(standardLighting(input, tangentFrame(input), normal, base, frontFacing), vec3f(0.0));
+    let lit = max(standardLighting(input, tangentFrame(input), normal, shadedBase, frontFacing), vec3f(0.0));
     return vec4f(lit, albedo.a);
 }
 

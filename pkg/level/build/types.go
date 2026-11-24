@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 const (
@@ -51,6 +51,9 @@ type PublishOptions struct {
 	sharedCodecs  *codecActionCache
 	sharedAtlases *atlasActionCache
 	sharedPages   *packageActionCache
+	// BundleChunks packs each chunk's geometry, secondary UVs and lightmaps into
+	// one uncompressed ZIP. Material textures and dynamic models stay shared files.
+	BundleChunks bool
 	// Variant namespaces publication actions and generated descriptor names.
 	// Empty preserves the original descriptor; otherwise use a Go identifier.
 	Variant string

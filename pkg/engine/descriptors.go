@@ -1,6 +1,6 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/render"
+import "github.com/karty-game/ashura/internal/render"
 
 // ProjectionKind selects a camera projection.
 type ProjectionKind uint8
@@ -35,11 +35,13 @@ const (
 	HemisphereLight  LightKind = LightKind(render.HemisphereLightKind)
 	DirectionalLight LightKind = LightKind(render.DirectionalLightKind)
 	PointLight       LightKind = LightKind(render.PointLightKind)
+	SpotLight        LightKind = LightKind(render.SpotLightKind)
 )
 
 // PointShadow configures the existing point-light shadow feature. Enabled and
 // Resolution must be declared before Run; resolution is fixed for the App
 // lifetime. Bias is a world-space distance. DebugFaces enables the debug overlay.
+// Spotlight descriptors use only Enabled.
 type PointShadow struct {
 	Enabled    bool
 	Resolution uint32
@@ -49,8 +51,8 @@ type PointShadow struct {
 
 // LightData describes a light with named fields and linear colors. Hemisphere
 // uses Direction, Color (sky) and GroundColor. Directional uses Direction and
-// Color. Point uses Position, Range and Shadow; it does not use GroundColor.
-// Directional Direction follows light rays toward illuminated surfaces.
+// Color. Point uses Position, Range and Shadow. Spot also uses Direction and
+// cone angles. Directional and spot directions follow the outgoing light rays.
 type LightData struct {
 	Kind        LightKind
 	Direction   Vector3
@@ -60,6 +62,8 @@ type LightData struct {
 	Intensity   float32
 	Range       float32
 	Shadow      PointShadow
+	// Spot angles are half-angles in radians. Direction points out of the emitter.
+	InnerAngle, OuterAngle float32
 }
 
 // LightProvider is the light extension contract for application components.
@@ -118,6 +122,14 @@ func (binding lightBinding) renderLight() render.Light {
 		GroundColor: [3]float32{data.GroundColor.R, data.GroundColor.G, data.GroundColor.B},
 		Intensity:   data.Intensity,
 	}
+	if data.Kind == SpotLight {
+		value.Direction = vectorArray(data.Position)
+		value.SpotDirection = vectorArray(data.Direction)
+		value.GroundColor[0] = data.Range
+		value.InnerAngle, value.OuterAngle = data.InnerAngle, data.OuterAngle
+		value.CastShadows = data.Shadow.Enabled
+	}
+
 	if data.Kind == PointLight {
 		value.Direction = vectorArray(data.Position)
 

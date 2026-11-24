@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/resourcedata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 func TestVerifiedModelRetainsImmutableReaderGeometryAndExactBinding(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func TestPopupWheelAndTouchScrollRetainOffset(t *testing.T) {

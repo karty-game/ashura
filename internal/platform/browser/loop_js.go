@@ -9,8 +9,8 @@ import (
 	"syscall/js"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 // Run schedules frame updates through requestAnimationFrame until ctx is

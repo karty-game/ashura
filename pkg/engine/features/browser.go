@@ -3,9 +3,9 @@
 package features
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/platform/browser"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/platform/browser"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 func standard() engine.Feature {
@@ -41,5 +41,26 @@ func compute() engine.Feature {
 	return platform.Feature{
 		Kind:    platform.ComputeFeature,
 		Install: func(host any, _ platform.FeatureConfig) error { return browser.RegisterCompute(host) },
+	}
+}
+
+func clusteredLights() engine.Feature {
+	return platform.Feature{
+		Kind:    platform.ClusteredLightsFeature,
+		Install: func(host any, _ platform.FeatureConfig) error { return browser.RegisterClusteredLights(host) },
+	}
+}
+
+func particles() engine.Feature {
+	return platform.Feature{
+		Kind:    platform.ParticleFeature,
+		Install: func(host any, _ platform.FeatureConfig) error { return browser.RegisterParticles(host) },
+	}
+}
+
+func decals() engine.Feature {
+	return platform.Feature{
+		Kind:    platform.DecalFeature,
+		Install: func(host any, _ platform.FeatureConfig) error { return browser.RegisterDecals(host) },
 	}
 }

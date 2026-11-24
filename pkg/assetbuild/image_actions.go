@@ -77,6 +77,7 @@ func transformImages(plan *Plan, name, revision string, options any, include []s
 		}
 
 		plan.Resources[index].Ref = refs[0]
+		plan.carryInspectedImages(resource.Ref, refs[0])
 	}
 
 	return nil

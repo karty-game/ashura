@@ -12,6 +12,38 @@ import (
 	"testing/fstest"
 )
 
+func TestBudgetChecksEachPlatformAndCountsCommonOrphans(t *testing.T) {
+	t.Parallel()
+
+	for _, extra := range []string{"texture-profiles/bc/extra.bin", "texture-profiles/mobile/extra.bin", "orphan.bin", "texture-profiles/unknown/extra.bin"} {
+		t.Run(extra, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			sizedFile(t, root, "app.wasm", 1)
+			sizedFile(t, root, "wasm_exec.js", 1)
+			sizedFile(t, root, "texture-profiles/bc/atlas.kimp", impostorsSampleLimit-2)
+			sizedFile(t, root, "texture-profiles/mobile/atlas.kimp", impostorsSampleLimit-2)
+
+			packages := budgetSamplePackages("impostors")
+
+			var output bytes.Buffer
+			if err := checkWebSampleBudgets(root, packages, &output); err != nil {
+				t.Fatal("exact per-platform limit rejected", err)
+			}
+
+			if !strings.Contains(output.String(), "impostors/bc") || !strings.Contains(output.String(), "impostors/mobile") {
+				t.Fatal("missing platform totals", output.String())
+			}
+
+			sizedFile(t, root, extra, 1)
+
+			if err := checkWebSampleBudgets(root, packages, &bytes.Buffer{}); !errors.Is(err, errBudget) {
+				t.Fatal("excluded extra platform/common file", err)
+			}
+		})
+	}
+}
+
 func TestBudgetCountsEveryAssetAndSharedFile(t *testing.T) {
 	t.Parallel()
 

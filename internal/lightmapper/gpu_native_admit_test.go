@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func nativeAdmissionFixture(t *testing.T, count, samples uint32) (GPUScene, GPUTile, wgpu.Limits) {

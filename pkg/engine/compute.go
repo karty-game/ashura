@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/shader"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var (

@@ -6,9 +6,9 @@ import (
 	"errors"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/pkg/shader"
 )
 
 // The core driver holds only these hooks. The concrete GPU implementation is

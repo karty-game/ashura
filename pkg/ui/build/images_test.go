@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func TestUIImagesAtlasPreservesAlphaAndReusesDeterministicBuild(t *testing.T) {
@@ -29,14 +29,9 @@ func TestUIImagesAtlasPreservesAlphaAndReusesDeterministicBuild(t *testing.T) {
 	writePNG(t, filepath.Join(root, "assets/blue.png"), pixels["Blue"])
 
 	config := assetbuild.Config{Output: "generated/assets",
-		Pipelines: []assetbuild.Pipeline{{Name: "fixture",
-			Input: []string{"assets/**"},
-			Import: []assetbuild.Plugin{
-				assetbuild.Images(),
-				assetbuild.Atlas(assetbuild.AtlasOptions{Name: "ui", Include: []string{"**"}, Clamp: true, MaxSize: 16, Padding: 2}),
-				uibuild.Images(),
-			},
-		}},
+		Pipelines: []assetbuild.Pipeline{
+			uibuild.Atlas(uibuild.AtlasOptions{Name: "ui", Include: "**", MaxSize: 16, Padding: 2}),
+		},
 	}
 	options := assetbuild.Options{Project: root, Identity: "ui-image-pipeline-fixture"}
 

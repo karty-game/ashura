@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"
-	logicbuild "github.com/karty-game/karty-webgpu/pkg/scene/build/logic"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	levelbuild "github.com/karty-game/ashura/pkg/level/build"
+	logicbuild "github.com/karty-game/ashura/pkg/scene/build/logic"
 )
 
 //nolint:gosec // G304: every fixture file is under its private t.TempDir.

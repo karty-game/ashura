@@ -1,0 +1,473 @@
+{
+  "duration": 0.9,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 4,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "flash",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "mode": "constant",
+          "value": 0.08
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "mode": "constant",
+          "value": 154
+        },
+        "sizeParam": null,
+        "speed": {
+          "mode": "constant",
+          "value": 0
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "flash",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.6,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.5
+            },
+            {
+              "t": 1,
+              "v": 1.5
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "kind": "point"
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 5,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          },
+          {
+            "count": 5,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.004
+          },
+          {
+            "count": 4,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.008
+          },
+          {
+            "count": 4,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.012
+          },
+          {
+            "count": 4,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.016
+          },
+          {
+            "count": 4,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.02
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 32,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "plasma",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 0.5,
+          "min": 0.25,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 8.399999999999999,
+          "min": 4.199999999999999,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 260,
+          "min": 120,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "plasma",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 1,
+              "g": 1,
+              "r": 0.6,
+              "t": 0
+            },
+            {
+              "a": 1,
+              "b": 1,
+              "g": 0.5,
+              "r": 0.3,
+              "t": 0.5
+            },
+            {
+              "a": 0,
+              "b": 0.3,
+              "g": 0.1,
+              "r": 0.1,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.3
+            },
+            {
+              "t": 0.15,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.4
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 2
+          },
+          "gravity": {
+            "x": 0,
+            "y": 150
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "render": {
+        "align": "velocity",
+        "maxStretch": 3.5,
+        "minStretch": 1,
+        "speedScale": 0.006
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 4,
+        "spread": 55
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-hard"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.05
+          },
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.1
+          },
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.15000000000000002
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 8,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "scorch-smoke",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 0.8,
+          "min": 0.5,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 36.4,
+          "min": 22.4,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 0,
+          "min": 0,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "scorch-smoke",
+      "noise": {
+        "frequency": 0.02,
+        "octaves": 1,
+        "scrollSpeed": 0.3,
+        "strength": {
+          "mode": "constant",
+          "value": 20
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.18,
+              "g": 0.15,
+              "r": 0.15,
+              "t": 0
+            },
+            {
+              "a": 0.35,
+              "b": 0.15,
+              "g": 0.12,
+              "r": 0.12,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.08,
+              "g": 0.06,
+              "r": 0.06,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.5
+            },
+            {
+              "t": 1,
+              "v": 1.5
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": -40
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "kind": "point"
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Laser impact",
+    "notes": "An enlarged flash, fan of motion-aligned plasma and smoke play once."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 9
+}

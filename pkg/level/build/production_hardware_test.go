@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/level"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/level"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 //nolint:paralleltest // Hardware worker qualification is intentionally serialized; Exercise the complete asset graph, both representations and their independent admission.

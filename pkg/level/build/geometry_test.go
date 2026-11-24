@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
-	meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
+	meshbuild "github.com/karty-game/ashura/pkg/mesh/build"
 )
 
 func TestIndependentGeometryStageRemapsLevelUVsBeforeOptionalBake(t *testing.T) {

@@ -15,7 +15,7 @@ type entityBindings struct {
 	identity         meshIdentity
 	sourceBatch      *sourceBatches
 	billboard        billboardComponent
-	material         materialComponent
+	material         MaterialProvider
 	alphaMask        alphaMaskMaterialComponent
 	culled           culledMaterialComponent
 	source           sourceMaterialComponent
@@ -30,6 +30,8 @@ type entityBindings struct {
 	occlusion        occlusionMaterialComponent
 	projection       projectionBinding
 	lights           []lightBinding
+	decalProjector   *DecalProjector
+	decalReceiver    *DecalReceiver
 }
 
 func (world *World) refreshBindings(entity Entity) {
@@ -44,6 +46,7 @@ func (world *World) refreshBindings(entity Entity) {
 	}
 
 	lights := entry.lights[:0]
+	previousDecal := entry.decalProjector
 	*entry = entityBindings{lights: lights}
 
 	world.eachComponent(entity, func(component any) {
@@ -52,6 +55,8 @@ func (world *World) refreshBindings(entity Entity) {
 		}
 
 		entry.bindNavigation(component)
+
+		entry.bindDecals(component)
 
 		if value, ok := component.(*Transform); ok {
 			entry.transform = value
@@ -93,6 +98,11 @@ func (world *World) refreshBindings(entity Entity) {
 			entry.lights = append(entry.lights, lightBinding{legacy: value, shadow: shadow, debug: debug})
 		}
 	})
+
+	if previousDecal != entry.decalProjector {
+		world.bindDecal(entity, entry.decalProjector)
+	}
+
 	world.updateCameraBinding(entity, entry)
 	world.frame.invalidate(entity.index, entry.mesh != nil || entry.prepared != nil || entry.owner != nil)
 }
@@ -147,7 +157,7 @@ func (entry *entityBindings) bindNavigation(component any) {
 }
 
 func (entry *entityBindings) bindMaterial(component any) {
-	if provider, ok := component.(materialComponent); ok {
+	if provider, ok := component.(MaterialProvider); ok {
 		entry.material = provider
 		entry.source, _ = component.(sourceMaterialComponent)
 		entry.impostor, _ = component.(impostorMaterialComponent)

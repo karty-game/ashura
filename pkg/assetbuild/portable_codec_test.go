@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type portableCodecFixture struct{ test *testing.T }

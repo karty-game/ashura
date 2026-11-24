@@ -5,9 +5,9 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 // PrepareCompute admits work only when compute was explicitly registered.

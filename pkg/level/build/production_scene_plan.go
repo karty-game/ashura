@@ -2,7 +2,7 @@
 
 package levelbuild
 
-import "github.com/karty-game/karty-webgpu/pkg/assetbuild"
+import "github.com/karty-game/ashura/pkg/assetbuild"
 
 type productionSceneRefs struct{ geometry, lighting assetbuild.Ref }
 

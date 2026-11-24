@@ -7,7 +7,7 @@ import (
 	"math"
 	"sort"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 const maximumLayerFragments = 1 << 20

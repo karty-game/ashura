@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 13,
+  "meta": {
+    "name": "Heart burst",
+    "createdWith": "particlr@0.x",
+    "notes": "Twinkling sparks that trace a soft glowing heart."
+  },
+  "duration": 2,
+  "looping": true,
+  "seed": 61,
+  "params": [],
+  "layers": [
+    {
+      "id": "heart",
+      "name": "heart",
+      "enabled": true,
+      "blend": "add",
+      "texture": {
+        "ref": "circle-soft",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 120
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": false,
+        "maxParticles": 220
+      },
+      "shape": {
+        "kind": "texture",
+        "width": 140,
+        "height": 140,
+        "threshold": 0.25,
+        "mask": {
+          "width": 64,
+          "height": 64,
+          "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAFEA4EAAAAAAAAAAAAAAAAAAAAAAQOEAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABiq9ju8+vaw6mOc1tHNywmJiw3R1tzjqnD2uvz7tirYgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC6r//////////////+HGr52QioqQna/G4f//////////////qgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgP///////////////////+7bzsjIztvu////////////////////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwP///////////////////////vHq6vH+///////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAA0P//////////////////////////+vr//////////////////////////9AAAAAAAAAAAAAAAAAAAAAAAAAAsv//////////////////////////////////////////////////////////sgAAAAAAAAAAAAAAAAAAAAAAZv////////////////////////////////////////////////////////////9mAAAAAAAAAAAAAAAAAAAAAP///////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAJP///////////////////////////////////////////////////////////////+TAAAAAAAAAAAAAAAAAAD//////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAABo//////////////////////////////////////////////////////////////////9oAAAAAAAAAAAAAAAAwP//////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAAAPz///////////////////////////////////////////////////////////////////wAAAAAAAAAAAAAAEf/////////////////////////////////////////////////////////////////////RwAAAAAAAAAAAAB5/////////////////////////////////////////////////////////////////////3kAAAAAAAAAAAAAm/////////////////////////////////////////////////////////////////////+bAAAAAAAAAAAAALH/////////////////////////////////////////////////////////////////////sQAAAAAAAAAAAAC9/////////////////////////////////////////////////////////////////////70AAAAAAAAAAAAaw//////////////////////////////////////////////////////////////////////DGgAAAAAAAAAALsX/////////////////////////////////////////////////////////////////////xS4AAAAAAAAAAD3F/////////////////////////////////////////////////////////////////////8U9AAAAAAAAAABIw//////////////////////////////////////////////////////////////////////DSAAAAAAAAAAAUsD/////////////////////////////////////////////////////////////////////wFIAAAAAAAAAAFq/+v//////////////////////////////////////////////////////////////////+r9aAAAAAAAAAABhvvP///////////////////////////////////////////////////////////////////O+YQAAAAAAAAAAaL7u///////////////////////////////////////////////////////////////////uvmgAAAAAAAAAAG6+6///////////////////////////////////////////////////////////////////675uAAAAAAAAAAB0wOr9/////////////////////////////////////////////////////////////////erAdAAAAAAAAAACecLp+/////////////////////////////////////////////////////////////////vpwnkCAAAAAAAACX3E6vr////////////////////////////////////////////////////////////////66sR9CQAAAAAAAA2Axer6////////////////////////////////////////////////////////////////+urFgA0AAAAAAAANgMXq+v////////////////////////////////////////////////////////////////rqxYANAAAAAAAACHzD6fr+//////////////////////////////////////////////////////////////766cN8CAAAAAAAAAB1vub4/f7///////////////////////////////////////////////////////////79+Oa+dQAAAAAAAAAAaLXg8/r7/f////////////////////////////////////////////////////////37+vPgtWgAAAAAAAAAAFWn1uz19/j+//////////////////////////////////////////////////////749/Xs1qdVAAAAAAAAAAA6k8fi7fDx9//////////////////////////////////////////////////////38fDt4seTOgAAAAAAAAAAFXiz0uHm6O34///////////////////////////////////////////////////47ejm4dKzeBUAAAAAAAAAAABTl73Q2Nzg6vv////////////////////////////////////////////////76uDc2NC9l1MAAAAAAAAAAAAAJHKhusbL0drp////////////////////////////////////////////////6drRy8a6oXIkAAAAAAAAAAAAAABDfJ2ut77G1Or/////////////////////////////////////////////6tTGvreunXxDAAAAAAAAAAAAAAAACE13kJ2nsL3Q6///////////////////////////////////////////69C9sKedkHdNCAAAAAAAAAAAAAAAAAATSWp+i5ajtc3s////////////////////////////////////////7M21o5aLfmpJEwAAAAAAAAAAAAAAAAAAAA87V2l4hpiuyuz/////////////////////////////////////7MqumIZ4aVc7DwAAAAAAAAAAAAAAAAAAAAAAASdBVWZ4jafG6v//////////////////////////////////6sanjXhmVUEnAQAAAAAAAAAAAAAAAAAAAAAAAAAAESxBVmuEocLn////////////////////////////////58KhhGtWQSwRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFzBHYXybveL/////////////////////////////4r2bfGFHMBcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFITxYdpa43P//////////////////////////3LiWdlg8IQUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVM1JxkrTW+f/////////////////////51rSScVIzFQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0uT2+QsdHw///////////////////w0bGQb08uDQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACS1PcJGwzen////////////////pzbCRcE8tCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKMFR1lbLN5fr///////////rlzbKVdVQwCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA4XH6cuNDl9/////////fl0Licflw4EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG0Rpi6jC2Or3//////fq2MKoi2lEGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAApVHqbuM/i8fv///vx4s+4m3pUKQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACDtnjq7J3u75/v757t7Jro5nOwgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYTXqhwNnr+P7++OvZwKF6TRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACZdirDN4/H4+PHjzbCKXSYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALWSRtM7g6OjgzrSRZC0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmXIenu8bGu6eHXCYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAk8YnuIiHtiPAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVJCQVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        "emitFrom": "volume"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 0.8,
+          "max": 1.4
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 2,
+          "max": 10
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 4,
+          "max": 9
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        }
+      },
+      "overLifetime": {
+        "size": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0,
+              "ease": "easeOut"
+            },
+            {
+              "t": 0.2,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0
+            }
+          ]
+        },
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 1,
+              "g": 0.5,
+              "b": 0.6,
+              "a": 0
+            },
+            {
+              "t": 0.2,
+              "r": 1,
+              "g": 0.4,
+              "b": 0.55,
+              "a": 0.9
+            },
+            {
+              "t": 1,
+              "r": 1,
+              "g": 0.2,
+              "b": 0.35,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": null,
+        "velocity": {
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "drag": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 12
+        },
+        "frequency": 0.02,
+        "scrollSpeed": 0.2,
+        "octaves": 1
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": null,
+      "randomFlip": null,
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    }
+  ]
+}

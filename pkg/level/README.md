@@ -1,9 +1,8 @@
 # Baked levels
 
-Schema v7 supports calibrated `RGBDiffuse` pages (one map) and `RNMFit` pages
-(three maps). `preview` marks unqualified lighting output. See the
-[v6 calibration contract](../../spec/baked-level-v6.md) and
-[v7 LDR delivery](../../spec/baked-level-v7.md).
+Schema v8 adds optional chunk packs to v7's calibrated `RGBDiffuse` pages (one
+map) and `RNMFit` pages (three maps). `preview` marks unqualified lighting output.
+See [production level publication](build/README.md) for build settings.
 
 V7 prepares sRGB BC7/BC1 or ETC2 RGB lightmaps offline, retaining one shared
 energy scale per complete RGB/RNM atlas tuple. BC profiles use linear BC7
@@ -18,14 +17,18 @@ consumes the selected GPU blocks directly, including their authored mip chain.
 An unavailable family is an explicit error; loading never expands it to RGBA.
 
 Legacy ETC1S callers explicitly use `level/basis.NewLoader` or inject a
-transcoder through `NewLoaderWithTranscoder`. For that opt-in delivery, see [baked level v3](../../spec/baked-level-v3.md).
+transcoder through `NewLoaderWithTranscoder`.
 Its web worker transcodes to compressed GPU blocks during `Request.Read`, with
 no RGBA expansion. Use `Loader.Request` with an active device. The current native
 backend and standalone `ReadChunk` reject that opt-in profile; existing assets
 keep their current behavior. RNM and SSBump retain their numeric encoding.
 
-A baked level contains a small manifest, independently loadable static chunk
-geometry, shared Source material textures and three RNM lightmaps per page.
+A baked level contains a small manifest, independently loadable static chunks,
+shared Source material textures and three RNM lightmaps per page. With
+`PublishOptions.BundleChunks`, each chunk's geometry, UV streams and lightmaps
+are a single uncompressed ZIP with build-generated entry offsets. Material
+textures remain external and shared. The loader consumes the same prepared
+payloads without ZIP decompression or filesystem extraction.
 Level preparation is build-only. The runtime consumes prepared bytes; it never
 clips or merges geometry, unwraps UVs, prepares transport or repacks textures.
 
@@ -71,8 +74,6 @@ cancellation; later Fetch/stream/WebCrypto settlement cannot reenter an exited
 WASM application. Integrity checks and App-loop resource ownership are unchanged.
 `level.WholeScene` explicitly selects one authored single-space scene and its
 build-flattened independent models. Portal worlds retain their own policy.
-See the [V1 presentation contract](../../spec/level-presentation-v1.md) for
-selection, cancellation, external-binding errors and lifecycle guarantees.
 `resource.ProjectBase(project)` selects the standard native `generated/public`
 directory or the browser export's relative asset root without sample platform
 files.
@@ -109,12 +110,25 @@ err = task.Cancel()
 ```
 
 Create one `level.NewLoader(app)` per residency domain before using these calls.
-Its requests snapshot only the selected chunk's resident texture metadata. Shared
-resident images are neither downloaded nor decoded again. If they are evicted
+Each request checks the device's support for the selected chunk's declared
+formats before requesting its payloads. Requests snapshot only that chunk's
+resident texture metadata. Shared resident images reuse their verified bytes
+and parsed metadata without another read. If they are evicted
 while the I/O task runs, `Begin` returns `ErrStaleRequest`; request the chunk again.
 Pending tasks pin acquired resources until completion or cancellation.
 
-`ReadChunk` and `ReadRequest.Read` fetch a selected chunk's missing dependencies
+For bundled chunks, `ReadChunk` and `ReadRequest.Read` fetch the chunk pack once
+alongside missing shared material textures. Pack and entry bounds/checksums are
+verified before admission; offsets are prepared offline and loading uses owned
+byte views. The browser hashes entries in the archive's original JavaScript
+buffer before copying the archive into WASM. A pack's backing buffer can remain
+retained for the chunk's lifetime. The load step reuses parsed model metadata
+from I/O admission. Geometry, UV/model binding and texture checks still apply.
+Shared resident textures skip their reads, metadata decoding and uploads.
+When a chunk has a pack, its page references identify entries inside that pack;
+the chunk loader resolves them rather than opening their paths as loose files.
+
+For loose chunks, these methods fetch a selected chunk's missing dependencies
 concurrently: at most eight verified reads and 32 MiB of declared payload bytes
 in flight. A valid file larger than that window runs alone, retaining the
 128 MiB per-file limit. The existing 256 MiB distinct-file bound still limits
@@ -135,10 +149,8 @@ Before App.Run it retains ordinary first-use upload behavior. A 1024 × 1024 RGB
 with its full mip chain is approximately 5.33 MiB; this is a bound on payload size,
 not a guarantee of device upload latency. Record frame gaps on target hardware.
 A 2048px RNM map is 16 MiB. Current whole-texture and whole-page steps are too
-coarse for smooth loading of the consolidated Sponza profile: the measured
-candidate reduces draw cost but still has loading stalls. See
-[validation](../../spec/validation.md); larger atlases do not establish smooth
-streaming by themselves.
+coarse for smooth loading of the consolidated Sponza profile. The measured
+candidate reduced draw cost and still had loading stalls.
 
 After loading, `BeginPresentation` retains the chunk without adding draw records.
 Call `Instance.PresentNext` once on each following update. Each call exposes at
@@ -148,6 +160,14 @@ chunks. Partially visible geometry can be removed immediately with `Remove`;
 failure rolls the entire partial presentation back. Pending presentation prevents
 chunk unload, including before its first range is visible. Completed calls are
 idempotent, and App close removes partial presentations.
+
+Set authored decal batches with Instance.SetDecals before the first call to
+PresentNext. OpenOptions.Decals can supply the same prepared association
+by chunk ID when using Open. ChunkDecals.ReceiverLayers opts the chunk's
+material ranges into receiving marks. Removing the presentation also removes
+its authored marks. Presentation.SetDecalEnabled toggles one mark by its
+authored index. See the [decal build guide](../decal/build/README.md) for
+offline albedo bakes and prepared projector batches.
 
 `ReadChunk`, synchronous `Loader.Load` and synchronous `LoadedChunk.Instantiate`
 remain convenience APIs. Use resident-aware requests, stepped loading and stepped

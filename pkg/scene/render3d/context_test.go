@@ -6,12 +6,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/pkg/scene"
-	scene3d "github.com/karty-game/karty-webgpu/pkg/scene/render3d"
+	"github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/scene"
+	scene3d "github.com/karty-game/ashura/pkg/scene/render3d"
 )
 
 func TestSupplyDistinguishesInvalidContextFromClosedLifetime(t *testing.T) {

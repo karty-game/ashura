@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // Page maps one atlas page's nonempty primitives to the supplied source parts.

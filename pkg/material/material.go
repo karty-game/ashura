@@ -2,8 +2,8 @@
 package material
 
 import (
-	engine "github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	engine "github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Options is the compatibility input to Standard. It has the same fields as

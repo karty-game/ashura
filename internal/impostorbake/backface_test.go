@@ -6,9 +6,9 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestDoubleSidedCaptureFlipsCompleteMappedNormal(t *testing.T) {

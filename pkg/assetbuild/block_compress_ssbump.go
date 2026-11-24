@@ -5,7 +5,7 @@ package assetbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // PrepareSSBumpUASTC encodes authored linear coefficient mips at the explicit
@@ -41,7 +41,7 @@ func TranscodeSSBumpNative(ctx context.Context, prepared []byte, target texture.
 		format = blockVKASTC4x4
 	case texture.ETC2RGB:
 		format = blockVKETC2RGB
-	case texture.RGBA8, texture.BC1, texture.BC6H, texture.ETC2RGBA:
+	case texture.RGBA8, texture.BC1, texture.BC6H, texture.ETC2RGBA, texture.ASTC6x6:
 		return nil, errBlockCompression
 	default:
 		return nil, errBlockCompression

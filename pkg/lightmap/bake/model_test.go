@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 //nolint:gocognit // This regression checks geometry admission and both exact secondary-UV receiver supports together.

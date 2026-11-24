@@ -9,9 +9,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/meshopt"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/meshopt"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 type processor struct{ cleanup bool }

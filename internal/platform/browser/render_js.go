@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 func (driver *Driver) present(frame render.Frame) error {
@@ -20,7 +20,7 @@ func (driver *Driver) present(frame render.Frame) error {
 		return err
 	}
 
-	if len(frame.Draws) > 0 {
+	if len(frame.Draws) > 0 || frame.WorldParticles {
 		if err := driver.ensureTargets(); err != nil {
 			return err
 		}
@@ -28,6 +28,12 @@ func (driver *Driver) present(frame render.Frame) error {
 
 	if err := driver.prepareDrawData(frame); err != nil {
 		return err
+	}
+
+	if len(driver.draws) != 0 {
+		if err := driver.updateFrameUniform(frame); err != nil {
+			return err
+		}
 	}
 
 	if err := driver.updateAttachedUI(frame.UI); err != nil {
@@ -55,9 +61,11 @@ func (driver *Driver) present(frame render.Frame) error {
 		return err
 	}
 
+	driver.simulateParticles(encoder, frame.Particles)
+
 	driver.metrics.Step(diagnostics.ComputePhase)
 
-	if err := driver.recordPointShadow(encoder, frame); err != nil {
+	if err := driver.recordLighting(encoder, frame); err != nil {
 		return err
 	}
 
@@ -65,15 +73,33 @@ func (driver *Driver) present(frame render.Frame) error {
 		return err
 	}
 
-	driver.drawSprites(encoder, view)
-
-	if driver.uiBridge != nil {
-		driver.uiBridge.draw(encoder, view, frame.UI)
-	}
+	driver.drawOverlays(encoder, view, frame.UI)
 
 	driver.metrics.Step(diagnostics.RenderPhase)
 
 	return driver.submit()
+}
+
+func (driver *Driver) recordLighting(encoder js.Value, frame render.Frame) error {
+	if err := driver.recordPointShadow(encoder, frame); err != nil {
+		return err
+	}
+
+	driver.recordClusteredLighting(encoder, frame)
+
+	return driver.recordStaticDecals(encoder, frame)
+}
+
+func (driver *Driver) drawOverlays(encoder, view js.Value, overlay *uipaint.Frame) {
+	driver.drawSprites(encoder, view)
+
+	if driver.particleBridge != nil {
+		driver.particleBridge.Draw(encoder, view)
+	}
+
+	if driver.uiBridge != nil {
+		driver.uiBridge.draw(encoder, view, overlay)
+	}
 }
 
 func (driver *Driver) updateAttachedUI(frame *uipaint.Frame) error {
@@ -118,6 +144,15 @@ func (driver *Driver) submit() error {
 
 	return nil
 }
+
+const (
+	shadowDepthFormat   = "depth32float"
+	drawDepthAttachment = "depthStencilAttachment"
+	depthLoadProperty   = "depthLoadOp"
+	depthStoreProperty  = "depthStoreOp"
+	depthClearProperty  = "depthClearValue"
+	depthCompareLess    = "less"
+)
 
 const textureUsageRenderAttachment = 0x10
 
@@ -165,13 +200,13 @@ func (driver *Driver) createPipelineVariant(format, shaderName string, source, c
 	pipeline, err := awaitPromise(driver.device.Call("createRenderPipelineAsync", jsObject(map[string]any{
 		labelProperty:  shaderName,
 		layoutProperty: automaticLayout,
-		vertexProperty: jsObject(map[string]any{moduleProperty: shader, entryPointProperty: vertexEntry, "buffers": buffers}),
+		vertexProperty: jsObject(map[string]any{moduleProperty: shader, entryPointProperty: vertexEntry, uiVertexBuffers: buffers}),
 		fragmentProperty: jsObject(
 			map[string]any{moduleProperty: shader, entryPointProperty: render.FragmentEntry(true), targetsProperty: targets},
 		),
 		primitiveProperty: jsObject(map[string]any{topologyProperty: triangleListTopology, "frontFace": "ccw", cullModeProperty: cullMode}),
 		depthStencilProperty: jsObject(
-			map[string]any{formatProperty: "depth24plus", depthWriteEnabledProperty: true, depthCompareProperty: "less"},
+			map[string]any{formatProperty: "depth24plus", depthWriteEnabledProperty: true, depthCompareProperty: depthCompareLess},
 		),
 		"multisample": jsObject(map[string]any{"count": driver.sampleCount}),
 	})))
@@ -209,12 +244,12 @@ func (driver *Driver) prepareScenePass() error {
 		viewProperty: js.Undefined(), "clearValue": driver.clearValue, loadOpProperty: loadOpClear, storeOpProperty: uiStore,
 	})
 	driver.depthAttach = jsObject(map[string]any{
-		viewProperty: js.Undefined(), "depthLoadOp": loadOpClear, "depthStoreOp": "discard", "depthClearValue": 1,
+		viewProperty: js.Undefined(), depthLoadProperty: loadOpClear, depthStoreProperty: "discard", depthClearProperty: 1,
 	})
 	driver.attachments = js.Global().Get("Array").New(1)
 	driver.attachments.SetIndex(0, driver.colorAttach)
 	driver.passDescriptor = jsObject(map[string]any{
-		uiAttachments: driver.attachments, "depthStencilAttachment": driver.depthAttach,
+		uiAttachments: driver.attachments, drawDepthAttachment: driver.depthAttach,
 	})
 	driver.clearPassDescriptor = jsObject(map[string]any{uiAttachments: driver.attachments})
 
@@ -248,6 +283,8 @@ func (driver *Driver) prepareDrawData(frame render.Frame) error {
 
 	for _, draw := range frame.Draws {
 		if !render.HasGeometry(draw) {
+			driver.draws = append(driver.draws, browserDraw{})
+
 			continue
 		}
 
@@ -286,22 +323,38 @@ func nextCapacity(required int) int {
 }
 
 func (driver *Driver) drawMaterials(pass js.Value, frame render.Frame) error {
-	var activeSource, activeCull, activeImpostor bool
+	if err := driver.prepareDecals(frame.Decals); err != nil {
+		return err
+	}
 
-	for index, draw := range driver.draws {
-		group, err := driver.materialGroup(draw.call, frame)
+	var activeSource, activeCull, activeImpostor, pipelineSet bool
+
+	order := driver.opaqueOrder.Prepare(frame)
+	for index := range driver.draws {
+		if order != nil {
+			index = order[index]
+		}
+
+		draw := driver.draws[index]
+		if draw.count == 0 {
+			continue
+		}
+
+		group, err := driver.materialGroup(draw.call)
 		if err != nil {
 			return err
 		}
 
-		if index == 0 || activeSource != draw.call.Source || activeCull != draw.call.CullBackfaces ||
+		if !pipelineSet || activeSource != draw.call.Source || activeCull != draw.call.CullBackfaces ||
 			activeImpostor != (draw.call.Impostor != nil) {
 			pass.Call("setPipeline", driver.drawPipeline(draw.call))
 			// The shadow group is shared by this pipeline variant. Rebinding it
 			// per draw needlessly allocates JS bridge call arguments.
 			driver.bindPointShadow(pass, draw.call)
+			driver.bindDecals(pass, draw.call)
 			activeSource, activeCull = draw.call.Source, draw.call.CullBackfaces
 			activeImpostor = draw.call.Impostor != nil
+			pipelineSet = true
 		}
 
 		lightmapUV := js.Undefined()
@@ -351,7 +404,7 @@ func modelVertexBuffers(_, impostor bool) js.Value {
 		jsObject(
 			map[string]any{
 				arrayStrideProperty: render.InstanceStride,
-				stepModeProperty:    "instance",
+				stepModeProperty:    uiInstanceStep,
 				attributesProperty:  instanceAttributes,
 			},
 		),

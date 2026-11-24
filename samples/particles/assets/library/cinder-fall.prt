@@ -1,0 +1,291 @@
+{
+  "duration": 3,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 78,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 22
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "cinders",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 120,
+          "min": -120,
+          "mode": "range"
+        },
+        "life": {
+          "max": 2.8,
+          "min": 1.8,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 19,
+          "min": 11,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 230,
+          "min": 130,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "cinders",
+      "noise": {
+        "frequency": 0.01,
+        "octaves": 2,
+        "scrollSpeed": 0.2,
+        "strength": {
+          "mode": "constant",
+          "value": 24
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.45,
+              "g": 0.88,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 1,
+              "b": 0.28,
+              "g": 0.72,
+              "r": 1,
+              "t": 0.15
+            },
+            {
+              "a": 0.9,
+              "b": 0.15,
+              "g": 0.5,
+              "r": 1,
+              "t": 0.7
+            },
+            {
+              "a": 0.65,
+              "b": 0.08,
+              "g": 0.38,
+              "r": 0.95,
+              "t": 0.88
+            },
+            {
+              "a": 0,
+              "b": 0.02,
+              "g": 0.12,
+              "r": 0.5,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "t": 0,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.55
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.4
+          },
+          "gravity": {
+            "x": 0,
+            "y": 140
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 10,
+        "spread": 35
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 23,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 9
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "warmth",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 2,
+          "min": 1.2,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 145,
+          "min": 105,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 0,
+          "min": 0,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "warmth",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.12,
+              "g": 0.4,
+              "r": 0.9,
+              "t": 0
+            },
+            {
+              "a": 0.1,
+              "b": 0.15,
+              "g": 0.45,
+              "r": 1,
+              "t": 0.4
+            },
+            {
+              "a": 0,
+              "b": 0.05,
+              "g": 0.25,
+              "r": 0.7,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeInOut",
+              "t": 0,
+              "v": 0.7
+            },
+            {
+              "t": 0.5,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.8
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "height": 20,
+        "kind": "rect",
+        "width": 240
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Cinder fall",
+    "notes": "Prewarmed cinders fill the rising shower for a brief preview without a velocity limit."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 68
+}

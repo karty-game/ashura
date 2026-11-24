@@ -8,7 +8,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 type testLightmapLayout struct {

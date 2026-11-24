@@ -58,6 +58,7 @@ func (imagePlugin) Plan(plan *Plan) error {
 		}
 
 		plan.Resources = append(plan.Resources, Resource{ID: source.identity, Ref: refs[0]})
+		plan.inspectImage(refs[0], source)
 	}
 
 	return nil
@@ -75,7 +76,7 @@ func (source imageSource) MarshalJSON() ([]byte, error) {
 func discoverImages(plan *Plan) ([]imageSource, error) {
 	var result []imageSource
 
-	paths, names := make(map[string]bool), make(map[string]bool)
+	paths, names := make(map[string]bool), make(map[string]string)
 
 	for _, pattern := range plan.Input {
 		files, err := plan.Glob(pattern)
@@ -87,7 +88,15 @@ func discoverImages(plan *Plan) ([]imageSource, error) {
 
 		for _, file := range files {
 			ext := strings.ToLower(path.Ext(file))
-			if !sourceImageExtension(ext) || paths[file] {
+			if !sourceImageExtension(ext) {
+				if plan.inspection != nil {
+					plan.inspection.skipped[file] = true
+				}
+
+				continue
+			}
+
+			if paths[file] {
 				continue
 			}
 
@@ -95,11 +104,21 @@ func discoverImages(plan *Plan) ([]imageSource, error) {
 			identity := strings.TrimSuffix(relative, path.Ext(relative))
 
 			name := AssetName(identity)
-			if name == "" || names[name] || strings.ContainsAny(relative, "*?[\\") {
-				return nil, fmt.Errorf("source %q has colliding/unsupported asset name: %w", file, errSourceImage)
+			if name == "" || strings.ContainsAny(relative, "*?[\\") {
+				return nil, fmt.Errorf("source %q has an unsupported asset name: %w", file, errSourceImage)
 			}
 
-			paths[file], names[name] = true, true
+			if first, exists := names[name]; exists {
+				return nil, fmt.Errorf(
+					"sources %q and %q both generate %q; rename one to give it a distinct Go name: %w",
+					first,
+					file,
+					name,
+					errSourceImage,
+				)
+			}
+
+			paths[file], names[name] = true, file
 			result = append(result, imageSource{file, relative, identity, name, imageUsage(identity)})
 		}
 	}

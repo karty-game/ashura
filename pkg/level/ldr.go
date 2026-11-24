@@ -1,8 +1,8 @@
 package level
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // This selects existing native upload/sampling formats. The complete manifest
@@ -26,5 +26,16 @@ func lightmapImageProfile(page Page) (texture.Format, texture.ColorSpace) {
 		return texture.ETC2RGB, space
 	default:
 		return texture.RGBA8, space
+	}
+}
+
+func ssbumpFormat(storage string) texture.Format {
+	switch storage {
+	case nativeHDRStorage, leveldata.StorageBC1LDR, leveldata.StorageBC7LDR:
+		return texture.BC7
+	case mobileStorage:
+		return texture.ASTC4x4
+	default:
+		return texture.RGBA8
 	}
 }

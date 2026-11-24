@@ -10,7 +10,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func testModel(points [][3]float32, indices []uint32) modeldata.Document {

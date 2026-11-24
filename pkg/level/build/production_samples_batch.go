@@ -5,8 +5,8 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 type productionSamplePage struct {
@@ -43,10 +43,7 @@ func (plugin *productionPlugin) planSpaceSamples(
 func (plugin *productionPlugin) sampleBatchAction(
 	identity, space string, pages []pageRecord, scene assetbuild.Ref,
 ) assetbuild.Action {
-	cache := assetbuild.CacheAutomatic
-	if plugin.options.BackendIdentity == "" {
-		cache = assetbuild.CacheDisabled
-	}
+	inputs, cache := plugin.gpuCacheInputs([]assetbuild.Ref{scene})
 
 	artifacts := make([]assetbuild.Artifact, 0, len(pages)*2)
 	roster := make([]productionSamplePage, len(pages))
@@ -62,7 +59,7 @@ func (plugin *productionPlugin) sampleBatchAction(
 		Parallel: true, Exclusive: plugin.workerResource,
 		ID:        "level/production/samples/" + identity + "/" + space,
 		Processor: "lightmapper-sample", Revision: "go-webgpu-linear-batches@1",
-		Inputs: []assetbuild.Ref{scene}, Artifacts: artifacts,
+		Inputs: inputs, Artifacts: artifacts,
 		Options: struct {
 			Sampling bake.Options
 			Worker   bake.WorkerOptions

@@ -3,8 +3,8 @@ package level_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/level"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/level"
 )
 
 func TestPublicPreparedPresentationContractNeedsNoDeviceToOpenOrClose(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"time"
 	"unicode/utf16"
 
-	ui "github.com/karty-game/karty-webgpu/internal/uihost"
+	ui "github.com/karty-game/ashura/internal/uihost"
 )
 
 type browserUI struct {

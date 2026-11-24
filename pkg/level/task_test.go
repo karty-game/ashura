@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 func TestResidentRequestSkipsTextureFilesAndContainerDecoding(t *testing.T) {
@@ -54,7 +54,7 @@ func TestResidentRequestSkipsTextureFilesAndContainerDecoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(prepared.images) != 0 || len(prepared.files) != 2 || len(prepared.imageInfo) != 3 {
+	if len(prepared.images) != 0 || len(prepared.payloads) != 2 || len(prepared.imageInfo) != 3 {
 		t.Fatal("resident images were fetched or decoded again")
 	}
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
 )
 
 const (

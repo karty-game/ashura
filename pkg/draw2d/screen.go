@@ -3,7 +3,7 @@ package draw2d
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 // Screen owns a flat retained sprite layer in framebuffer pixels.

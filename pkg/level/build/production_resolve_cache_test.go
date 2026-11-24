@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 type productionResolveCacheFixture struct {

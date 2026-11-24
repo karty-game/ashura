@@ -3,8 +3,8 @@ package light_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/light"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/light"
 )
 
 func TestLightDefaults(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func TestFeatureRegistrationIsAtomicAndBeforeRun(t *testing.T) {

@@ -1,6 +1,10 @@
 package ktx2data
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+
+	"github.com/karty-game/ashura/internal/texturedata"
+)
 
 // Native containers are prepared offline. Admission inspects metadata and block
 // ranges only; decoding stays in the GPU's texture sampler.
@@ -22,7 +26,8 @@ func validBlockDescriptor(data []byte, format uint32) bool {
 		alpha = 31 // KHR_DF_SAMPLE_DATATYPE_LINEAR | ALPHA.
 	}
 
-	if !validBlockLayout(data, model, plane, transfer) {
+	side := byte(texturedata.BlockDimension(payloadFormat(format))) - 1 //nolint:gosec // BlockDimension returns only four or six.
+	if !validBlockLayout(data, model, plane, transfer, side) {
 		return false
 	}
 
@@ -47,15 +52,15 @@ func blockDescriptorProfile(format uint32) (model, plane, bits, channel byte, up
 		return 161, 8, 63, 2, 0xffffffff
 	case vkETC2RGBA, vkETC2RGBASRGB:
 		return 161, 16, 63, 2, 0xffffffff
-	case vkASTC4x4:
+	case vkASTC4x4, vkASTC6x6, vkASTC6x6SRGB:
 		return 162, 16, 127, 0, 0xffffffff
 	default:
 		return 134, 16, 127, 0, 0xffffffff
 	}
 }
 
-func validBlockLayout(data []byte, model, plane, transfer byte) bool {
-	return data[12] == model && data[13] <= 1 && data[14] == transfer && data[15] == 0 && data[16] == 3 && data[17] == 3 &&
+func validBlockLayout(data []byte, model, plane, transfer, side byte) bool {
+	return data[12] == model && data[13] <= 1 && data[14] == transfer && data[15] == 0 && data[16] == side && data[17] == side &&
 		data[18] == 0 && data[19] == 0 && data[20] == plane && allZero(data[21:28])
 }
 

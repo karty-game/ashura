@@ -12,8 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 func TestPresentationCloseInsideJSCallback(t *testing.T) {
@@ -24,18 +25,24 @@ func TestPresentationCloseInsideJSCallback(t *testing.T) {
 		}
 
 		t.Run(name, func(t *testing.T) {
-			t.Run("manifest", func(t *testing.T) { testPresentationCloseCallback(t, appClose, false) })
-			t.Run("parallel-chunk", func(t *testing.T) { testPresentationCloseCallback(t, appClose, true) })
+			t.Run("manifest", func(t *testing.T) { testPresentationCloseCallback(t, appClose, false, false) })
+			t.Run("parallel-chunk", func(t *testing.T) { testPresentationCloseCallback(t, appClose, true, false) })
+			t.Run("bundled-chunk", func(t *testing.T) { testPresentationCloseCallback(t, appClose, true, true) })
+			t.Run("bundle-entry-digest", func(t *testing.T) { testBundleEntryDigestCloseCallback(t, appClose) })
 		})
 	}
 }
 
-func testPresentationCloseCallback(t *testing.T, appClose, chunkRead bool) {
+func testPresentationCloseCallback(t *testing.T, appClose, chunkRead, bundled bool) {
 	t.Helper()
 
 	expectedReads := 1
 	if chunkRead {
 		expectedReads = 8
+	}
+
+	if bundled {
+		expectedReads = 4 // One owned bundle plus the three distinct shared material textures.
 	}
 
 	fixture := js.Global().Get("Function").New("expected", `
@@ -74,7 +81,12 @@ return fixture;
 
 	state.reads.Go(func() {
 		if chunkRead {
-			_, readErr = ReadChunk(ctx, "/fixture", pendingPresentationChunk())
+			chunk := pendingPresentationChunk()
+			if bundled {
+				chunk = pendingBundledPresentationChunk(chunk)
+			}
+
+			_, readErr = ReadChunk(ctx, "/fixture", chunk)
 		} else {
 			_, readErr = resource.Read(ctx, "/fixture", asset)
 		}
@@ -113,6 +125,22 @@ return fixture;
 	if fixture.Get("count").Int() != expectedReads || fixture.Get("aborted").Int() != expectedReads {
 		t.Fatal("close did not abort every outstanding request", fixture.Get("count"), fixture.Get("aborted"))
 	}
+}
+
+func pendingBundledPresentationChunk(chunk Chunk) Chunk {
+	chunk.Bundle = &leveldata.ChunkBundle{
+		File: Reference{Path: "pending-bundle.zip", Size: 5, SHA256: strings.Repeat("9", 64)},
+	}
+
+	refs := make([]Reference, 2, 2+len(chunk.Pages[0].Maps))
+	refs[0], refs[1] = chunk.Pages[0].Geometry, chunk.Pages[0].UV
+
+	refs = append(refs, chunk.Pages[0].Maps[:]...)
+	for index, ref := range refs {
+		chunk.Bundle.Entries = append(chunk.Bundle.Entries, leveldata.BundleEntry{SHA256: ref.SHA256, Offset: int64(index)})
+	}
+
+	return chunk
 }
 
 func pendingPresentationChunk() Chunk {

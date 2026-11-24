@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-text/typesetting/font"
 	"github.com/go-text/typesetting/shaping"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/uipaint"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type glyphMetric struct{ rect, uv Rect }

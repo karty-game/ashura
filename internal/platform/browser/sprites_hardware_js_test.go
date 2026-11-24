@@ -8,8 +8,8 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/pkg/draw2d"
 )
 
 //nolint:paralleltest // Each case isolates GPU pixel and residency evidence.

@@ -5,11 +5,11 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func (driver *Driver) drawScene(encoder, view js.Value, frame render.Frame) error {
-	if len(frame.Draws) == 0 {
+	if len(frame.Draws) == 0 && !frame.WorldParticles {
 		driver.clearSurface(encoder, view, frame.ClearColor)
 
 		return nil
@@ -24,6 +24,10 @@ func (driver *Driver) drawScene(encoder, view js.Value, frame render.Frame) erro
 		pass.Call("end")
 
 		return err
+	}
+
+	if frame.WorldParticles {
+		driver.particleBridge.DrawWorld(pass, frame.ViewProjection)
 	}
 
 	driver.drawPointShadowDebug(pass, frame)

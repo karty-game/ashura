@@ -2,6 +2,35 @@ package texturedata
 
 import "testing"
 
+func TestASTC6x6PhysicalMipLayout(t *testing.T) {
+	t.Parallel()
+
+	data := Data{Width: 18, Height: 18, Format: ASTC6x6,
+		Levels: [][]byte{make([]byte, 144), make([]byte, 64), make([]byte, 16), make([]byte, 16), make([]byte, 16)}}
+
+	image, err := FromOwned(data)
+	if err != nil || ByteSize(image) != 256 {
+		t.Fatal("ASTC physical mip lengths", image, err)
+	}
+
+	for _, size := range []struct{ logical, physical int }{{18, 18}, {9, 12}, {4, 6}, {2, 6}, {1, 6}} {
+		width, height := CopyExtent(ASTC6x6, size.logical, size.logical)
+		if width != size.physical || height != size.physical {
+			t.Fatal("ASTC physical mip extent", size, width, height)
+		}
+	}
+
+	data.Levels[1] = make([]byte, 16)
+	if _, err := FromOwned(data); err == nil {
+		t.Fatal("admitted truncated ASTC mip")
+	}
+
+	data.Width = 16
+	if _, err := FromOwned(data); err == nil {
+		t.Fatal("admitted ASTC base aligned to four instead of six")
+	}
+}
+
 func TestCompressedMipBoundsAndOwnership(t *testing.T) {
 	t.Parallel()
 

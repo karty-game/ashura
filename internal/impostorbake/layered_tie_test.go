@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 func TestLayeredCoplanarColorUsesLaterPartIndependentOfGatherOrder(t *testing.T) {

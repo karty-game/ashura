@@ -35,7 +35,7 @@ run = "go run ./cmd/engine run web ./samples/basic-scene"
 [tasks.samples]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
 description = "Build and serve the full sample gallery with automatic build-tool installation"
-run = "go run ./cmd/engine run web ./samples/..."
+run = "go run ./cmd/engine run web ./samples/... --jobs=2"
 
 [tasks.build-samples]
 env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
@@ -125,11 +125,11 @@ run('go', ['test', './pkg/scene/resource', './pkg/level',
 '''
 
 [tasks.test-tinygo-allocations]
-env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo" }
+env = { CGO_ENABLED = "0", GOFLAGS = "-tags=nofakecgo", BINARYEN_CORES = "1" }
 description = "Execute scene and browser bridge allocation regressions with pinned TinyGo"
 run = [
-  "tinygo test -target=wasm -opt=z -p=2 -run '^TestPrimitiveFramesKeepAllocationAndFinalizerPressureBounded$' -v ./internal/platform/browser/framehost",
-  "tinygo test -target=wasm -opt=z -p=2 -run '^Test(SourceBatchCache.*|AppUpdateFrameDoesNotAllocate|SteadyFrameDoesNotAllocate|ReflectedInstancesDoNotAllocate|NamedDescriptorFramesDoNotAllocate)$' -v ./pkg/engine",
+  "tinygo test -target=wasm -opt=1 -p=2 -run '^TestPrimitiveFramesKeepAllocationAndFinalizerPressureBounded$' -v ./internal/platform/browser/framehost",
+  "tinygo test -target=wasm -opt=1 -p=2 -run '^Test(SourceBatchCache.*|AppUpdateFrameDoesNotAllocate|SteadyFrameDoesNotAllocate|ReflectedInstancesDoNotAllocate|NamedDescriptorFramesDoNotAllocate)$' -v ./pkg/engine",
 ]
 
 [tasks.build-native]

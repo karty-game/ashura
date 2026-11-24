@@ -3,14 +3,15 @@ package model
 import (
 	"errors"
 	"math"
+	"reflect"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 var errPartRange = errors.New("model instance range is outside its prepared parts")
 
 // Instance is one logical model instance containing all flattened primitives.
-// Each entity has an independent Transform and by-value Standard material.
+// Each entity has an independent Transform and a by-value material.
 type Instance struct {
 	model    *Model
 	world    *engine.World
@@ -25,7 +26,24 @@ func (model *Model) Instantiate(world *engine.World, transform engine.Transform)
 		return nil, errUnavailable
 	}
 
-	return model.instantiate(world, transform, 0, len(model.parts), true)
+	return model.instantiate(world, transform, 0, len(model.parts), true, nil)
+}
+
+// InstantiateWithMaterial assigns a copy of surface to each part instead of
+// its authored material. The override supplies the full shading and coverage.
+func (model *Model) InstantiateWithMaterial(
+	world *engine.World, transform engine.Transform, surface engine.MaterialProvider,
+) (*Instance, error) {
+	if model == nil {
+		return nil, errUnavailable
+	}
+
+	value := reflect.ValueOf(surface)
+	if !value.IsValid() || value.Kind() == reflect.Pointer && value.IsNil() {
+		return nil, engine.ErrInvalidComponent
+	}
+
+	return model.instantiate(world, transform, 0, len(model.parts), true, surface)
 }
 
 // InstantiateRange adds an existing contiguous range of prepared parts without
@@ -33,10 +51,12 @@ func (model *Model) Instantiate(world *engine.World, transform engine.Transform)
 // explicitly when no longer wanted. Historical instance pruning stays in Unload
 // and full Instantiate so this bounded operation never scans previous ranges.
 func (model *Model) InstantiateRange(world *engine.World, transform engine.Transform, first, count int) (*Instance, error) {
-	return model.instantiate(world, transform, first, count, false)
+	return model.instantiate(world, transform, first, count, false, nil)
 }
 
-func (model *Model) instantiate(world *engine.World, transform engine.Transform, first, count int, prune bool) (*Instance, error) {
+func (model *Model) instantiate(
+	world *engine.World, transform engine.Transform, first, count int, prune bool, override engine.MaterialProvider,
+) (*Instance, error) {
 	if model == nil || !model.loaded || model.app.Closed() {
 		return nil, errUnavailable
 	}
@@ -69,13 +89,39 @@ func (model *Model) instantiate(world *engine.World, transform engine.Transform,
 	}()
 
 	for _, source := range model.parts[first : first+count] {
-		instance.entities = append(instance.entities, world.Add(source, transform, source.material))
+		surface := override
+		if surface == nil {
+			surface = source.material
+		}
+
+		instance.entities = append(instance.entities, world.Add(source, transform, surface))
 	}
 
 	model.instances[instance] = struct{}{}
 	committed = true
 
 	return instance, nil
+}
+
+// SetTransform updates all attached part transforms in place. The transform
+// follows the same rules as Instantiate. Removed parts and detached Transform
+// components are skipped.
+func (instance *Instance) SetTransform(transform engine.Transform) error {
+	if instance == nil || instance.world == nil || !instance.model.loaded || instance.model.app.Closed() {
+		return errUnavailable
+	}
+
+	if !validRootTransform(transform) {
+		return errRootTransform
+	}
+
+	for _, entity := range instance.entities {
+		if part := instance.world.Transform(entity); part != nil {
+			*part = transform
+		}
+	}
+
+	return nil
 }
 
 // Entities returns an independent list of the instance's entity handles.

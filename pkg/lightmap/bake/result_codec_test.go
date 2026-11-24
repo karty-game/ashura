@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
+	"github.com/karty-game/ashura/internal/lightmapper"
 )
 
 func TestLinearArtifactRetainsHDRStatisticsAndRejectsCorruption(t *testing.T) {

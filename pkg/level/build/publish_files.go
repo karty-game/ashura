@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func sortedFiles(files map[string]fileRecord) []fileRecord {

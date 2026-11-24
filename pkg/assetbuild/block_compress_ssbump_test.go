@@ -9,7 +9,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestSSBumpUASTCAdmissionPreservesMipsAndSource(t *testing.T) {

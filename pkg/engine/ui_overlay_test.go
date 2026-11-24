@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 func TestCursorOverlayDisablesPointerLockWithoutCapturingWorldInput(t *testing.T) {

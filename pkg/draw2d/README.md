@@ -138,7 +138,3 @@ See the [sprite sample](../../samples/sprites2d/README.md) for prepared standalo
 and atlas images, transforms, order, tint, opacity, clipping and UI composition.
 Tilemap compilation and prepared animation sequences remain future pipeline
 extensions; the runtime does not generate tile geometry or pack animation art.
-
-The [v1 decision](../../spec/decisions/0004-screen2d-v1.md) records the contract and
-implementation boundaries. Exact checks and remaining platform limits are in
-[validation](../../spec/validation.md).

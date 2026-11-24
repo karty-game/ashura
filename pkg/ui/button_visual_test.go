@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func TestButtonVisualRejectsInvalidValuesAtomically(t *testing.T) {

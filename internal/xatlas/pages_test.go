@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func TestPhysicalDensityPagesAndSession(t *testing.T) {

@@ -5,9 +5,9 @@ package native
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // The core driver holds only these hooks. The concrete GPU implementation is
@@ -16,7 +16,6 @@ type computeBackendInterface interface {
 	PrepareCompute(resources computedata.Resources) error
 	uploadComputeBuffers(uploads []bufferdata.Upload) error
 	recordCompute(encoder *wgpu.CommandEncoder, commands []computedata.Dispatch) error
-	submitComputeOnly(schedule []computedata.Dispatch) error
 	UnloadBuffer(source *bufferdata.Buffer)
 	UnloadComputePipeline(source *computedata.Pipeline)
 	UnloadComputeBindings(source *computedata.BindGroup)

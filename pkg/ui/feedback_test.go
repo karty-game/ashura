@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 func TestProgressBoundsAndSilentPaintUpdate(t *testing.T) {

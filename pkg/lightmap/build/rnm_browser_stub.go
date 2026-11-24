@@ -5,7 +5,7 @@ package lightmapbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 // BakeRNMBrowser is a host build operation; browser games use lightmap.NewRNM.

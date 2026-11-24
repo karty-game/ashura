@@ -8,7 +8,7 @@ import (
 	"math"
 	"math/bits"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 type pixels struct {

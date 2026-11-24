@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func TestOverlayChromeBlocksUnderlyingControlsAndScroll(t *testing.T) {

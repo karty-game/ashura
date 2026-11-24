@@ -43,7 +43,7 @@ func TestWebExportRejectsBudgetBeforePublishing(t *testing.T) {
 	t.Setenv("GOFLAGS", strings.TrimSpace(os.Getenv("GOFLAGS")+" -buildvcs=false"))
 	root := t.TempDir()
 	writeWebFixtures(t, root, map[string]string{
-		"go.mod":                  "module github.com/karty-game/karty-webgpu\n\ngo 1.27.0\n",
+		"go.mod":                  "module github.com/karty-game/ashura\n\ngo 1.27.0\n",
 		"samples/new/main.go":     "package main\nfunc main() {}\n",
 		"samples/another/main.go": "package main\nfunc main() {}\n",
 	})

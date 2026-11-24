@@ -1,8 +1,8 @@
 package light
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 // Point is an omnidirectional light with finite influence. Position is in world

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 //nolint:paralleltest // One native worker qualifies cross-chunk visibility without concurrent GPU fixtures.

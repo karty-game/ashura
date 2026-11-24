@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"sync"
 
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 // Destination identity lookup, complete edge admission and dense conversion

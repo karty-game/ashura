@@ -11,11 +11,11 @@ import (
 	"syscall/js"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 type inputListener struct {
@@ -37,6 +37,7 @@ type browserDraw struct {
 type Driver struct {
 	uiBridge                uiBackend
 	spriteBridge            spriteBackend
+	particleBridge          particleBackend
 	shadowBridge            shadowBackend
 	computeBridge           computeBackendInterface
 	pointShadow             *gpuPointShadow
@@ -47,6 +48,7 @@ type Driver struct {
 	colorFormat             string
 	colorTexture, colorView js.Value
 	draws                   []browserDraw
+	opaqueOrder             render.OpaqueOrder
 	geometry                render.GeometryCache[gpuGeometry]
 	instances               map[uint32]*gpuInstances
 	frameHost               js.Value
@@ -57,6 +59,11 @@ type Driver struct {
 	frameOpen               bool
 	textures                map[*texturedata.Texture]gpuTexture
 	materials               map[uint32]*gpuMaterial
+	frameUniform            js.Value
+	frameUniformBytes       js.Value
+	clusteredLights         *gpuClusteredLights
+	decals                  *gpuDecals
+	frameUniformState       render.FrameUniformState
 	impostorViews           map[*impostordata.Document]*gpuImpostor
 	impostorSampler         js.Value
 	white, flat, whiteAO    *texturedata.Texture
@@ -70,6 +77,7 @@ type Driver struct {
 	discardOperation       js.Value
 	context                js.Value
 	device                 js.Value
+	compression            browserCompression
 	standardPipeline       js.Value
 	standardCulledPipeline js.Value
 	sourceCulledPipeline   js.Value
@@ -162,7 +170,7 @@ func New(config platform.Config) (platform.Driver, error) {
 	driver := &Driver{
 		window: window,
 		canvas: canvas, context: context, device: device, queue: device.Get("queue"),
-		sampleCount: config.SampleCount, colorFormat: format, metrics: config.Metrics,
+		sampleCount: config.SampleCount, colorFormat: format, metrics: config.Metrics, compression: enabledCompression(device),
 	}
 	driver.initFrameHost(host)
 
@@ -238,13 +246,20 @@ func (driver *Driver) Close() error {
 
 	driver.closed = true
 	driver.closeSprites()
+	driver.closeParticles()
 
 	if driver.uiBridge != nil {
 		driver.uiBridge.Close()
 	}
 
 	driver.releaseCompute()
+	driver.closeDecals()
 	driver.releaseMaterials()
+
+	if driver.clusteredLights != nil {
+		driver.clusteredLights.release()
+		driver.clusteredLights = nil
+	}
 
 	if driver.shadowBridge != nil {
 		driver.shadowBridge.Close()
@@ -344,6 +359,12 @@ func (driver *Driver) prepareScene(config platform.Config) error {
 	}
 
 	featureConfig := platform.FeatureConfig{PointShadowResolution: config.PointShadowResolution}
+	if err := platform.InstallLightingFeature(driver, config.Features, featureConfig); err != nil {
+		_ = driver.Close()
+
+		return err
+	}
+
 	if err := platform.InstallMaterialFeatures(driver, config.Features, featureConfig); err != nil {
 		_ = driver.Close()
 
@@ -355,6 +376,8 @@ func (driver *Driver) prepareScene(config platform.Config) error {
 
 		return err
 	}
+
+	driver.prepareClusterMaterialGroups()
 
 	if err := platform.InstallOptionalFeatures(driver, config.Features, featureConfig); err != nil {
 		_ = driver.Close()

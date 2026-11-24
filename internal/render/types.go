@@ -3,13 +3,14 @@
 package render
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/particledata"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 // Vertex is the static mesh vertex format shared by both render backends.
@@ -26,6 +27,7 @@ type DrawCall struct {
 	MeshOwner          any
 	MeshValid          bool
 	ID                 uint32
+	DecalLayers        uint32
 	Albedo, Normal, AO *texturedata.Texture
 	Reflection         *texturedata.Texture
 	Lightmap           *texturedata.Texture
@@ -45,6 +47,7 @@ type DrawCall struct {
 	UVScale            [2]float32
 	NormalStrength     float32
 	Prepared           *meshdata.Geometry
+	Bounds             meshdata.Bounds
 	Vertices           []Vertex
 	Indices            []uint32
 	Transform          [16]float32
@@ -83,28 +86,40 @@ type Light struct {
 	DebugShadowFaces bool
 	ShadowResolution uint32
 	ShadowBias       float32
+	SpotDirection    [3]float32
+	InnerAngle       float32
+	OuterAngle       float32
 }
 
 const (
 	HemisphereLightKind    uint32 = 1
 	DirectionalLightKind   uint32 = 2
 	PointLightKind         uint32 = 3
+	SpotLightKind          uint32 = 4
 	PerspectiveProjection  uint8  = 1
 	OrthographicProjection uint8  = 2
 )
 
 // Frame is the complete scene snapshot required for one presentation.
 type Frame struct {
-	Screen2D *spritepaint.Frame
-	UI       *uipaint.Frame
-	Uploads  []bufferdata.Upload
-	Compute  []computedata.Dispatch
+	Screen2D       *spritepaint.Frame
+	Particles      []*particledata.Instance
+	WorldParticles bool
+	UI             *uipaint.Frame
+	Uploads        []bufferdata.Upload
+	Compute        []computedata.Dispatch
 
 	// PointerLock permits browser pointer capture for the active free-look camera.
-	PointerLock    bool
-	CameraPosition [3]float32
-	ViewProjection [16]float32
-	ClearColor     [4]float32
-	Draws          []DrawCall
-	Lights         []Light
+	PointerLock           bool
+	CameraPosition        [3]float32
+	ViewProjection        [16]float32
+	ClearColor            [4]float32
+	ShadowCasterRevision  uint64
+	ClusteredLighting     bool
+	UnculledLights        bool
+	CameraNear, CameraFar float32
+	PerspectiveCamera     bool
+	Draws                 []DrawCall
+	Lights                []Light
+	Decals                *DecalFrame
 }

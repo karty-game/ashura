@@ -7,17 +7,32 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/impostorbake"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/impostorbake"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var errBC1AtlasDimensions = errors.New("BC1 impostor atlas dimensions must be multiples of four")
+var errAtlasFormat = errors.New("impostor view atlas format must be BC1, ETC2RGBA or ASTC6x6; layered storage must remain RGBA8")
+var errTextureProfile = errors.New("impostor texture profile must be empty, bc or mobile")
+var errASTCAtlasDimensions = errors.New("ASTC impostor atlas dimensions must be multiples of six")
 
 // Resolve public capture defaults before examining model data or adding actions.
 // Raw internal capture layouts remain useful independently of BC1 publication.
 func captureSettings(options Options) (impostorbake.Options, error) {
+	if options.TextureProfile != "" && options.TextureProfile != "bc" && options.TextureProfile != "mobile" {
+		return impostorbake.Options{}, errTextureProfile
+	}
+
+	if options.AtlasFormat != texture.RGBA8 && options.AtlasFormat != texture.BC1 && options.AtlasFormat != texture.ETC2RGBA &&
+		options.AtlasFormat != texture.ASTC6x6 ||
+		options.Mode == Layered && options.AtlasFormat != texture.RGBA8 {
+		return impostorbake.Options{}, errAtlasFormat
+	}
+
 	settings, err := impostorbake.Defaults(options.settings())
 	if err != nil || settings.Mode == impostordata.ModeLayered {
 		return settings, err
@@ -28,12 +43,18 @@ func captureSettings(options Options) (impostorbake.Options, error) {
 		columns, rows = settings.FrameGrid, settings.FrameGrid
 	}
 
-	const paddingSides, blockSide = 2, 4
+	const paddingSides = 2
+
+	blockSide := texturedata.BlockDimension(options.AtlasFormat)
 
 	cell := settings.Resolution + paddingSides*settings.Padding
 
 	width, height := columns*cell, rows*cell
 	if width%blockSide != 0 || height%blockSide != 0 {
+		if options.AtlasFormat == texture.ASTC6x6 {
+			return impostorbake.Options{}, fmt.Errorf("%w: %dx%d", errASTCAtlasDimensions, width, height)
+		}
+
 		return impostorbake.Options{}, fmt.Errorf("%w: %dx%d", errBC1AtlasDimensions, width, height)
 	}
 

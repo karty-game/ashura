@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 type comparisonResources struct {
@@ -27,22 +29,27 @@ type comparisonPresentation struct {
 	requested string
 	quality   impostor.Quality
 	failures  sample.Errors
+	cancel    context.CancelFunc
+	pending   <-chan comparisonResult
+}
+
+type comparisonResult struct {
+	example comparisonExample
+	data    []byte
+	err     error
 }
 
 func setupComparison(app *engine.App, world *engine.World, comparison *comparisonScene) (release func() error, err error) {
 	presentation := &comparisonPresentation{
 		app: app, world: world, scene: comparison, examples: comparisonExamples(), quality: impostor.DefaultQuality(),
 	}
+	presentation.requested = presentation.examples[0].id
 
 	defer func() {
 		if err != nil {
 			sample.Cleanup(&err, presentation.close)
 		}
 	}()
-
-	if err := presentation.selectModel(presentation.examples[0].id); err != nil {
-		return nil, err
-	}
 
 	presentation.controls, err = showComparison(app, presentation)
 	if err != nil {
@@ -52,9 +59,21 @@ func setupComparison(app *engine.App, world *engine.World, comparison *compariso
 	comparison.notify = func(lightIndex int, mode rotationMode) {
 		presentation.failures.Check(presentation.controls.syncMotion(lightIndex, mode))
 	}
-	comparison.prepare = presentation.update
+	comparison.prepare = presentation.start
 
 	return presentation.close, nil
+}
+
+func (presentation *comparisonPresentation) start() error {
+	examples, err := comparisonExamplesForDevice(presentation.app)
+	if err != nil {
+		return err
+	}
+
+	presentation.examples = examples
+	presentation.scene.prepare = presentation.update
+
+	return presentation.update()
 }
 
 func (presentation *comparisonPresentation) update() error {
@@ -62,23 +81,50 @@ func (presentation *comparisonPresentation) update() error {
 		return err
 	}
 
-	if presentation.requested == "" {
-		return nil
+	if presentation.requested != "" {
+		requested := presentation.requested
+		presentation.requested = ""
+		presentation.requestModel(requested)
 	}
 
-	requested := presentation.requested
-	presentation.requested = ""
+	select {
+	case result := <-presentation.pending:
+		presentation.pending = nil
+		presentation.cancel()
+		presentation.cancel = nil
 
-	return presentation.selectModel(requested)
+		if result.err != nil {
+			return result.err
+		}
+
+		return presentation.selectModel(result.example, result.data)
+	default:
+		return nil
+	}
 }
 
-func (presentation *comparisonPresentation) selectModel(id string) (err error) {
-	if id == presentation.selected {
-		return nil
+func (presentation *comparisonPresentation) requestModel(requested string) {
+	if presentation.cancel != nil {
+		presentation.cancel()
+		presentation.cancel, presentation.pending = nil, nil
 	}
 
-	example := selectExample(presentation.examples, id)
+	if requested == presentation.selected {
+		return
+	}
 
+	example := selectExample(presentation.examples, requested)
+	ctx, cancel := context.WithCancel(context.Background())
+	results := make(chan comparisonResult, 1)
+	presentation.cancel, presentation.pending = cancel, results
+
+	go func() {
+		data, err := resource.Read(ctx, resource.ProjectBase("samples/impostors"), example.card)
+		results <- comparisonResult{example: example, data: data, err: err}
+	}()
+}
+
+func (presentation *comparisonPresentation) selectModel(example comparisonExample, data []byte) (err error) {
 	next := &comparisonResources{}
 
 	defer func() {
@@ -87,7 +133,7 @@ func (presentation *comparisonPresentation) selectModel(id string) (err error) {
 		}
 	}()
 
-	if err := next.load(presentation.app, presentation.world, example, presentation.quality); err != nil {
+	if err := next.load(presentation.app, presentation.world, example, data, presentation.quality); err != nil {
 		return err
 	}
 
@@ -120,6 +166,11 @@ func (presentation *comparisonPresentation) selectModel(id string) (err error) {
 }
 
 func (presentation *comparisonPresentation) close() error {
+	if presentation.cancel != nil {
+		presentation.cancel()
+		presentation.cancel, presentation.pending = nil, nil
+	}
+
 	presentation.scene.prepare, presentation.scene.notify = nil, nil
 	presentation.scene.qualityAsset = nil
 
@@ -144,6 +195,7 @@ func (resources *comparisonResources) load(
 	app *engine.App,
 	world *engine.World,
 	example comparisonExample,
+	data []byte,
 	quality impostor.Quality,
 ) error {
 	var err error
@@ -159,7 +211,7 @@ func (resources *comparisonResources) load(
 		return err
 	}
 
-	resources.card, err = example.card.Load(app)
+	resources.card, err = impostor.Prepared(example.card.ID, data).Load(app)
 	if err != nil {
 		return err
 	}

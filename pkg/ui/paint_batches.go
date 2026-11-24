@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/karty-game/karty-webgpu/internal/uipaint"
+import "github.com/karty-game/ashura/internal/uipaint"
 
 // Mixed image/text controls retain contiguous texture runs in painter order.
 // A paint-only update replaces its own runs in place when their count is stable.

@@ -7,9 +7,9 @@ import (
 	"errors"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/shader"
 )
 
 const UniformSize = 64

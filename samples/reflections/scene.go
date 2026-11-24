@@ -1,24 +1,26 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
-	"github.com/karty-game/karty-webgpu/pkg/reflection"
-	"github.com/karty-game/karty-webgpu/pkg/reflection/scene"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
-	"github.com/karty-game/karty-webgpu/samples/reflections/generated/assets"
+	"errors"
+	"time"
+
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/mesh"
+	"github.com/karty-game/ashura/pkg/reflection"
+	"github.com/karty-game/ashura/pkg/reflection/scene"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/samples/internal/sample"
+	"github.com/karty-game/ashura/samples/reflections/generated/assets"
 )
+
+var errReflectionCompression = errors.New("reflections requires BC or ETC2 texture compression")
 
 //nolint:mnd // The camera starts inside the authored reflection room.
 func createScene(app *engine.App) (*engine.World, error) {
-	environment, err := assets.RoomReflection().Load(app)
-	if err != nil {
-		return nil, err
-	}
-
 	scene := engine.NewWorld()
 	projection, controls := camera.FirstPerson()
 
@@ -44,7 +46,7 @@ func createScene(app *engine.App) (*engine.World, error) {
 
 	// The offline panorama and visible geometry share this room definition.
 	// The placed probe demonstrates cubemap parallax correction within its box.
-	probe := reflection.DefaultProbe("room probe", environment)
+	probe := reflection.DefaultProbe("room probe", nil)
 	probe.HalfExtents = sceneVector(authored.ProbeHalfExtents)
 	probeEntity := scene.Add(probe, engine.Transform{Position: sceneVector(authored.ProbePosition), Scale: engine.Vector3One()})
 
@@ -66,11 +68,39 @@ func createScene(app *engine.App) (*engine.World, error) {
 	}
 
 	liveProbe, _ := engine.Get[reflection.Probe](scene, probeEntity)
+
+	var stop func()
+
+	stop = app.OnUpdateError(func(time.Duration) error {
+		stop()
+
+		asset, err := reflectionForFormat(app.CompressedAlbedoFormat())
+		if err != nil {
+			return err
+		}
+
+		liveProbe.Environment, err = asset.Load(app)
+
+		return err
+	})
+
 	if err := showReflectionControls(app, liveProbe, reflective); err != nil {
 		return nil, err
 	}
 
 	return scene, nil
+}
+
+func reflectionForFormat(format texture.Format) (ktx2.Asset, error) {
+	if format == texture.BC1 {
+		return assets.RoomReflection(), nil
+	}
+
+	if format == texture.ETC2RGB {
+		return assets.RoomReflectionMobile(), nil
+	}
+
+	return ktx2.Asset{}, errReflectionCompression
 }
 
 func geometry(object reflectionscene.Object) mesh.Mesh {

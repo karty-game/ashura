@@ -11,7 +11,7 @@ Cleanup works within each material part. It keeps hard surface edges, texture
 seams and small triangles with nonzero area. It does not reduce a model's detail
 or merge nearby points just because they are close together.
 
-Import `meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"`.
+Import `meshbuild "github.com/karty-game/ashura/pkg/mesh/build"`.
 
 ## Settings and defaults
 
@@ -28,7 +28,7 @@ The implementation is Go and adds no runtime decoder or compression format.
 The maintained level path runs cleanup after
 [PreparedGLB](../importers/model-glb.md#pass-the-model-to-later-build-steps), before scene import and UV
 generation. Import `modelbuild` from `pkg/model/build` and `levelbuild` from
-`pkg/level/build` under `github.com/karty-game/karty-webgpu/`:
+`pkg/level/build` under `github.com/karty-game/ashura/`:
 
 ```go
 Import: []assetbuild.Plugin{

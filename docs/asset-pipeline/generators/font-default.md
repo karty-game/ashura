@@ -11,7 +11,7 @@ embedded WASM, computes their distance fields. Those fields let the renderer
 draw smooth glyph edges at different sizes. This plugin supports the fixed Go
 Regular profile; it is not an importer for arbitrary fonts.
 
-Import `uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"`.
+Import `uibuild "github.com/karty-game/ashura/pkg/ui/build"`.
 
 ## Settings and defaults
 
@@ -36,8 +36,8 @@ recipe is:
 package main
 
 import (
-    "github.com/karty-game/karty-webgpu/pkg/assetbuild"
-    uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+    "github.com/karty-game/ashura/pkg/assetbuild"
+    uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func main() {

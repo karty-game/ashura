@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/internal/resourcedata"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 type referenceResult struct {

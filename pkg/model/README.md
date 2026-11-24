@@ -39,6 +39,13 @@ instance.Remove()
 return asset.Unload()
 ```
 
+Use `asset.InstantiateWithMaterial(world, root, surface)` to give every
+part the same Standard or Source material. The override supplies the full
+material, including shading, sidedness and coverage. Each part receives its
+own ECS copy. Use `instance.SetTransform(root)` to move all parts together.
+It validates the full root before writing into the existing transforms and
+skips parts removed through the World.
+
 Loading first admits the complete bounded container, every primitive and every
 texture before creating App-owned resources. It copies each admitted packed geometry and texture payload once for ownership,
 retaining the exact GPU bytes without keeping a duplicate prepared texture container. There is
@@ -89,7 +96,7 @@ Supported source profile:
   normal mips renormalize and AO mips average linear values, entirely offline.
 - MASK cutouts preserve tint/image alpha and an explicit cutoff (0.5 when omitted),
   with source alpha retained in offline-generated mips. Opaque-only containers
-  retain exact V1 bytes; masks select [prepared model V2](../../spec/model-v2.md).
+  retain exact V1 bytes. Masks select prepared model V2.
   Blended transparency remains unsupported. Very thin masks need distant-mip
   quality review; current alpha mips average without threshold-specific adjustment.
 - Default single-sided and explicit double-sided materials preserve culling state.

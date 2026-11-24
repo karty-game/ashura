@@ -3,8 +3,8 @@
 package levelbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
 )
 
 const sceneSourceSchema = "karty.level-scene-source@1"

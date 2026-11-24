@@ -1,10 +1,10 @@
 package engine
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type cameraComponent interface {
@@ -43,7 +43,9 @@ type meshIdentity interface {
 	RuntimeMeshIdentity() any
 }
 
-type materialComponent interface {
+// MaterialProvider supplies the tint and roughness of a material component.
+// Standard and Source materials implement it, with additional methods for their maps.
+type MaterialProvider interface {
 	RuntimeMaterial() (color Color, roughness float32)
 }
 

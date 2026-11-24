@@ -3,10 +3,10 @@ package main
 import (
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 const modeKey = engine.Key('T')

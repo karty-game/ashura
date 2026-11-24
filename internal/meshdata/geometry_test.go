@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
+	"github.com/karty-game/ashura/internal/meshdata"
 )
 
 func TestAdmissionAndImmutableOwnership(t *testing.T) {

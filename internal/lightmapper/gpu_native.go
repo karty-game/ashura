@@ -7,7 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // nativeGPUExecutor owns an offline headless device through the rendering binding.
@@ -26,7 +26,7 @@ type nativeGPUExecutor struct {
 	shader          *wgpu.ShaderModule
 	layouts         [3]*wgpu.BindGroupLayout
 	pipelineLayouts [3]*wgpu.PipelineLayout
-	stages          [14]*wgpu.ComputePipeline
+	stages          [stageCount]*wgpu.ComputePipeline
 	scene           *wgpu.Buffer
 	traceRays       bool
 	traceCounts     GPUTraceCounts

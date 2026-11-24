@@ -5,8 +5,8 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 type shadowBackend interface {
@@ -23,6 +23,9 @@ type pointShadowGPU struct {
 	faces, uniforms           [render.PointShadowFaces]js.Value
 	pipelines                 [2]js.Value
 	groups                    [2][render.PointShadowFaces]js.Value
+	faceData                  [render.PointShadowFaces][render.PointShadowFaceSize]byte
+	faceBytes, sampleBytes    js.Value
+	facePasses                [render.PointShadowFaces]js.Value
 }
 
 type pointShadowFeature struct {

@@ -27,12 +27,16 @@ func TestRepositoryGalleryOrderAndTitles(t *testing.T) {
 		{Name: "Materials", Path: "apps/samples/standard-materials/"},
 		{Name: "UI Components", Path: "apps/samples/ui/"},
 		{Name: "Sprites2D", Path: "apps/samples/sprites2d/"},
+		{Name: "Particles", Path: "apps/samples/particles/"},
 		{Name: "Billboards", Path: "apps/samples/billboards/"},
+		{Name: "Decals", Path: "apps/samples/decals/"},
 		{Name: "Impostors", Path: "apps/samples/impostors/"},
 		{Name: "Instancing", Path: "apps/samples/instancing/"},
 		{Name: "Reflections", Path: "apps/samples/reflections/"},
 		{Name: "Compute texture", Path: "apps/samples/compute-texture/"},
+		{Name: "Luminous", Path: "apps/samples/luminous/"},
 		{Name: "Sponza", Path: "apps/samples/sponza/"},
+		{Name: "Collision courtyard", Path: "apps/samples/courtyard/"},
 	}
 	if len(packages) != len(want) {
 		t.Fatalf("discovered %d samples, want %d", len(packages), len(want))

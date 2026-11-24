@@ -38,8 +38,8 @@ func TestRecipeCacheTracksImportedCode(t *testing.T) {
 	t.Parallel()
 	project := assetRecipeFixture(t)
 	recipe := strings.Replace(recipeFixture,
-		`import "github.com/karty-game/karty-webgpu/pkg/assetbuild"`,
-		`import ("github.com/karty-game/karty-webgpu/pkg/assetbuild"; "example.test/assets/settings")`, 1)
+		`import "github.com/karty-game/ashura/pkg/assetbuild"`,
+		`import ("github.com/karty-game/ashura/pkg/assetbuild"; "example.test/assets/settings")`, 1)
 	recipe = strings.Replace(recipe, "size := 2", "size := settings.Size", 1)
 	writeWebFixtures(t, project, map[string]string{
 		assetConfigFile: recipe, "settings/options.go": "package settings\nconst Size = 2\n",

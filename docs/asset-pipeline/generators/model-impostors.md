@@ -28,7 +28,7 @@ The diagram shows the Octahedral/Angular path. `Resolution` is the size of
 **each captured view**, while the complete atlas contains every view plus its
 padding. A 7×7 grid contains 49 views, so it is much larger than one 256px image.
 
-Import `impostorbuild "github.com/karty-game/karty-webgpu/pkg/impostor/build"`.
+Import `impostorbuild "github.com/karty-game/ashura/pkg/impostor/build"`.
 
 ## Settings and defaults
 
@@ -73,7 +73,7 @@ This matches the current sample's default quality:
 ```
 
 Add the imports from [GLBWithOptions](../importers/model-glb.md) and use the
-[recipe wrapper](../getting-started.md#prepare-some-textures). `GLBWithOptions` prepares the source model
+[recipe wrapper](../getting-started.md#add-a-recipe). `GLBWithOptions` prepares the source model
 first; `Cards` consumes it and leaves the original model available too. No
 `KTX2` or `GoCatalog` is needed. Both stages publish their own output. If only
 the proxy is needed, [PreparedGLB](../importers/model-glb.md#pass-the-model-to-later-build-steps) can import the model without

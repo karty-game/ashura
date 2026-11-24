@@ -1,6 +1,6 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/diagnostics"
+import "github.com/karty-game/ashura/internal/diagnostics"
 
 // DrawStats counts submitted draws, instances and triangles in one rendering layer.
 // Scene instances are mesh submissions; sprite and UI instances are quads.

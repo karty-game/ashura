@@ -3,9 +3,9 @@
 package lightmapbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/xatlas"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/xatlas"
 )
 
 func decodeGeometry(data []byte) (modeldata.Document, error) {

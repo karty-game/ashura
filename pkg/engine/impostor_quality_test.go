@@ -3,7 +3,7 @@ package engine
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 type impostorQualityFixture struct {

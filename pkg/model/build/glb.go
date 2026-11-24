@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 const bundleSlot = "files"
@@ -132,7 +132,7 @@ package models
 
 import (
  _ "embed"
- "github.com/karty-game/karty-webgpu/pkg/model"
+ "github.com/karty-game/ashura/pkg/model"
 )
 
 //go:embed %s

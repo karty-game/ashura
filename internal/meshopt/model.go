@@ -9,8 +9,8 @@ import (
 	"math"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // Cleanup removes unused/exact duplicate vertices and exact zero-area faces.

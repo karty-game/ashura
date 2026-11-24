@@ -5,10 +5,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/samples/sprites2d/generated/assets"
+	"github.com/karty-game/ashura/pkg/draw2d"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/samples/sprites2d/generated/assets"
 )
 
 const (

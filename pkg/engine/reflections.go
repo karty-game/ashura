@@ -3,8 +3,8 @@ package engine
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 type reflectionProbe struct {

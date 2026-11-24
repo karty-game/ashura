@@ -7,10 +7,10 @@ import (
 	"crypto/sha256"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/msdfcodec"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/msdfcodec"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 const fontToolTimeout = 2 * time.Minute

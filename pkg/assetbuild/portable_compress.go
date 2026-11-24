@@ -5,9 +5,9 @@ package assetbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 const (

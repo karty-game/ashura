@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/model"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/model"
 )
 
 type presentationArrival struct {
@@ -263,6 +263,14 @@ func (state *Presentation) loadNext() error {
 	instance, err := chunk.BeginPresentation(state.world)
 	if err != nil {
 		return err
+	}
+
+	if state.options.Decals != nil {
+		if err := state.attachChunkDecals(instance); err != nil {
+			instance.Remove()
+
+			return err
+		}
 	}
 
 	state.instances = append(state.instances, instance)

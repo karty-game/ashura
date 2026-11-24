@@ -53,7 +53,7 @@ func TestMixedWebGalleryPairsAndExecutesBothRuntimes(t *testing.T) {
 	}
 
 	writeWebFixtures(t, root, map[string]string{
-		"go.mod":                                       "module github.com/karty-game/karty-webgpu\n\ngo 1.27.0\n",
+		"go.mod":                                       "module github.com/karty-game/ashura\n\ngo 1.27.0\n",
 		"samples/basic-scene/main.go":                  tinyGoAsyncFixture,
 		"samples/instancing/main.go":                   tinyGoAsyncFixture,
 		"samples/instancing/generated/public/data.bin": "all prepared files count",

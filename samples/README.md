@@ -1,21 +1,23 @@
 # Samples
 
 Install [mise](https://mise.jdx.dev/installing-mise.html) 2026.11.5 or newer,
-then run `mise install` from the repository root. Mise is required for all
-development workflows. Start with the basic scene:
+then run `mise install` from the repository root. Start with the basic scene.
 
 ```sh
 mise run start
 ```
 
-Build and serve the full gallery:
+Build and serve the full gallery.
 
 ```sh
 mise run samples
-# run only Basic Scene with TinyGo:
-mise run samples-tinygo
-# or
-mise exec -- go run ./cmd/engine run web ./samples/...
+```
+
+If TinyGo fails to compile Basic Scene, explicitly select standard Go for the
+local preview. Use `mise run start -- --compiler=go` for Basic Scene alone.
+
+```sh
+mise run samples -- --compiler=go
 ```
 
 Sponza uses embedded WASM libraries through Go for UVs and texture codecs, and
@@ -28,12 +30,13 @@ See [Sponza's setup and qualification limits](sponza/README.md).
 
 The CLI discovers browser-compatible `main` packages, prepares each sample's
 assets and builds a gallery with a sidebar. New samples are picked up automatically.
-Asset recipes run across samples with up to four workers (also capped by
-`GOMAXPROCS`). Browser compilation starts after all assets are ready and batches
-the sample packages into one Go build, sharing dependency discovery and Go's
-normal build concurrency. Samples with the same executable name use separate
-batches to keep their outputs distinct. The default `--compiler=auto` policy
-uses TinyGo 0.44.0 only for Basic Scene and standard Go for every other sample.
+Asset preparation runs up to four projects concurrently. The CLI reduces
+that count according to `GOMAXPROCS` and the per-project action limit.
+`mise run samples` sets that limit to two with `--jobs=2`. Once assets are
+ready, standard Go compiles samples in batches with shared dependency
+discovery. Samples that share an executable name use separate batches.
+The default `--compiler=auto` policy uses TinyGo 0.44.0 only for Basic
+Scene and standard Go for every other sample.
 Mixed galleries share one bridge per compiler under `runtimes/`, and each app
 records its own compiler identity and bridge hash in `build-info.json`.
 Explicit compiler selectors remain available for diagnostics and custom apps;
@@ -41,12 +44,13 @@ asset recipes always run with host standard Go.
 
 Selecting a sample replaces the active view; only one scene runs at a time.
 The top bar explains what the selected sample showcases; the sidebar keeps its
-short name. Basic Scene's size description refers to gzipped WASM bytes.
+short name.
 The **Open sample** link opens that sample in its own tab. Gallery selections are
 also represented in the URL hash, so a selected scene can be bookmarked.
 
-A free loopback port is selected by default (`127.0.0.1:0`). Open the printed URL;
-in a remote workspace, forward that printed port or use the workspace's proxy URL.
+A free loopback port is selected by default (`127.0.0.1:0`). Open the printed URL
+locally. In a remote workspace, forward the printed port or open that port
+through the workspace's authenticated proxy.
 Use `--addr 127.0.0.1:9000` when a fixed port is wanted. WebGPU needs a supported
 browser and a secure context; localhost qualifies. All page, runtime and WASM URLs
 are relative, including when served below a proxy path.
@@ -69,16 +73,19 @@ mise run build-samples
 mise exec -- go run ./cmd/engine build web ./samples/basic-scene --output dist/basic-scene
 ```
 
-`build-samples` uses the automatic compiler policy and checks the entire
-published size per sample: 20,000,000 bytes maximum, with exceptions of
-35,000,000 for Impostors and 45,000,000 for Sponza. The target for simple samples
-is 10,000,000 bytes. Prepared assets, shared scripts and pages count before any
-transfer compression. Both shared compiler runtimes count in full against every
-sample. The gallery is written to `dist/samples/`, including the matching WASM runtimes,
-sample pages, WASM binaries and prepared public resources. The destination must
-not already exist; remove or rename a previous export before rebuilding. Failed
-builds remove their staging directory without publishing a partial site. The
-same `--profile` and `--no-cache` options as browser previews are supported.
+`build-samples` uses the automatic compiler policy and checks each sample's
+distribution size per platform. The maximum is 20,000,000 bytes, with
+35,000,000 for Impostors and 45,000,000 for Sponza. The target for simple
+samples is 10,000,000 bytes. Each total includes WASM, common files, the
+selected external texture profile when present, and all shared files,
+including both compiler bridges in a mixed gallery. The gallery total counts
+both external texture profiles. The checks use file sizes before transfer
+compression.
+
+The export puts matching WASM runtimes, sample pages, WASM binaries and
+prepared public resources in `dist/samples/`. Use a fresh destination for
+each export. Failed builds discard staging. Exports accept the same
+`--profile`, `--no-cache`, and `--jobs` options as browser previews.
 
 The [sample workflow](../.github/workflows/samples.yml) runs the full mise check
 gate (assets, formatting, native/browser lint, tests and target builds), and
@@ -105,9 +112,9 @@ changed build; the pipeline still verifies action identities, tracked inputs and
 output hashes before reuse. Generated outputs, locks and recovery journals are
 rebuilt locally. CI runs `assets` followed by `check-prepared`, the same checks as
 `mise run check`, without a duplicate preparation pass before validation. All
-checks and export budgets still run on cache hits. Sponza's GPU sampling and
-resolve actions remain uncached without an explicit backend
-identity; other verified preparation can be reused.
+checks and export budgets still run on cache hits. Sponza uses the identity
+reported by its native adapter to reuse verified sampling and resolve results
+on subsequent builds.
 A warmed local cache does not establish a successful fresh public CI run.
 
 Warm runs reuse Go's cached recipe executables and verified asset actions.
@@ -166,8 +173,9 @@ README.md       usage and copyright annex for asset credits and licenses
 ```
 
 Keep asset authors, source links, licenses and adaptation notes in the sample
-README's `Copyright annex` section. Do not add separate sample copyright,
-license, attribution or provenance files, or asset-directory notice READMEs.
+README's `Copyright annex` section. When an asset's notice ships with the
+gallery, link to the distributable notice from the annex and keep its credit
+text in one place.
 
 `asset.config.go` owns the asset lifecycle. Before developing, prepare the named
 Go declarations and their assets:
@@ -203,13 +211,16 @@ device shader compilation follows the normal compute API.
 
 ## Debug panel
 
-Every runtime sample attaches the retained [debug panel](../pkg/debug/README.md)
-through checked `debug.Show(app)`. Configure application UI before attaching it;
-the panel shares that View without replacing its content. All samples start it hidden. Use **Hide / Debug**
-buttons, F3 to toggle or Escape to hide. Its pinned header and scrolling metrics
-use the same UI library and WebGPU pipeline on browser and native targets.
-The panel uses at most 70% of the viewport height. Hide pauses metric collection
-and leaves a small reopen button. There are no debug HTML controls or CSS.
+Every sample except Basic Scene starts with a collapsed **Debug · F3** button
+in the top right. Click or tap **Debug** to open the panel. Press **F3** to
+toggle it when the sample has keyboard focus, or use **Hide** or **Escape**
+to close it. Closing the panel pauses metric collection.
+
+Call `debug.Show(app)` after configuring sample UI, then call `panel.Hide()`
+before running. The panel shares an existing retained View or creates one
+with the prepared default font. Browser and native use the same WebGPU UI,
+and the scrollable panel occupies at most 70% of the viewport height.
+[Debug panel API and metrics](../pkg/debug/README.md)
 
 Compact retained controls explain each feature. Larger comparisons collapse
 advanced settings; perspective comparisons widen their field of view on narrow
@@ -227,12 +238,13 @@ to the curated order.
 | [Materials](standard-materials/) | Standard normal/AO shading and Valve/Source RNM/SSBump, shared prepared textures and comparison controls |
 | [UI Components](ui/) | WebGPU controls, actions, tabs, tooltips, alerts, progress, pagination, smooth scrolling and responsive forms |
 | [Sprites2D](sprites2d/) | Prepared images and atlas regions, output-pixel placement, transforms, order, tint, opacity and clipping |
+| [Particles](particles/) | Replay GPU particle effects and raise a wall to see how they interact with scene depth |
 | [Billboards](billboards/) | Spherical, axis-constrained and fixed world-sized quads while orbiting |
+| [Decals](decals/) | Spray paint onto the Switchyard and toggle its authored decals to compare the surfaces |
 | [Impostors](impostors/) | Complex CC0 boulder, stool and vase models beside two-triangle impostors, adaptive quality, mip controls and matched lighting |
 | [Instancing](instancing/) | Five thousand moving cube instances following a two-dimensional wave, submitted with GPU instancing |
 | [Reflections](reflections/) | Offline panorama bake, placed box probe with parallax-corrected cubemap sampling, reflective floor, walls and ceiling |
 | [Compute texture](compute-texture/) | Embedded WGSL writes a material texture through declared compute resources and per-frame dispatch; Space pauses the pattern |
+| [Luminous](luminous/) | Compare clustered and all-lights rendering in a castle courtyard lit by up to 240 lights |
 | [Sponza](sponza/) | An offline-baked atrium with RNM/SSBump relief, restored cutouts, portable textures, retained navigation and free flight |
-
-A decals sample remains planned once projected decals have a supporting public
-API. New examples should exercise real library functionality.
+| [Collision courtyard](courtyard/) | Walk a collision course, aim at a switch and use pressure plates to reach the relics |

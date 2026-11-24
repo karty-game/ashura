@@ -5,8 +5,8 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func (plugin *productionPlugin) planSamples(
@@ -16,10 +16,7 @@ func (plugin *productionPlugin) planSamples(
 	page pageRecord,
 	scene assetbuild.Ref,
 ) (assetbuild.Ref, error) {
-	cache := assetbuild.CacheAutomatic
-	if plugin.options.BackendIdentity == "" {
-		cache = assetbuild.CacheDisabled
-	}
+	inputs, cache := plugin.gpuCacheInputs(append([]assetbuild.Ref{scene}, plugin.resume...))
 
 	refs, err := plan.Add(
 		assetbuild.Action{
@@ -27,7 +24,7 @@ func (plugin *productionPlugin) planSamples(
 			ID:        fmt.Sprintf("level/production/sample/%s/%s/%d", identity, chunk, index),
 			Processor: "lightmapper-sample",
 			Revision:  "go-webgpu-linear-result@1",
-			Inputs:    append([]assetbuild.Ref{scene}, plugin.resume...),
+			Inputs:    inputs,
 			Artifacts: []assetbuild.Artifact{page.Receivers, page.Geometry},
 			Options: struct {
 				Sampling bake.Options

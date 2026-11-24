@@ -4,9 +4,9 @@ import (
 	_ "embed"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/shader"
 )
 
 //go:embed wgsl/compute-fixture.wgsl

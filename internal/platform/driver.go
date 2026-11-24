@@ -6,12 +6,12 @@ import (
 	"image"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uihost"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uihost"
 )
 
 // Config contains platform-independent application window settings.
@@ -56,6 +56,7 @@ type InputState struct {
 	TouchDX, TouchDY     float32
 	TouchPanX, TouchPanY float32
 	Pinch                float32
+	Touch                TouchPointer
 	Width                int
 	Height               int
 	Keys                 [256]bool

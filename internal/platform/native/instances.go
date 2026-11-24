@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 type gpuInstances struct {

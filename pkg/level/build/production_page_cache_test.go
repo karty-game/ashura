@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func TestProductionPageCacheJoinsImmutablePreparation(t *testing.T) {

@@ -29,7 +29,7 @@ func New%s(id string, services %sServices, setup func(*%s) (func(), error)) (_ *
 `
 
 func (build *compiler) generate(source, packageName, name string) (string, error) {
-	imports := map[string]string{"scene": "github.com/karty-game/karty-webgpu/pkg/scene", "fmt": "fmt"}
+	imports := map[string]string{"scene": "github.com/karty-game/ashura/pkg/scene", "fmt": "fmt"}
 	services := make(map[string]string)
 
 	var declarations, factories strings.Builder

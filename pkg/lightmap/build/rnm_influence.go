@@ -9,9 +9,9 @@ import (
 	"math"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 const (

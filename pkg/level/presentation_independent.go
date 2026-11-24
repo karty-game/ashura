@@ -3,9 +3,9 @@ package level
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 var (

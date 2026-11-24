@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func indexSupportRows(report bake.SurfaceEdgeReport, receivers []bake.Receiver) (bake.ReconstructionAdjacency, error) {

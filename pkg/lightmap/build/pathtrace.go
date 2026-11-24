@@ -8,8 +8,8 @@ import (
 	"errors"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 // PathTraceOptions controls only offline production tracing. Samples defaults

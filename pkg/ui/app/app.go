@@ -3,8 +3,8 @@
 package uiapp
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 type attachment struct{ *ui.View }

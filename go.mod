@@ -1,4 +1,4 @@
-module github.com/karty-game/karty-webgpu
+module github.com/karty-game/ashura
 
 go 1.27.0
 

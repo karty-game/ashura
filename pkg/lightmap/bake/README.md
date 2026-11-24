@@ -1,15 +1,12 @@
 # Offline lightmap baking
 
-`github.com/karty-game/karty-webgpu/pkg/lightmap/bake` is a host-only build API.
+`github.com/karty-game/ashura/pkg/lightmap/bake` is a host-only build API.
 It prepares physical RGB diffuse lighting and calibrated RNM coefficients from
 one transport solver. The game receives completed textures; this package adds no
 runtime lightmapper, fitting solver, image decoder or worker to an engine build.
 
-The [production specification](../../../spec/lightmap.md) defines units,
-projection, preparation and acceptance. Implemented APIs are described here;
-measured validation and remaining qualifications are recorded in
-[validation](../../../spec/validation.md). A successful CPU test or desktop bake
-is not phone qualification or a game frame-pacing result.
+This guide describes the production units, projection and implemented APIs.
+Phone qualification and game frame pacing require separate device checks.
 
 ## Fixed-count hardware bake
 
@@ -27,7 +24,7 @@ Sample count and bounce depth are example quality choices, not device budgets.
 ```go
 import (
     "context"
-    bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+    bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func gather(ctx context.Context, scene bake.Scene, uv1 [][3]bake.Vec2,
@@ -69,9 +66,9 @@ admission checks this explicit selection before creating the device.
 
 The worker is an in-process Go executor using the existing rendering binding.
 Our Go/WGSL implementation remains in Ashura; no C helper, subprocess protocol or
-separate worker installation is involved. `wgpu-native` is still an upstream
-native library. The retained binding fixes and qualification limits are recorded in
-[Decision 14](../../../spec/decisions/0014-in-process-go-lightmap-baking.md).
+separate worker installation is involved. The
+[tool requirements](../../../docs/asset-pipeline/tools.md) cover the upstream
+`wgpu-native` dependency.
 
 For cacheable preparation, `NativeLibrary` identifies the binding's active library,
 `WGPU_NATIVE_PATH`, `./lib` or the local native library. The level asset plugin
@@ -121,9 +118,8 @@ seam support. `ReconstructHalo` also accepts explicit bounded cross-tile inputs.
 
 `ReconstructionOptions.MaximumHalo` is an optional scheduling ceiling. Zero uses
 the actual packet, negotiated device and worker memory bounds. A positive value
-retains an additional explicit receiver ceiling. Neither mode truncates a
-receiver's complete neighbor support or changes quality. See
-[decision 12](../../../spec/decisions/0012-automatic-reconstruction-halo.md).
+retains an additional explicit receiver ceiling. Both modes preserve each
+receiver's complete neighbor support and reconstruction quality.
 
 Reconstruction retains original estimates for zero averaged tangent frames.
 Canonical prepared support shares identity indexing with frame partitioning and
@@ -162,8 +158,7 @@ execution/decoding failure returns no partial result list. Keep input receivers
 immutable until return. `Bake` uses the same path for a single entry.
 
 Standard fixed production sampling uses one cacheable logical-space action with
-individual page outputs. Adaptive and explicit-resume planning retain their
-existing per-page behavior. See [decision 11](../../../spec/decisions/0011-batched-fixed-lightmap-sampling.md).
+individual page outputs. Adaptive and explicit-resume planning operate per page.
 
 `Worker.BakeAdaptive` accepts `AdaptivePolicy`, optional frozen `AdaptiveState`
 and a snapshot callback. It runs an independent pilot, freezes per-receiver

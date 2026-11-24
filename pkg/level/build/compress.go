@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // ETC1SOptions configures offline portable Basis encoding at quality 1..255.

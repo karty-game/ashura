@@ -1,0 +1,337 @@
+{
+  "duration": 1.52,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 2,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Emerald core",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "mode": "constant",
+          "value": 0.88
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "mode": "constant",
+          "value": 172
+        },
+        "sizeParam": null,
+        "speed": {
+          "mode": "constant",
+          "value": 0
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Emerald core",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0.2,
+              "b": 0.66,
+              "g": 1,
+              "r": 0.54,
+              "t": 0
+            },
+            {
+              "a": 0.52,
+              "b": 0.55,
+              "g": 1,
+              "r": 0.31,
+              "t": 0.2
+            },
+            {
+              "a": 0,
+              "b": 0.44,
+              "g": 0.61,
+              "r": 0.06,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.1
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.23,
+              "v": 0.91
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 1.25
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0
+          },
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": null,
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "volume",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 0
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 34,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          },
+          {
+            "count": 19,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.24
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 70,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Collectible stars",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 132,
+          "min": -132,
+          "mode": "range"
+        },
+        "life": {
+          "max": 1.25,
+          "min": 0.68,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 65,
+          "min": 27,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 127,
+          "min": 40,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Collectible stars",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0.22,
+              "b": 0.58,
+              "g": 1,
+              "r": 0.7,
+              "t": 0
+            },
+            {
+              "a": 1,
+              "b": 0.58,
+              "g": 1,
+              "r": 0.82,
+              "t": 0.22
+            },
+            {
+              "a": 0.81,
+              "b": 0.41,
+              "g": 0.97,
+              "r": 0.33,
+              "t": 0.62
+            },
+            {
+              "a": 0,
+              "b": 0.29,
+              "g": 0.64,
+              "r": 0.13,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.15
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.26,
+              "v": 1.04
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.62,
+              "v": 0.71
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 0.08
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.94
+          },
+          "gravity": {
+            "x": 0,
+            "y": -40
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": null,
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "surface",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 22
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "Ashura sample",
+    "name": "Pickup Sparkle",
+    "notes": "An emerald adaptation of the CC0 Pickup Sparkle preset."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 17
+}

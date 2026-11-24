@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 type gpuGeometry struct {
@@ -60,13 +60,23 @@ func (driver *Driver) createGeometry(vertices, indices, lightmapUV []byte) (gpuG
 }
 
 func drawCalls(driver *Driver, pass *wgpu.RenderPassEncoder, frame render.Frame) error {
-	if err := driver.geometry.Prepare(frame.Draws); err != nil {
+	if err := driver.prepareDecals(frame.Decals); err != nil {
+		return err
+	}
+
+	if err := driver.updateFrameUniform(frame); err != nil {
 		return err
 	}
 
 	var active *wgpu.RenderPipeline
 
-	for _, draw := range frame.Draws {
+	order := driver.opaqueOrder.Prepare(frame)
+	for index := range frame.Draws {
+		if order != nil {
+			index = order[index]
+		}
+
+		draw := frame.Draws[index]
 		if !render.HasGeometry(draw) {
 			continue
 		}
@@ -81,7 +91,7 @@ func drawCalls(driver *Driver, pass *wgpu.RenderPassEncoder, frame render.Frame)
 			return err
 		}
 
-		group, err := driver.materialGroup(draw, frame)
+		group, err := driver.materialGroup(draw)
 		if err != nil {
 			return err
 		}
@@ -89,11 +99,13 @@ func drawCalls(driver *Driver, pass *wgpu.RenderPassEncoder, frame render.Frame)
 		pipeline := driver.drawPipeline(draw)
 		if pipeline != active {
 			pass.SetPipeline(pipeline)
+			driver.bindPointShadow(pass, draw)
+			driver.bindDecals(pass, draw)
+
 			active = pipeline
 		}
 
 		pass.SetBindGroup(0, group, nil)
-		driver.bindPointShadow(pass, draw)
 		pass.SetVertexBuffer(0, geometry.vertices, 0, geometry.vertexBytes)
 		pass.SetVertexBuffer(1, instances.buffer, 0, uint64(len(instances.state.Data)))
 
@@ -159,7 +171,7 @@ func (driver *Driver) drawScenePass(encoder *wgpu.CommandEncoder, view *wgpu.Tex
 	defer driver.geometry.Prune(gpuGeometry.release)
 	defer driver.pruneInstances()
 
-	if len(frame.Draws) == 0 {
+	if len(frame.Draws) == 0 && !frame.WorldParticles {
 		return driver.clearSurface(encoder, view, frame.ClearColor)
 	}
 
@@ -172,10 +184,7 @@ func (driver *Driver) drawScenePass(encoder *wgpu.CommandEncoder, view *wgpu.Tex
 		return fmt.Errorf("begin render pass: %w", err)
 	}
 
-	err = drawCalls(driver, pass, frame)
-	if err == nil {
-		driver.drawPointShadowDebug(pass, frame)
-	}
+	err = driver.drawSceneContents(pass, frame)
 
 	pass.End()
 	pass.Release()
@@ -183,6 +192,24 @@ func (driver *Driver) drawScenePass(encoder *wgpu.CommandEncoder, view *wgpu.Tex
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (driver *Driver) drawSceneContents(pass *wgpu.RenderPassEncoder, frame render.Frame) error {
+	if len(frame.Draws) > 0 {
+		if err := drawCalls(driver, pass, frame); err != nil {
+			return err
+		}
+	}
+
+	if frame.WorldParticles {
+		if err := driver.particleBridge.DrawWorld(pass, frame.ViewProjection); err != nil {
+			return err
+		}
+	}
+
+	driver.drawPointShadowDebug(pass, frame)
 
 	return nil
 }

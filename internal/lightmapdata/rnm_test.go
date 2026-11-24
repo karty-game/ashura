@@ -6,8 +6,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
 )
 
 func TestRNMRoundTripUsesContiguousOwnedGPUData(t *testing.T) {

@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	preparation "github.com/karty-game/karty-webgpu/internal/lightmapbuild"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	preparation "github.com/karty-game/ashura/internal/lightmapbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // LightmapUVs prepares density-controlled RNM pages and full-space transport per chunk.

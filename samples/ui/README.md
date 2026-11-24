@@ -31,4 +31,4 @@ Browser text editing requires EditContext; native text editing uses SDL services
 The prepared default font has Go Regular's coverage; unsupported glyphs retain
 their text and show a missing-glyph shape. A screen-reader bridge is not
 implemented. Physical IMEs, touch keyboards and native-window support require
-separate qualification; see [validation](../../spec/validation.md).
+separate qualification.

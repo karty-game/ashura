@@ -5,7 +5,7 @@ package levelbuild
 import (
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // Device families consume identical prepared pages before native texture

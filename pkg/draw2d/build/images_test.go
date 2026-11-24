@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	spritebuild "github.com/karty-game/karty-webgpu/pkg/draw2d/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	spritebuild "github.com/karty-game/ashura/pkg/draw2d/build"
 )
 
 func TestSpriteImagesAtlasPreservesAlphaAndReusesDeterministicBuild(t *testing.T) {

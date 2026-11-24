@@ -7,7 +7,7 @@ can reuse recently read vertex data. The model keeps its shape, triangle winding
 and texture coordinates. The output uses ordinary vertex and index buffers,
 with no decompression step in the game.
 
-Import `meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"`.
+Import `meshbuild "github.com/karty-game/ashura/pkg/mesh/build"`.
 
 ## Settings and defaults
 
@@ -26,7 +26,7 @@ the workload and require GPU measurement.
 
 For levels, place optimization after the separate lightmap UV stage and before
 baking. Import `levelbuild` from
-`github.com/karty-game/karty-webgpu/pkg/level/build`:
+`github.com/karty-game/ashura/pkg/level/build`:
 
 ```go
 Process: []assetbuild.Plugin{

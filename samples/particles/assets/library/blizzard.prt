@@ -1,0 +1,395 @@
+{
+  "duration": 2,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 180,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 90
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "flakes-fast",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 1.4,
+          "min": 0.9,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 6,
+          "min": 3,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 200,
+          "min": 120,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "flakes-fast",
+      "noise": {
+        "frequency": 0.005,
+        "octaves": 1,
+        "scrollSpeed": 0.5,
+        "strength": {
+          "mode": "constant",
+          "value": 40
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.8,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0.15
+            },
+            {
+              "a": 0.8,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.9,
+              "t": 0.85
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.9,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": -260,
+            "y": 320
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "render": {
+        "align": "velocity",
+        "maxStretch": 2.5,
+        "minStretch": 1,
+        "speedScale": 0.003
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 210,
+        "spread": 12
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 48,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 25
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "flakes-near",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 1.4,
+          "min": 0.9,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 13,
+          "min": 8,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 220,
+          "min": 140,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "flakes-near",
+      "noise": {
+        "frequency": 0.005,
+        "octaves": 1,
+        "scrollSpeed": 0.5,
+        "strength": {
+          "mode": "constant",
+          "value": 55
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.95,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0.15
+            },
+            {
+              "a": 0.95,
+              "b": 1,
+              "g": 0.96,
+              "r": 0.92,
+              "t": 0.85
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.96,
+              "r": 0.92,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": -340,
+            "y": 380
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 210,
+        "spread": 12
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 24,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 6
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "gust-haze",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 2.2,
+          "min": 1.5,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 100,
+          "min": 60,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "mode": "constant",
+          "value": 0
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "gust-haze",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.12,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.9,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.8
+            },
+            {
+              "t": 1,
+              "v": 1.4
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": -180,
+            "y": 20
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "height": 240,
+        "kind": "rect",
+        "width": 420
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Blizzard",
+    "notes": "Prewarmed flakes and haze fill the volume from the first frame. Fast flakes stretch along their motion."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 88
+}

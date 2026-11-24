@@ -6,9 +6,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 //go:embed testdata/rgba8.ktx2

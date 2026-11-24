@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/mesh"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 const (

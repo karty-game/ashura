@@ -2,7 +2,7 @@
 
 package levelbuild
 
-import "github.com/karty-game/karty-webgpu/pkg/assetbuild"
+import "github.com/karty-game/ashura/pkg/assetbuild"
 
 // The portable profile retains authored numeric coefficients exactly. Only the
 // offline KTX container layout is canonicalized; no block codec or mip filter runs.

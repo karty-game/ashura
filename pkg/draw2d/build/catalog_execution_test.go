@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	spritebuild "github.com/karty-game/karty-webgpu/pkg/draw2d/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	spritebuild "github.com/karty-game/ashura/pkg/draw2d/build"
 )
 
 func TestSpriteImagesGeneratedCatalogRunsWithMultiplePagesAndStandaloneImage(t *testing.T) {
@@ -65,7 +65,7 @@ func runGeneratedSpriteCatalog(t *testing.T, project, source string) {
 	}
 
 	module := fmt.Sprintf(
-		"module github.com/karty-game/karty-webgpu/internal/draw2d-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/karty-webgpu v0.0.0\n\nreplace github.com/karty-game/karty-webgpu => %q\n",
+		"module github.com/karty-game/ashura/internal/draw2d-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/ashura v0.0.0\n\nreplace github.com/karty-game/ashura => %q\n",
 		root,
 	)
 	if err = os.WriteFile(filepath.Join(project, "go.mod"), []byte(module), 0o600); err != nil {
@@ -126,7 +126,7 @@ import (
     "math"
     "testing"
 
-    "github.com/karty-game/karty-webgpu/pkg/draw2d"
+    "github.com/karty-game/ashura/pkg/draw2d"
 )
 
 func TestGeneratedImages(t *testing.T) {

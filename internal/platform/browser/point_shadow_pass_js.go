@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func (driver *pointShadowFeature) initPointShadowPasses(shadow *pointShadowGPU) error {
@@ -14,11 +14,22 @@ func (driver *pointShadowFeature) initPointShadowPasses(shadow *pointShadowGPU) 
 		return nil
 	}
 
+	bytes := js.Global().Get("Uint8Array")
+	shadow.faceBytes = bytes.New(render.PointShadowFaceSize)
+	shadow.sampleBytes = bytes.New(render.PointShadowSampleSize)
+
 	for face := range render.PointShadowFaces {
 		shadow.faces[face] = shadow.image.Call(
 			"createView",
 			jsObject(map[string]any{dimensionProperty: "2d", "baseArrayLayer": face, arrayLayerCountProperty: 1}),
 		)
+		shadow.facePasses[face] = jsObject(map[string]any{
+			labelProperty: "point shadow face", uiAttachments: js.ValueOf([]any{}),
+			drawDepthAttachment: jsObject(map[string]any{
+				viewProperty: shadow.faces[face], depthLoadProperty: loadOpClear,
+				depthStoreProperty: uiStore, depthClearProperty: 1,
+			}),
+		})
 		shadow.uniforms[face] = driver.device.Call(
 			"createBuffer",
 			jsObject(map[string]any{sizeProperty: render.PointShadowFaceSize, usageProperty: uniformBufferUsage}),
@@ -27,7 +38,7 @@ func (driver *pointShadowFeature) initPointShadowPasses(shadow *pointShadowGPU) 
 
 	shader := driver.device.Call(
 		"createShaderModule",
-		jsObject(map[string]any{labelProperty: "point-shadow.wgsl", shaderCodeProperty: render.PointShadowShader()}),
+		jsObject(map[string]any{labelProperty: "shadow-depth.wgsl", shaderCodeProperty: render.ShadowDepthShader()}),
 	)
 	for variant := range 2 {
 		if err := driver.createPointShadowVariant(shadow, shader, variant); err != nil {
@@ -56,7 +67,7 @@ func (driver *pointShadowFeature) createPointShadowVariant(shadow *pointShadowGP
 		jsObject(
 			map[string]any{
 				arrayStrideProperty: render.InstanceStride,
-				stepModeProperty:    "instance",
+				stepModeProperty:    uiInstanceStep,
 				attributesProperty:  instanceVertexAttributes(),
 			},
 		),
@@ -67,19 +78,21 @@ func (driver *pointShadowFeature) createPointShadowVariant(shadow *pointShadowGP
 			"createRenderPipelineAsync",
 			jsObject(
 				map[string]any{
-					labelProperty:  "point shadow radial depth",
+					labelProperty:  "point shadow projected depth",
 					layoutProperty: automaticLayout,
 					vertexProperty: jsObject(
-						map[string]any{moduleProperty: shader, entryPointProperty: vertexEntry, "buffers": js.ValueOf(buffers)},
-					),
-					fragmentProperty: jsObject(
-						map[string]any{moduleProperty: shader, entryPointProperty: "fs_main", targetsProperty: js.ValueOf([]any{})},
+						map[string]any{moduleProperty: shader, entryPointProperty: vertexEntry, uiVertexBuffers: js.ValueOf(buffers)},
 					),
 					primitiveProperty: jsObject(
 						map[string]any{topologyProperty: triangleListTopology, "frontFace": "cw", cullModeProperty: cull},
 					),
 					depthStencilProperty: jsObject(
-						map[string]any{formatProperty: "depth32float", depthWriteEnabledProperty: true, depthCompareProperty: "less"},
+						map[string]any{
+							formatProperty:            shadowDepthFormat,
+							depthWriteEnabledProperty: true,
+							depthCompareProperty:      depthCompareLess,
+							"depthBias":               render.ShadowDepthBias, "depthBiasSlopeScale": render.ShadowDepthBiasSlopeScale,
+						},
 					),
 				},
 			),
@@ -114,66 +127,65 @@ func (driver *pointShadowFeature) recordPointShadow(encoder js.Value, frame rend
 		return render.ErrPointShadowStartup
 	}
 
-	if !enabled {
-		light.GroundColor[0] = 1
+	var dirty uint8
+	if enabled {
+		dirty = shadow.state.Update(frame, light)
 	}
 
-	data := render.PointShadowSampleUniform(light, enabled)
+	data := shadow.state.SampleUniform(light, enabled)
 	if data != shadow.sampleData {
-		array := js.Global().Get("Uint8Array").New(len(data))
-		js.CopyBytesToJS(array, data[:])
-		driver.queue.Call("writeBuffer", shadow.sampleUniform, 0, array)
+		js.CopyBytesToJS(shadow.sampleBytes, data[:])
+		driver.queue.Call("writeBuffer", shadow.sampleUniform, 0, shadow.sampleBytes)
 		shadow.sampleData = data
 	}
 
-	if !enabled || !shadow.state.Update(frame, light) {
+	if dirty == 0 {
 		return nil
 	}
 
+	masks := shadow.state.FaceMasks()
+
 	for face := range render.PointShadowFaces {
-		data := render.PointShadowFaceUniform(light, face)
-		array := js.Global().Get("Uint8Array").New(len(data))
-		js.CopyBytesToJS(array, data[:])
-		driver.queue.Call("writeBuffer", shadow.uniforms[face], 0, array)
-		pass := driver.startRenderPass(
-			encoder,
-			jsObject(
-				map[string]any{
-					labelProperty: "point shadow face",
-					uiAttachments: js.ValueOf([]any{}),
-					"depthStencilAttachment": jsObject(
-						map[string]any{
-							viewProperty:      shadow.faces[face],
-							"depthLoadOp":     loadOpClear,
-							"depthStoreOp":    uiStore,
-							"depthClearValue": 1,
-						},
-					),
-				},
-			),
-		)
-
-		for _, draw := range driver.draws {
-			if !render.CastsPointShadow(draw.call) {
-				continue
-			}
-
-			variant := 0
-			if draw.call.CullBackfaces {
-				variant = 1
-			}
-
-			pass.Call("setPipeline", shadow.pipelines[variant])
-			pass.Call("setBindGroup", 0, shadow.groups[variant][face])
-			pass.Call("setVertexBuffer", 0, draw.geometry.vertices)
-			pass.Call("setVertexBuffer", 1, draw.instance.buffer)
-			pass.Call("setIndexBuffer", draw.geometry.indices, driver.indexFormat)
-			// WebGPU defaults all trailing offsets to zero.
-			pass.Call("drawIndexed", draw.count, draw.instances)
+		if dirty&(1<<face) == 0 {
+			continue
 		}
 
-		pass.Call("end")
+		driver.recordPointShadowFace(encoder, masks, face)
 	}
 
 	return nil
+}
+
+func (driver *pointShadowFeature) recordPointShadowFace(encoder js.Value, masks []uint8, face int) {
+	shadow := driver.pointShadow
+
+	data := shadow.state.FaceUniform(face)
+	if data != shadow.faceData[face] {
+		js.CopyBytesToJS(shadow.faceBytes, data[:])
+		driver.queue.Call("writeBuffer", shadow.uniforms[face], 0, shadow.faceBytes)
+		shadow.faceData[face] = data
+	}
+
+	pass := driver.startRenderPass(encoder, shadow.facePasses[face])
+
+	for index, draw := range driver.draws {
+		if masks[index]&(1<<face) == 0 {
+			continue
+		}
+
+		variant := 0
+		if draw.call.CullBackfaces {
+			variant = 1
+		}
+
+		pass.Call("setPipeline", shadow.pipelines[variant])
+		pass.Call("setBindGroup", 0, shadow.groups[variant][face])
+		pass.Call("setVertexBuffer", 0, draw.geometry.vertices)
+		pass.Call("setVertexBuffer", 1, draw.instance.buffer)
+		pass.Call("setIndexBuffer", draw.geometry.indices, driver.indexFormat)
+		// WebGPU defaults all trailing offsets to zero.
+		pass.Call("drawIndexed", draw.count, draw.instances)
+	}
+
+	pass.Call("end")
 }

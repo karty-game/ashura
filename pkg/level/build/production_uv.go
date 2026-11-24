@@ -9,11 +9,11 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	preparation "github.com/karty-game/karty-webgpu/internal/lightmapbuild"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/leveldata"
+	preparation "github.com/karty-game/ashura/internal/lightmapbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func (plugin *uvPlugin) prepareProductionUV(ctx *assetbuild.Context, chunk chunkRecord) (assetbuild.Result, error) {

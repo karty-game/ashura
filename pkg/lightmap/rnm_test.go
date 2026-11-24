@@ -5,11 +5,11 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 func TestRNMProgressiveSchedulingAndImmutableScene(t *testing.T) {

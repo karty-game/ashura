@@ -5,7 +5,7 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 const (
@@ -14,14 +14,38 @@ const (
 	textureCompressionASTC = "texture-compression-astc"
 )
 
-// CompressedAlbedoFormat queries the enabled device once per residency request.
+type browserCompression struct{ bc, etc2, astc bool }
+
+func enabledCompression(device js.Value) browserCompression {
+	features := device.Get("features")
+
+	return browserCompression{
+		bc:   features.Call("has", textureCompressionBC).Bool(),
+		etc2: features.Call("has", textureCompressionETC2).Bool(),
+		astc: features.Call("has", textureCompressionASTC).Bool(),
+	}
+}
+
+func (compression browserCompression) has(feature string) bool {
+	switch feature {
+	case textureCompressionBC:
+		return compression.bc
+	case textureCompressionETC2:
+		return compression.etc2
+	case textureCompressionASTC:
+		return compression.astc
+	default:
+		return false
+	}
+}
+
+// CompressedAlbedoFormat selects a format from the enabled-device snapshot.
 func (driver *Driver) CompressedAlbedoFormat() texturedata.Format {
-	features := driver.device.Get("features")
-	if features.Call("has", textureCompressionBC).Bool() {
+	if driver.compression.bc {
 		return texturedata.BC1
 	}
 
-	if features.Call("has", textureCompressionETC2).Bool() {
+	if driver.compression.etc2 {
 		return texturedata.ETC2RGB
 	}
 
@@ -31,8 +55,9 @@ func (driver *Driver) CompressedAlbedoFormat() texturedata.Format {
 func compressionFeatures(adapter js.Value) []any {
 	var required []any
 
+	features := adapter.Get("features")
 	for _, feature := range []string{textureCompressionBC, textureCompressionETC2, textureCompressionASTC} {
-		if adapter.Get("features").Call("has", feature).Bool() {
+		if features.Call("has", feature).Bool() {
 			required = append(required, feature)
 		}
 	}
@@ -50,7 +75,7 @@ func (driver *Driver) preparedTextureFormat(source *texturedata.Texture) (string
 		feature, blockFormat := gpuBlockFormat(encoding)
 		format = blockFormat
 
-		if !driver.device.Get("features").Call("has", feature).Bool() {
+		if !driver.compression.has(feature) {
 			return "", errTextureUpload
 		}
 
@@ -70,6 +95,8 @@ func gpuBlockFormat(encoding texturedata.Format) (string, string) {
 		return textureCompressionETC2, "etc2-rgba8unorm"
 	case texturedata.ASTC4x4:
 		return textureCompressionASTC, "astc-4x4-unorm"
+	case texturedata.ASTC6x6:
+		return textureCompressionASTC, "astc-6x6-unorm"
 	case texturedata.BC6H:
 		return textureCompressionBC, "bc6h-rgb-ufloat"
 	case texturedata.BC7:
@@ -81,4 +108,15 @@ func gpuBlockFormat(encoding texturedata.Format) (string, string) {
 	default:
 		return "", ""
 	}
+}
+
+// SupportsTextureFormat reports enabled device capabilities without preparing data.
+func (driver *Driver) SupportsTextureFormat(format texturedata.Format) bool {
+	if format == texturedata.RGBA8 {
+		return true
+	}
+
+	feature, _ := gpuBlockFormat(format)
+
+	return driver.compression.has(feature)
 }

@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/shader"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Point is one source in the prepared model's coordinate system. Its attenuation

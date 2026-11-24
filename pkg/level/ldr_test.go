@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestLDRProfileUsesExactFormatAndHardwareTransfer(t *testing.T) {
@@ -48,7 +49,7 @@ func TestLDRProfileUsesExactFormatAndHardwareTransfer(t *testing.T) {
 
 			missing := filepath.Join(root, "missing-payload-root")
 			for _, device := range []texture.Format{texture.RGBA8, texture.BC1, texture.ETC2RGB} {
-				prepared, err := readChunk(t.Context(), missing, chunk, nil, nil, device)
+				prepared, err := readChunkFixture(t.Context(), missing, chunk, nil, device)
 				if device == profile.device {
 					if prepared != nil || !errors.Is(err, fs.ErrNotExist) {
 						t.Fatal("supported profile did not reach payload I/O", err)
@@ -58,7 +59,7 @@ func TestLDRProfileUsesExactFormatAndHardwareTransfer(t *testing.T) {
 				}
 			}
 
-			prepared, err := readChunk(t.Context(), root, chunk, nil, nil, profile.device)
+			prepared, err := readChunkFixture(t.Context(), root, chunk, nil, profile.device)
 			if prepared != nil || !errors.Is(err, leveldata.ErrFormat) {
 				t.Fatal("raw RGBE payload admitted as native sRGB LDR", err)
 			}
@@ -74,7 +75,16 @@ func TestLDRMobileReliefNeedsNoOptionalCompression(t *testing.T) {
 	ref := payload(t, root, data)
 	material := Material{SSBump: &ref}
 
-	prepared := &PreparedChunk{files: map[string][]byte{ref.SHA256: data},
+	verified, err := resource.ReadVerified(
+		t.Context(),
+		root,
+		resource.Asset{ID: "ssbump", Path: ref.Path, Size: ref.Size, SHA256: ref.SHA256},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	prepared := &PreparedChunk{payloads: map[string]*resource.Payload{ref.SHA256: verified},
 		images: make(map[string]texture.Data), imageInfo: make(map[string]imageMetadata)}
 	if err := prepared.admitMaterialImages(material, leveldata.StorageETC2LDR); err != nil {
 		t.Fatal("exact portable relief rejected", err)

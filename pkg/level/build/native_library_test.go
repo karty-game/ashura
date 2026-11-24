@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestNativeLibraryUsesOnlyPinnedUpstreamArchives(t *testing.T) {

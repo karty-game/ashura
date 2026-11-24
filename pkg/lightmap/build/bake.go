@@ -7,8 +7,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Result contains a one-mip linear RGBA8 atlas and its irradiance decoding scale.

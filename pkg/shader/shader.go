@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Module is immutable WGSL source. Device compilation occurs during App.Run setup.

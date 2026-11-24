@@ -7,8 +7,8 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/platform/browser/framehost"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/platform/browser/framehost"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 //nolint:paralleltest // Owns the browser bootstrap factory during this test.

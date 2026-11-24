@@ -1,16 +1,40 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/samples/impostors/generated/impostors"
-	"github.com/karty-game/karty-webgpu/samples/impostors/generated/models"
+	"errors"
+
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
+	impostors "github.com/karty-game/ashura/samples/impostors/generated/impostors/bc"
+	mobile "github.com/karty-game/ashura/samples/impostors/generated/impostors/mobile"
+	"github.com/karty-game/ashura/samples/impostors/generated/models"
 )
+
+var errImpostorCompression = errors.New("impostors requires BC or ASTC texture compression")
 
 type comparisonExample struct {
 	id, label string
 	model     model.Asset
-	card      impostor.Asset
+	card      resource.Asset
+}
+
+func comparisonExamplesForDevice(app *engine.App) ([3]comparisonExample, error) {
+	examples := comparisonExamples()
+	if app.SupportsTextureFormat(texture.BC1) {
+		return examples, nil
+	}
+
+	if !app.SupportsTextureFormat(texture.ASTC6x6) {
+		return [3]comparisonExample{}, errImpostorCompression
+	}
+
+	for index, card := range [3]resource.Asset{mobile.AssetsBoulder(), mobile.AssetsStool(), mobile.AssetsVase()} {
+		examples[index].card = card
+	}
+
+	return examples, nil
 }
 
 func comparisonExamples() [3]comparisonExample {

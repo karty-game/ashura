@@ -6,10 +6,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func TestUnregisteredSpritesRejectDrawsButAllowEmptyViewport(t *testing.T) {

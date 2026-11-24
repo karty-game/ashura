@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 13,
+  "meta": {
+    "name": "Snow",
+    "createdWith": "particlr@0.x",
+    "notes": "Gentle drifting snowfall with parallax depth."
+  },
+  "duration": 3,
+  "looping": true,
+  "seed": 29,
+  "params": [],
+  "layers": [
+    {
+      "id": "snow-far",
+      "name": "snow-far",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "circle-soft",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 40
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": true,
+        "maxParticles": 160
+      },
+      "shape": {
+        "kind": "edge",
+        "length": 360,
+        "emitFrom": "surface"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 2,
+          "max": 3
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 5,
+          "max": 15
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 3,
+          "max": 7
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -40,
+          "max": 40
+        }
+      },
+      "overLifetime": {
+        "size": null,
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 0
+            },
+            {
+              "t": 0.15,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 0.6
+            },
+            {
+              "t": 0.85,
+              "r": 0.9,
+              "g": 0.95,
+              "b": 1,
+              "a": 0.6
+            },
+            {
+              "t": 1,
+              "r": 0.9,
+              "g": 0.95,
+              "b": 1,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": null,
+        "velocity": {
+          "gravity": {
+            "x": -8,
+            "y": 40
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "constant",
+            "value": 0.8
+          },
+          "speedMultiplier": {
+            "mode": "curve",
+            "keys": [
+              {
+                "t": 0,
+                "v": 1
+              },
+              {
+                "t": 0.5,
+                "v": 0.6
+              },
+              {
+                "t": 1,
+                "v": 1
+              }
+            ]
+          },
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 10
+        },
+        "frequency": 0.006,
+        "scrollSpeed": 0.12,
+        "octaves": 1
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": null,
+      "randomFlip": null,
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    },
+    {
+      "id": "snow-near",
+      "name": "snow-near",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "circle-soft",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 12
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": true,
+        "maxParticles": 48
+      },
+      "shape": {
+        "kind": "edge",
+        "length": 360,
+        "emitFrom": "surface"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 2,
+          "max": 3
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 6,
+          "max": 16
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 10,
+          "max": 16
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -40,
+          "max": 40
+        }
+      },
+      "overLifetime": {
+        "size": null,
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 0
+            },
+            {
+              "t": 0.15,
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 0.9
+            },
+            {
+              "t": 0.85,
+              "r": 0.92,
+              "g": 0.96,
+              "b": 1,
+              "a": 0.9
+            },
+            {
+              "t": 1,
+              "r": 0.92,
+              "g": 0.96,
+              "b": 1,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": null,
+        "velocity": {
+          "gravity": {
+            "x": -12,
+            "y": 55
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "constant",
+            "value": 0.8
+          },
+          "speedMultiplier": {
+            "mode": "curve",
+            "keys": [
+              {
+                "t": 0,
+                "v": 1
+              },
+              {
+                "t": 0.5,
+                "v": 0.45
+              },
+              {
+                "t": 1,
+                "v": 1
+              }
+            ]
+          },
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 18
+        },
+        "frequency": 0.006,
+        "scrollSpeed": 0.12,
+        "octaves": 1
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": null,
+      "randomFlip": null,
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    }
+  ]
+}

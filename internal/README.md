@@ -22,8 +22,8 @@ private implementation details; callers should not depend on their layout.
 
 Runtime packages consume prepared data. Source image decoding, UV generation,
 packing and lightmap computation belong to asset preparation. Go hosts the
-embedded UV, texture and font libraries offline. Remaining native dependencies
-retain their [tool/library ownership](../spec/asset-tools.md). The approved runtime
+embedded UV, texture and font libraries offline. The [asset pipeline tool guide](../docs/asset-pipeline/tools.md)
+covers the remaining native dependencies. The runtime
 ETC1S compatibility path remains distinct; prepared native GPU exports do not
 add runtime transcoding.
 

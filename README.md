@@ -17,16 +17,22 @@ A Go-first WebGPU engine built around one mantra:
 
 ## Getting Started
 
+From your Go module, add Ashura and its preview CLI. Save the example below as `main.go`.
+
+```sh
+go get github.com/karty-game/ashura/pkg/engine github.com/karty-game/ashura/cmd/engine
+```
+
 ```go
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/engine/features"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine/features"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/mesh"
 )
 
 func main() {
@@ -58,3 +64,11 @@ func main() {
 	}
 }
 ```
+
+Run the example in your browser with the Ashura CLI.
+
+```sh
+CGO_ENABLED=0 GOFLAGS=-tags=nofakecgo go run github.com/karty-game/ashura/cmd/engine run web .
+```
+
+See the [engine guide](pkg/engine/README.md) for setup and the [sample gallery](https://karty-game.github.io/ashura/) for more scenes.

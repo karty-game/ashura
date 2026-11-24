@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/reflection"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/samples/internal/sampleui"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/reflection"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/samples/internal/sampleui"
 )
 
 func showReflectionControls(app *engine.App, liveProbe *reflection.Probe, reflective []*material.Material) error {

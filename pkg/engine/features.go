@@ -3,13 +3,15 @@ package engine
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 // Feature is an explicit engine implementation selected from pkg/engine/features.
 // UI is attached separately through pkg/ui/app, with its own retained View.
 type Feature = platform.Feature
+
+var errClusterLightCapacity = fmt.Errorf("engine: clustered shading supports at most %d lights", render.ClusterLightLimit)
 
 var (
 	ErrFeatureMissing   = platform.ErrFeatureMissing
@@ -48,6 +50,10 @@ func (app *App) validateFeatureSetup(shadowResolution uint32) error {
 		return missingFeature(platform.SpriteFeature)
 	}
 
+	if len(app.particles) != 0 && !app.featureMask.Has(platform.ParticleFeature) {
+		return missingFeature(platform.ParticleFeature)
+	}
+
 	if (len(app.buffers) > 0 || len(app.computePipelines) > 0 || len(app.computeGroups) > 0) &&
 		!app.featureMask.Has(platform.ComputeFeature) {
 		return missingFeature(platform.ComputeFeature)
@@ -74,3 +80,8 @@ func (app *App) requireDrawFeature(draw render.DrawCall) error {
 
 	return nil
 }
+
+// SetLightCulling switches the registered clustered lighting renderer between
+// compute culling and an all-lights loop for visual and performance comparisons.
+// Call it on the App loop, or before Run.
+func (app *App) SetLightCulling(enabled bool) { app.unculledLights = !enabled }

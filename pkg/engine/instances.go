@@ -1,6 +1,10 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/render"
+import (
+	"slices"
+
+	"github.com/karty-game/ashura/internal/render"
+)
 
 type frameBatch struct {
 	draw            render.DrawCall
@@ -15,6 +19,7 @@ type frameBatch struct {
 	cursor          int
 	version         uint64
 	dirty           bool
+	shadowKey       render.ShadowCasterKey
 }
 
 // Keep probe identity inline instead of boxing a composite value in InstanceKey.
@@ -34,6 +39,7 @@ type frameStorage struct {
 	aspect          float32
 	cameraReady     bool
 	probes          []reflectionProbe
+	shadowOrder     []uint32
 }
 
 func (storage *frameStorage) reset() {
@@ -165,7 +171,14 @@ func (storage *frameStorage) finish() render.Frame {
 		}
 	}
 
-	for _, batch := range storage.order {
+	previousDrawCount := len(storage.shadowOrder)
+
+	shadowChanged := previousDrawCount != len(storage.order)
+	if storage.frame.ClusteredLighting {
+		storage.shadowOrder = slices.Grow(storage.shadowOrder, max(len(storage.order)-previousDrawCount, 0))[:len(storage.order)]
+	}
+
+	for index, batch := range storage.order {
 		if batch.draw.InstanceKey != nil {
 			if len(batch.draw.Instances) != batch.cursor {
 				batch.dirty = true
@@ -180,7 +193,22 @@ func (storage *frameStorage) finish() render.Frame {
 		}
 
 		batch.draw.InstanceVersion, batch.draw.InstanceOwner, batch.draw.ChangedInstances = batch.version, batch, batch.changed
+		if storage.frame.ClusteredLighting {
+			key := render.CasterKey(batch.draw)
+			if index >= previousDrawCount || storage.shadowOrder[index] != batch.draw.ID || batch.shadowKey != key {
+				shadowChanged = true
+				batch.shadowKey = key
+				storage.shadowOrder[index] = batch.draw.ID
+			}
+		}
+
 		storage.frame.Draws = append(storage.frame.Draws, batch.draw)
+	}
+
+	if storage.frame.ClusteredLighting {
+		if shadowChanged || storage.frame.ShadowCasterRevision == 0 {
+			storage.frame.ShadowCasterRevision++
+		}
 	}
 
 	return storage.frame

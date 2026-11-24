@@ -6,8 +6,8 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 //nolint:paralleltest // The fixture owns real browser document focus and EditContext attachment.

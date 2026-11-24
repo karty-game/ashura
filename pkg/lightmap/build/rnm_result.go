@@ -3,7 +3,7 @@ package lightmapbuild
 import (
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // RNMResult contains three one-mip irradiance coefficient atlases. Encoding

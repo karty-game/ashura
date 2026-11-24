@@ -7,13 +7,13 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 func TestBC1PreparedPairLoadsBeforeRunAndRejectsEncodingMismatch(t *testing.T) {

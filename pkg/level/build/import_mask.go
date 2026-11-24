@@ -3,9 +3,9 @@
 package levelbuild
 
 import (
-	geometry "github.com/karty-game/karty-webgpu/internal/levelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	geometry "github.com/karty-game/ashura/internal/levelbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func separateMaskedPlacement(

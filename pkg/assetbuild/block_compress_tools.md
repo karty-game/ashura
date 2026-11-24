@@ -11,8 +11,14 @@ records exact source paths, commit, checksums and notices. The C-API modules are
 unchanged upstream artifacts. A build lazily owns one serialized encoder and
 transcoder session and reuses their initialized instances across asset actions.
 Cache-only builds initialize neither. Standalone function calls create temporary
-sessions. See [Decision 15](../../spec/decisions/0015-portable-offline-libraries.md)
-for memory ceilings, cancellation and cache migration.
+sessions.
+
+Large native ASTC6x6 exports process block-row strips with two bounded offline
+workers, reusing the build session and temporarily owning one additional encoder.
+They share the original two-minute operation deadline, preserve authored mip
+pixels and clamp partial block edges. The extra instance closes after the workers
+join. Each module retains its existing 1 GiB memory ceiling; this is not a runtime
+pool or an application-side transformation.
 
 The embedded endpoint encoders are single-threaded. BC1 punchthrough masks are
 applied offline in Go after endpoint encoding; no replacement native encoder is

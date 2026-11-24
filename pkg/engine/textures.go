@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var (
@@ -52,6 +52,22 @@ func (app *App) CompressedAlbedoFormat() texture.Format {
 	}
 
 	return texture.RGBA8
+}
+
+// SupportsTextureFormat reports support on the current enabled device. Before
+// Run opens the device it returns false. It performs no resource preparation.
+func (app *App) SupportsTextureFormat(format texture.Format) bool {
+	if app == nil || app.closed || app.driver == nil {
+		return false
+	}
+
+	if driver, ok := app.driver.(interface {
+		SupportsTextureFormat(format texturedata.Format) bool
+	}); ok {
+		return driver.SupportsTextureFormat(format)
+	}
+
+	return format == texture.RGBA8
 }
 
 func (app *App) newTexture(data texture.Data, create func(texture.Data) (*texture.Texture, error)) (*texture.Texture, error) {
@@ -129,6 +145,12 @@ func (app *App) UnloadTextures(images []*texture.Texture) error {
 // Check scene references once for the complete batch, rather than rescanning
 // every component for each texture in a multi-texture model.
 func (app *App) sceneTexturesInUse(candidates map[*texture.Texture]struct{}) bool {
+	if app.scene != nil && app.scene.decals != nil && app.scene.decals.static != nil {
+		if _, used := candidates[app.scene.decals.static.atlas]; used {
+			return true
+		}
+	}
+
 	inUse := false
 
 	app.scene.Each(func(entity Entity) {
@@ -137,6 +159,11 @@ func (app *App) sceneTexturesInUse(candidates map[*texture.Texture]struct{}) boo
 		}
 
 		app.scene.eachComponent(entity, func(component any) {
+			if value, ok := component.(*DecalProjector); ok && value.ReceiverMask != 0 && value.Tint.A != 0 {
+				_, found := candidates[value.Image.Texture]
+				inUse = inUse || found
+			}
+
 			if provider, ok := component.(texturedMaterialComponent); ok {
 				albedo, normal, _, _ := provider.RuntimeTextures()
 				_, hasAlbedo := candidates[albedo]

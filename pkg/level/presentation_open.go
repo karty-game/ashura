@@ -5,8 +5,8 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 // Selection is an explicit snapshot of chunk and independent-object indices.
@@ -24,6 +24,9 @@ type OpenOptions struct {
 	// Select runs once on the App loop after complete manifest admission. Treat
 	// its manifest as read-only. Returned index slices are copied before I/O.
 	Select func(Manifest) (Selection, error)
+	// Decals supplies already-prepared records and receiver layers for a selected
+	// chunk before its first material range is presented. It runs on the App loop.
+	Decals func(chunkID string) (ChunkDecals, error)
 	// StatusChanged runs only on the App loop after progress changes. Close
 	// emits no notification; Status exposes its Closed state explicitly.
 	StatusChanged func(PresentationStatus)

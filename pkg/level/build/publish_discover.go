@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func discoverPublishedPages(ctx *assetbuild.Context, child *assetbuild.Plan, resource assetbuild.Resource, options PublishOptions) error {
@@ -71,7 +71,7 @@ func planPublishedPages(
 					Parallel:  options.NativeTextures != nil,
 					ID:        fmt.Sprintf("level/package-page/%s/%s/%d", resource.ID, chunk.Description.ID, index),
 					Processor: "level-package-page",
-					Revision:  "shared-profile-pages@2",
+					Revision:  "shared-profile-pages@3",
 					Artifacts: artifacts,
 					Options:   pagePackagingOptions{chunk.Description.Origin, options.Development, page},
 					Outputs:   []assetbuild.Slot{{Name: slot, Schema: "karty.level-page@1"}},

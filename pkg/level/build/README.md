@@ -12,23 +12,29 @@ resize, SSBump generation and mip filtering, followed by chunking, UVs and bakin
 Finally put `Publish` or `PublishVariants` in `Pipeline.Output`. Materials accepts processed
 image records directly; no intermediate `KTX2()` file publication is needed.
 See [Sponza's recipe](../../../samples/sponza/asset.config.go) and the
-[V5 recipe contract](../../../spec/asset-pipeline-v5.md).
+[asset pipeline guide](../../../docs/asset-pipeline/README.md).
 
 `LightmapUVs(UVOptions{Production: true, ...})` and `ProductionBake` select the
 new offline compute path. It supports physical RGB and calibrated RNM from one
 trace, hierarchy-sampled emitters, footprint antialiasing, bounce lighting,
 independent pilot allocation and cross-page linear reconstruction. Use
 `PublishOptions.Representation` with `level.RGBDiffuse` or `level.RNMFit` to
-publish one or three maps. See the [baker API](../../lightmap/bake/README.md),
-[design and qualification status](../../../spec/lightmap.md), and
-[v6 format](../../../spec/baked-level-v6.md). `ProductionOptions.Worker.MemoryBytes`
-is an explicit offline worker ceiling; `BackendIdentity` identifies the GPU/driver
-configuration for cache invalidation. Final RNM requires `Verification`, all
+publish one or three maps. See the [baker API](../../lightmap/bake/README.md)
+and [level runtime format](../README.md). `ProductionOptions.Worker.MemoryBytes`
+is an explicit offline worker ceiling. The baker detects the native backend
+identity for caching. Final RNM requires `Verification`, all
 receivers and the actual material normal domain. Explicit previews retain
 verification diagnostics and are marked in the manifest.
 
 `samples/sponza/asset.config.go` is the maintained preview recipe and uses
 `PublishVariants` to emit only RNM BC and RNM mobile native profiles.
+
+Set `PublishOptions.BundleChunks: true` to publish each chunk's geometry,
+secondary UVs and lightmaps as one uncompressed pack. Shared material textures
+and independent models remain separate files. The build records byte offsets
+in the v8 manifest. Loading uses verified byte views without an archive parser
+or decompressor. The option defaults to
+false and applies independently to each publication profile.
 
 For integrated preparation, follow `StaticChunks` with
 `ProductionBake(ProductionOptions{UVs: &UVOptions{TexelsPerUnit: 16,
@@ -36,7 +42,6 @@ MaxPageSize: 512, Padding: 4}, ...})`. The baker prepares production receiver
 UVs while independently building acceleration and light distributions from the
 same complete chunk visibility geometry. Omit the separate `LightmapUVs` step
 in this form. Leaving `UVs` nil preserves the separately staged form above.
-See [the build API decision](../../../spec/decisions/0009-integrated-lightmap-preparation.md).
 
 Use the native production recipe below for maintained level builds. The inert
 `RNMBake` function and `BakeOptions` type have been removed from this unreleased
@@ -45,14 +50,13 @@ and `ProductionBake(ProductionOptions{...})`. Migrate lighting calibration and
 verification policy explicitly; existing `.klightmap` sidecars are not
 automatically converted. The old `engine assets lightmap` command still returns
 migration guidance before IO. Run the production recipe with `engine assets build`.
-See [the API cleanup decision](../../../spec/decisions/0005-repository-api-cleanup.md).
 
-For native web delivery use [V7 normalized LDR variants](../../../spec/baked-level-v7.md).
+For native web delivery, use v7 normalized LDR variants.
 Prepare BC and ETC2 profiles with `PublishVariants`, select the matching
 descriptor after device initialization, and upload prepared textures without
 embedding a runtime decoder.
 
-`PublishOptions.AlbedoETC1S` optionally enables the [v3 web delivery profile](../../../spec/baked-level-v3.md).
+`PublishOptions.AlbedoETC1S` optionally enables the v3 web delivery profile.
 Select an explicit quality; an empty executable uses the embedded Basis library.
 Explicit native executable paths and non-system components are qualification
 overrides. Distinct albedos encode after chart consolidation; input mips and all
@@ -60,13 +64,15 @@ RNM/SSBump bytes remain intact. The loader transcodes to GPU compressed blocks
 in a dedicated web worker. This option currently requires the browser loader;
 existing native/standalone loading continues to support uncompressed profiles.
 
-`PublishOptions.NativeTextures` selects [V7 normalized LDR delivery](../../../spec/baked-level-v7.md).
+`PublishOptions.NativeTextures` selects v7 normalized LDR delivery.
 Use `NativeTextureOptions{Family: "bc", LightmapFormat: "bc7", Transfer: "srgb", ...}`
 for the measured desktop choice. Optional BC1 trades precision for 4 bpp; the
 portable mobile target is ETC2 RGB. Lightmaps keep one common RGB/RNM tuple scale
 and use existing hardware sRGB sampling. The builder shares opaque UASTC/native
 encoding and requires no HDR encoder or runtime decoding component. NativeAlbedo
-retains the explicit offline AlbedoETC1S-to-native preparation path. Do not set
+retains the explicit offline AlbedoETC1S-to-native preparation path.
+`ProfileMaterials` places native albedo and relief under the selected device
+profile's directory. It requires `NativeAlbedo`. Do not set
 NativeTextures and NativeHDR together. Mobile SSBump keeps exact linear RGBA8
 channels and authored mips in a canonical GPU-ready KTX container because the
 tested ETC2 coefficient encoders lose too much directional precision. Desktop
@@ -80,10 +86,9 @@ run independent material and lightmap codecs in one dependency graph. Native
 albedo transcoding consumes its declared ETC1S producer directly. A combined
 profile index binds the finished material and lightmap files before descriptors
 are published; an encoder failure still rejects the complete build output.
-Local full-build/browser results are recorded in [validation](../../../spec/validation.md).
 Physical mobile and smooth-loading qualification remain open.
 
-Legacy `PublishOptions.NativeHDR` enables the [v4 BC delivery profile](../../../spec/baked-level-v4.md):
+Legacy `PublishOptions.NativeHDR` enables the v4 BC delivery profile with
 offline shared-exposure BC6H RNM and BC7 SSBump encoding after consolidation.
 It uses the embedded offline codecs by default and requires a BC-capable browser. The GPU receives
 native blocks; this option adds no runtime codec. `ProductionOptions.Sampling`
@@ -131,7 +136,6 @@ Pipelines: []assetbuild.Pipeline{{
                 Ground: bake.Vec3{.025, .02, .015},
             },
             Preview: true, // Final RNM also requires complete directional verification.
-            BackendIdentity: backendIdentity,
         }),
     },
     Output: []assetbuild.Plugin{levelbuild.Publish(levelbuild.PublishOptions{})},
@@ -196,13 +200,17 @@ without a helper process, browser, window or loopback service. Per-job buffers
 release after readback; resident scenes and pipelines are reused. Our baking
 logic remains a reusable Go/WGSL package called by the CLI's asset recipes.
 
-`BackendIdentity` identifies GPU, driver and backend. Offline actions additionally
-fingerprint the actual native library using `Context.TrackLibrary`; the recipe
-binary includes our Go implementation and WGSL. Empty backend identity disables
-GPU result caching. The pipeline installs the checksum-pinned upstream native library through mise
+`ProductionBake` probes the selected native adapter once per pipeline and uses
+its reported device, driver and backend as inputs to the sampling and resolve
+cache keys. The probe does not create a compute device or compile shaders. On a
+cache miss the worker checks that it selected the same adapter before baking.
+`BackendIdentity` overrides detection when the recipe supplies an explicit
+identity. Offline actions also fingerprint the actual native library using
+`Context.TrackLibrary`; the recipe binary includes our Go implementation and WGSL.
+The pipeline installs the checksum-pinned upstream native library through mise
 when needed; explicit `WGPU_NATIVE_PATH` and existing initialized libraries remain
-available. No worker release or native consumer compilation is needed. Shared
-binding fixes and qualification limits are recorded in [Decision 14](../../../spec/decisions/0014-in-process-go-lightmap-baking.md).
+available. No worker release or native consumer compilation is needed.
+See [asset pipeline tool requirements](../../../docs/asset-pipeline/tools.md).
 
 ## UV preparation tools
 
@@ -211,13 +219,12 @@ legacy bake inputs. Normal recipes declare UV settings only; no compiler,
 executable installation, JavaScript runtime or xatlas release is required. The
 build-owned preparer reuses compiled code and each request owns an isolated
 instance. Go repairs overlapping/collapsed charts before the existing density,
-geometry and receiver admission. See [portable UV preparation](../../../spec/asset-tools.md#embedded-xatlas-preparation).
+geometry and receiver admission. See [lightmap UV preparation](../../../docs/asset-pipeline/processors/level-lightmap-uvs.md).
 
 `UVOptions.Compiler` and `Executable` have been removed, along with
 `KARTY_XATLAS`. UV preparation always uses the embedded library. Third-party
 source is never compiled during preparation, and no encoder helper enters a
-game build. [Decision 16](../../../spec/decisions/0016-portable-only-asset-processing.md)
-removes the optional native paths retained by Decision 15.
+game build.
 
 ## Cache and publication
 
@@ -254,7 +261,7 @@ defaults to a maximum final atlas size of 1024; `MaxAtlasSize: 2048` permits
 2048px RNM maps using `karty.baked-level@2`. Position, normal, UV0 and lighting
 texels remain unchanged; UV1 adjustment and texture packing happen offline.
 Different numeric scales/encodings stay independent. Development output retains
-the individually rebakeable input pages. See [the v2 decision](../../../spec/baked-level-v2.md).
+the individually rebakeable input pages.
 
 The initial Sponza output had 415 page/material ranges against the original 22,
 which was a performance regression. Consolidation removes that coupling; it
@@ -290,8 +297,8 @@ Explicit `engine assets build --jobs 2` permits the production lightmapper's
 independent CPU surface-support action to overlap GPU sampling. Shared
 helper calls remain exclusive, spaces retain independent ownership, and all
 support/sample inputs join before resolve. Zero/one/default remains serial.
-This is build-only concurrency with additional resident memory, not a rendering
-or loading budget. See [the V2 pipeline contract](../../../spec/asset-pipeline-v2.md).
+This build-only concurrency uses additional resident memory. See
+[asset build concurrency](../../assetbuild/README.md#explicit-build-concurrency).
 
 
 ## Portable single-source level preparation
@@ -308,7 +315,7 @@ Use `Publish` for one explicit profile or `PublishVariants` for several profiles
 from one bake. Their offline texture paths use embedded Basis libraries, with
 no KTX executable or package install. `ProductionBake` uses the in-process Go
 executor and native wgpu-native library. See
-[tool availability](../../../spec/asset-tools.md).
+[asset pipeline tool requirements](../../../docs/asset-pipeline/tools.md).
 
 The [Sponza project recipe](../../../samples/sponza/asset.config.go) demonstrates
 the complete stage declaration. Application code uses `level.Open` to own the

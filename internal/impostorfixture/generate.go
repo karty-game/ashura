@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/karty-game/karty-webgpu/internal/impostorfixture"
+	"github.com/karty-game/ashura/internal/impostorfixture"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package level
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // TextureVariants identifies offline-prepared device profiles of one level.
@@ -18,7 +18,7 @@ func (variants TextureVariants) Select(format texture.Format) (resource.Asset, e
 		return variants.BC, nil
 	case texture.ETC2RGB:
 		return variants.Mobile, nil
-	case texture.RGBA8, texture.BC6H, texture.BC7, texture.ETC2RGBA, texture.ASTC4x4:
+	case texture.RGBA8, texture.BC6H, texture.BC7, texture.ETC2RGBA, texture.ASTC4x4, texture.ASTC6x6:
 		return resource.Asset{}, ErrNativeHDR
 	default:
 		return resource.Asset{}, ErrNativeHDR

@@ -2,25 +2,29 @@ package main
 
 import (
 	"math"
+	"slices"
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/samples/sprites2d/generated/assets"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/samples/sprites2d/generated/assets"
 )
 
 func TestExpeditionDeviceCatalogKeepsOnlySelectedPageFormats(t *testing.T) {
 	t.Parallel()
 
 	for _, profile := range []struct {
-		device, background, sprites texture.Format
+		device              []texture.Format
+		background, sprites texture.Format
 	}{
-		{texture.BC1, texture.BC1, texture.BC7},
-		{texture.ETC2RGB, texture.ETC2RGB, texture.ETC2RGBA},
+		{[]texture.Format{texture.BC1, texture.BC7}, texture.BC1, texture.BC7},
+		{[]texture.Format{texture.ETC2RGB, texture.ETC2RGBA}, texture.ETC2RGB, texture.ETC2RGBA},
+		{[]texture.Format{texture.BC1, texture.ETC2RGB, texture.ETC2RGBA}, texture.ETC2RGB, texture.ETC2RGBA},
+		{[]texture.Format{texture.BC1, texture.BC7, texture.ETC2RGB, texture.ETC2RGBA}, texture.BC1, texture.BC7},
 	} {
-		images, err := loadImages(profile.device)
+		images, err := assets.LoadForDevice(func(format texture.Format) bool { return slices.Contains(profile.device, format) })
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -48,8 +52,10 @@ func TestExpeditionDeviceCatalogKeepsOnlySelectedPageFormats(t *testing.T) {
 		}
 	}
 
-	if _, err := loadImages(texture.RGBA8); err == nil {
-		t.Fatal("device without either compression family selected unsupported artwork")
+	for _, supported := range [][]texture.Format{nil, {texture.BC1}, {texture.ETC2RGB}, {texture.BC7, texture.ETC2RGBA}} {
+		if _, err := assets.LoadForDevice(func(format texture.Format) bool { return slices.Contains(supported, format) }); err == nil {
+			t.Fatal("incomplete device formats selected unsupported artwork", supported)
+		}
 	}
 }
 

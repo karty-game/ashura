@@ -3,11 +3,12 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
-	meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	levelbuild "github.com/karty-game/ashura/pkg/level/build"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
+	meshbuild "github.com/karty-game/ashura/pkg/mesh/build"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
+	"github.com/karty-game/ashura/samples/internal/sampleassets"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 				Output: []assetbuild.Plugin{
 					rnmPublication(),
 				},
-			}},
+			}, sampleassets.Credits("assets/CREDITS.md", "CREDITS.md")},
 		}
 	})
 }
@@ -56,9 +57,9 @@ func rnmPublication() assetbuild.Plugin {
 	quality := 0
 	profile := func(variant, family string) levelbuild.PublishOptions {
 		return levelbuild.PublishOptions{
-			Variant: variant, Representation: "rnm-fit-v1", MaxAtlasSize: 1024,
+			Variant: variant, Representation: "rnm-fit-v1", MaxAtlasSize: 1024, BundleChunks: true,
 			NativeTextures: &levelbuild.NativeTextureOptions{
-				Family: family, NativeAlbedo: true,
+				Family: family, NativeAlbedo: true, ProfileMaterials: true,
 				Encoder: assetbuild.BlockCompressionOptions{LDRQuality: &quality, SSBumpQuality: &quality},
 			},
 			AlbedoETC1S: &levelbuild.ETC1SOptions{Quality: 192},

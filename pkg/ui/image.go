@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/uipaint"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // ImageAsset owns an immutable prepared page or a region of that page.

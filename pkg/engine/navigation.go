@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 const (
@@ -33,6 +33,7 @@ type orbitSettings struct {
 	distance                                 *float32
 	minimum, maximum, rotateSpeed, zoomSpeed float32
 	button                                   MouseButton
+	disableTouchRotate                       bool
 }
 
 type panSettings struct {
@@ -73,6 +74,10 @@ func orbitControlSettings(world *World, entity Entity) (orbitSettings, bool) {
 
 	settings.target, settings.distance, settings.minimum, settings.maximum, settings.rotateSpeed, settings.zoomSpeed, settings.button = entry.orbit.RuntimeOrbitControls()
 
+	if touch, ok := entry.orbit.(interface{ RuntimeOrbitTouchRotation() bool }); ok {
+		settings.disableTouchRotate = !touch.RuntimeOrbitTouchRotation()
+	}
+
 	return settings, settings.target != nil && settings.distance != nil
 }
 
@@ -108,7 +113,13 @@ func viewHeightForEntity(world *World, entity Entity) *float32 {
 func updateOrbit(world *World, entity Entity, transform *Transform, settings orbitSettings, input platform.InputState) {
 	initializeOrbit(transform, settings)
 	minimum, maximum := cameraRange(settings.minimum, settings.maximum, maximumCameraDistance)
-	deltaX, deltaY := dragDelta(input, settings.button)
+
+	deltaX, deltaY := mouseDragDelta(input, settings.button)
+	if !settings.disableTouchRotate {
+		deltaX += input.TouchDX
+		deltaY += input.TouchDY
+	}
+
 	rotateCamera(transform, deltaX, deltaY, positiveOr(settings.rotateSpeed, defaultFreeLookSensitivity))
 	transform.Rotation.Z = 0
 
@@ -182,20 +193,18 @@ func updatePanZoom(world *World, entity Entity, transform *Transform, settings p
 
 	minimum, maximum := cameraRange(settings.minimum, settings.maximum, defaultMaximumMapHeight)
 	*height = zoomExtent(positiveOr(*height, defaultViewHeight), minimum, maximum, settings.zoomSpeed, input)
-	deltaX, deltaY := dragDelta(input, settings.button)
-	deltaX += input.TouchPanX
-	deltaY += input.TouchPanY
+	deltaX, deltaY := mouseDragDelta(input, settings.button)
+	deltaX += input.TouchDX + input.TouchPanX
+	deltaY += input.TouchDY + input.TouchPanY
 	panCamera(transform, deltaX, deltaY, *height*positiveOr(settings.speed, defaultPanSpeed)/logicalHeight(input))
 }
 
-func dragDelta(input platform.InputState, button MouseButton) (float32, float32) {
-	deltaX, deltaY := input.TouchDX, input.TouchDY
+func mouseDragDelta(input platform.InputState, button MouseButton) (float32, float32) {
 	if int(button) < len(input.DragDX) {
-		deltaX += input.DragDX[button]
-		deltaY += input.DragDY[button]
+		return input.DragDX[button], input.DragDY[button]
 	}
 
-	return deltaX, deltaY
+	return 0, 0
 }
 
 func rotateCamera(transform *Transform, deltaX, deltaY, speed float32) {

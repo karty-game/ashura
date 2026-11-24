@@ -8,10 +8,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 func influenceAsset(t *testing.T, document lightmapdata.Document) *lightmap.Asset {

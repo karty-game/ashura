@@ -1,0 +1,148 @@
+<style>
+  #courtyard-touch {
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    font: 600 14px system-ui, sans-serif;
+    color: #fff5df;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #courtyard-hud {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    max-width: min(340px, calc(100% - max(12px, env(safe-area-inset-left)) - 142px));
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1px solid #9a875a;
+    border-radius: 10px;
+    background: #171812ee;
+  }
+  #courtyard-hud.complete { border-color: #83dfad; }
+  #courtyard-hud.complete #courtyard-objective { color: #abeec7; }
+  #courtyard-relics { color: #ffd46f; }
+  #courtyard-clock { margin-top: 3px; font-variant-numeric: tabular-nums; }
+  #courtyard-objective {
+    margin: 5px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.32;
+  }
+  #courtyard-gate-time {
+    margin-top: 4px;
+    color: #e0c7ff;
+    font-variant-numeric: tabular-nums;
+  }
+  #courtyard-reticle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #111827d9;
+    transform: translate(-50%, -50%);
+  }
+  #courtyard-reticle.ready { border-color: #6affff; }
+  #courtyard-restart, #courtyard-use, #courtyard-stick {
+    color: inherit;
+    background: #171812ee;
+    border: 1px solid #a99a78;
+    touch-action: none;
+    pointer-events: auto;
+  }
+  #courtyard-restart, #courtyard-use {
+    position: absolute;
+    right: max(12px, env(safe-area-inset-right));
+    padding: 0 12px;
+    min-height: 46px;
+    border-radius: 8px;
+    font: inherit;
+  }
+  #courtyard-restart { bottom: max(12px, env(safe-area-inset-bottom)); }
+  @media (max-width: 744px) {
+    #courtyard-touch.debug-open #courtyard-hud,
+    #courtyard-touch.debug-open #courtyard-reticle { visibility: hidden; }
+  }
+  #courtyard-desktop-help {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    border-radius: 7px;
+    background: #171812ee;
+    white-space: nowrap;
+  }
+  #courtyard-use, #courtyard-stick, #courtyard-touch-help { display: none; }
+  @media (any-pointer: coarse) {
+    #courtyard-desktop-help { display: none; }
+    #courtyard-restart { bottom: calc(max(12px, env(safe-area-inset-bottom)) + 54px); }
+    #courtyard-touch-help {
+      display: block;
+      position: absolute;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 8px;
+      border-radius: 7px;
+      background: #171812ee;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    #courtyard-stick, #courtyard-use {
+      position: absolute;
+      bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    #courtyard-stick {
+      display: grid;
+      place-items: center;
+      left: max(12px, env(safe-area-inset-left));
+      box-sizing: border-box;
+      width: 116px;
+      height: 116px;
+      border-radius: 50%;
+    }
+    #courtyard-knob {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fae1a9;
+      pointer-events: none;
+    }
+    #courtyard-stick-label {
+      position: absolute;
+      bottom: 9px;
+      pointer-events: none;
+    }
+    #courtyard-use {
+      display: block;
+      min-width: 76px;
+      background: #8ce6d7;
+      color: #171812;
+    }
+    #courtyard-use:disabled {
+      background: #171812ee;
+      color: #d4cdb9;
+    }
+  }
+</style>
+<div id="courtyard-hud">
+  <div id="courtyard-relics">Route A · Relics 0/3</div>
+  <div id="courtyard-clock">Time 0.0s</div>
+  <div id="courtyard-gate-time" hidden></div>
+  <p id="courtyard-objective"></p>
+</div>
+<button id="courtyard-restart" type="button">Restart</button>
+<div id="courtyard-desktop-help">WASD move · Drag to look · Space use · R restart</div>
+<div id="courtyard-touch-help">Drag scene to look</div>
+<div id="courtyard-reticle" aria-hidden="true"></div>
+<div id="courtyard-stick" role="group" aria-label="Move joystick">
+  <span id="courtyard-knob" aria-hidden="true"></span>
+  <span id="courtyard-stick-label" aria-hidden="true">Move</span>
+</div>
+<button id="courtyard-use" type="button" disabled>Use</button>

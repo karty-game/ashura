@@ -9,10 +9,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostorfixture"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/impostorfixture"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func TestAuthoredTreeMatchesSourceAndCompiles(t *testing.T) {

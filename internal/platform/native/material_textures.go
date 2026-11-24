@@ -4,9 +4,9 @@ package native
 
 import (
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func (driver *Driver) materialTextures(draw render.DrawCall) (albedo, normal, occlusion, reflection *texturedata.Texture) {

@@ -1,6 +1,9 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/render"
+import (
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/render"
+)
 
 // Mesh slices are immutable. Their headers identify geometry without scanning
 // static vertices; replacing any slice selects a new prepared record.
@@ -17,6 +20,7 @@ type meshGeometryKey struct {
 type renderGeometry struct {
 	vertices []render.Vertex
 	indices  []uint32
+	bounds   meshdata.Bounds
 	seen     bool
 }
 
@@ -42,6 +46,17 @@ func (world *World) meshGeometry(positions, normals []Vector3, uvs []Vector2, in
 	geometry := &renderGeometry{vertices: make([]render.Vertex, len(positions)), indices: indices, seen: true}
 	for index, position := range positions {
 		geometry.vertices[index].Position = vectorArray(position)
+
+		point := geometry.vertices[index].Position
+		if index == 0 {
+			geometry.bounds = meshdata.Bounds{Minimum: point, Maximum: point, Valid: true}
+		} else {
+			for axis, value := range point {
+				geometry.bounds.Minimum[axis] = min(geometry.bounds.Minimum[axis], value)
+				geometry.bounds.Maximum[axis] = max(geometry.bounds.Maximum[axis], value)
+			}
+		}
+
 		if index < len(normals) {
 			geometry.vertices[index].Normal = vectorArray(normals[index])
 		}

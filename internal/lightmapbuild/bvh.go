@@ -8,7 +8,7 @@ import (
 	"math"
 	"sort"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 type triangle struct {

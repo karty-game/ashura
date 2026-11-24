@@ -6,9 +6,9 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/basiscodec"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/basiscodec"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 // CompressBC1 encodes prepared RGBA8 mip levels to GPU-ready BC1 RGBA KTX2.

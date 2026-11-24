@@ -6,8 +6,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	levelbuild "github.com/karty-game/ashura/pkg/level/build"
 )
 
 func TestPublicNativeTexturePublisherContract(t *testing.T) {

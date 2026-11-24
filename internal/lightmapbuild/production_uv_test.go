@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/xatlas"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/xatlas"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func TestProductionUVPageRetainsSubpixelFootprintWithoutCentroidFallback(t *testing.T) {

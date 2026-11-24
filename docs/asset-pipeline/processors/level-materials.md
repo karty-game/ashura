@@ -12,7 +12,7 @@ This stage accepts processed images directly. You can resize a height image,
 convert it with [SSBump](../generators/image-ssbump.md), then bind it here without first writing a
 KTX2 file. [Publish](../publishers/level-publish.md) writes the finished level's textures.
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`.
 Place it in `Pipeline.Process`, after [Scenes](../importers/scene-lightmap-baking.md) and any image
 resize, SSBump conversion and mip generation; before
 [StaticChunks](level-static-chunks.md).

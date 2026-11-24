@@ -1,0 +1,402 @@
+{
+  "duration": 2,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 22,
+        "prewarm": true,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 90
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "flame",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 0.2,
+          "min": 0.12,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 16,
+          "min": 10,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 320,
+          "min": 220,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "flame",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0.95,
+              "b": 0.9,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.9,
+              "b": 0.15,
+              "g": 0.55,
+              "r": 1,
+              "t": 0.5
+            },
+            {
+              "a": 0,
+              "b": 0.02,
+              "g": 0.1,
+              "r": 0.6,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "render": {
+        "align": "velocity",
+        "maxStretch": 2.5,
+        "minStretch": 1,
+        "speedScale": 0.003
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 3,
+        "spread": 12
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 60,
+        "prewarm": false,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 26
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "smoke-trail",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 1.4,
+          "min": 0.8,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 26,
+          "min": 14,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 60,
+          "min": 30,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "smoke-trail",
+      "noise": {
+        "frequency": 0.008,
+        "octaves": 2,
+        "scrollSpeed": 0.25,
+        "strength": {
+          "mode": "constant",
+          "value": 30
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.52,
+              "g": 0.5,
+              "r": 0.5,
+              "t": 0
+            },
+            {
+              "a": 0.3,
+              "b": 0.47,
+              "g": 0.45,
+              "r": 0.45,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.3,
+              "g": 0.28,
+              "r": 0.28,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.5
+            },
+            {
+              "t": 1,
+              "v": 1.8
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": -20
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 4,
+        "spread": 25
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 9,
+        "prewarm": false,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 10
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "embers",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 0.6,
+          "min": 0.3,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 6,
+          "min": 3,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 240,
+          "min": 120,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "embers",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 0.3,
+              "g": 0.7,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0,
+              "b": 0.02,
+              "g": 0.1,
+              "r": 0.4,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 1.5
+          },
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "render": {
+        "align": "velocity",
+        "maxStretch": 3,
+        "minStretch": 1,
+        "speedScale": 0.004
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 2,
+        "spread": 30
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Rocket exhaust",
+    "notes": "Prewarmed, motion-aligned flames stream from the fixed nozzle with aligned sparks and a smoke trail."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 90
+}

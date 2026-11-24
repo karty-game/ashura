@@ -3,7 +3,7 @@ package impostor
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 // Instance is one entity sharing its source impostor's prepared resources.

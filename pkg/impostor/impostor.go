@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 const indicesPerTriangle = 3
@@ -128,6 +128,14 @@ func matchingTexture(data texture.Data, encoded []byte, document impostordata.Do
 		if !ktx2data.BC1Alpha(encoded) {
 			return false
 		}
+	}
+
+	if document.Storage == impostordata.StorageETC2RGBA {
+		format = texture.ETC2RGBA
+	}
+
+	if document.Storage == impostordata.StorageASTC6x6 {
+		format = texture.ASTC6x6
 	}
 
 	return data.Width == int(document.AtlasWidth) && data.Height == int(document.AtlasHeight) &&

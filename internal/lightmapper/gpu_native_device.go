@@ -11,32 +11,13 @@ import (
 	"time"
 
 	"github.com/gogpu/gputypes"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 const nativeIdentityPrefix = "ashura-webgpu/abi29-r1/scene5/transport4 "
 
 func (executor *nativeGPUExecutor) openDevice(options GPUWorkerOptions, source string) error {
-	var err error
-
-	executor.instance, err = wgpu.CreateInstance(nil)
-	if err != nil {
-		return fmt.Errorf("create offline WebGPU instance: %w", err)
-	}
-
-	executor.adapter, err = executor.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
-		PowerPreference: gputypes.PowerPreferenceHighPerformance, ForceFallbackAdapter: options.SoftwareForCI,
-	})
-	if err != nil {
-		return fmt.Errorf("request offline WebGPU adapter: %w", err)
-	}
-
-	info, err := executor.adapter.Info()
-	if err != nil {
-		return err
-	}
-
-	identity, err := nativeAdapterIdentity(info, options.SoftwareForCI)
+	identity, err := executor.openAdapter(options.SoftwareForCI)
 	if err != nil {
 		return err
 	}
@@ -52,7 +33,7 @@ func (executor *nativeGPUExecutor) openDevice(options GPUWorkerOptions, source s
 	}
 
 	executor.limits = executor.gpu.Limits()
-	executor.device = GPUDevice{Adapter: nativeIdentityPrefix + identity, SoftwareForCI: options.SoftwareForCI,
+	executor.device = GPUDevice{Adapter: identity, SoftwareForCI: options.SoftwareForCI,
 		MaxBufferSize: executor.limits.MaxBufferSize, MaxStorageBufferBindingSize: executor.limits.MaxStorageBufferBindingSize,
 		MaxStorageBuffersPerShaderStage: executor.limits.MaxStorageBuffersPerShaderStage}
 
@@ -66,6 +47,54 @@ func (executor *nativeGPUExecutor) openDevice(options GPUWorkerOptions, source s
 	}
 
 	return executor.compile(source)
+}
+
+// DetectGPUBackend identifies the adapter selected by the offline worker
+// without requesting a device or compiling any shaders.
+func DetectGPUBackend(ctx context.Context, softwareForCI bool) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+
+	life, cancel := context.WithCancel(ctx)
+
+	probe := nativeGPUExecutor{ctx: life, cancel: cancel}
+	defer func() { _ = probe.Close() }()
+
+	identity, err := probe.openAdapter(softwareForCI)
+	if err != nil {
+		return "", err
+	}
+
+	return identity, life.Err()
+}
+
+func (executor *nativeGPUExecutor) openAdapter(softwareForCI bool) (string, error) {
+	var err error
+
+	executor.instance, err = wgpu.CreateInstance(nil)
+	if err != nil {
+		return "", fmt.Errorf("create offline WebGPU instance: %w", err)
+	}
+
+	executor.adapter, err = executor.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
+		PowerPreference: gputypes.PowerPreferenceHighPerformance, ForceFallbackAdapter: softwareForCI,
+	})
+	if err != nil {
+		return "", fmt.Errorf("request offline WebGPU adapter: %w", err)
+	}
+
+	info, err := executor.adapter.Info()
+	if err != nil {
+		return "", err
+	}
+
+	identity, err := nativeAdapterIdentity(info, softwareForCI)
+	if err != nil {
+		return "", err
+	}
+
+	return nativeIdentityPrefix + identity, nil
 }
 
 func (executor *nativeGPUExecutor) requestDevice(required *wgpu.Limits) error {

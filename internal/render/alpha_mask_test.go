@@ -4,52 +4,51 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func TestAlphaMaskUniformAndRetainedMaterialChanges(t *testing.T) {
 	t.Parallel()
 
 	draw := render.DrawCall{Color: [4]float32{.2, .3, .4, .75}, AlphaMask: true, AlphaCutoff: .5}
-	frame := render.Frame{}
 	key := render.EffectiveMaterial(draw)
 
 	var state render.UniformState
-	if !state.Update(draw, frame) || uniformValue(state.Data, 39) != .5 || uniformValue(state.Data, 43) != 1 ||
-		uniformValue(state.Data, 23) != .75 {
+	if !state.Update(draw) || uniformValue(state.Data, 19) != .5 || uniformValue(state.Data, 23) != 1 ||
+		uniformValue(state.Data, 3) != .75 {
 		t.Fatal("mask cutoff or tint alpha omitted from Standard uniforms")
 	}
 
-	if state.Update(draw, frame) {
+	if state.Update(draw) {
 		t.Fatal("unchanged cutout material triggered an upload")
 	}
 
 	draw.Color[3] = .25
-	if render.EffectiveMaterial(draw) == key || !state.Update(draw, frame) {
+	if render.EffectiveMaterial(draw) == key || !state.Update(draw) {
 		t.Fatal("masked tint alpha mutation reused stale state")
 	}
 
 	key = render.EffectiveMaterial(draw)
 
 	draw.AlphaCutoff = 0
-	if render.EffectiveMaterial(draw) == key || !state.Update(draw, frame) || uniformValue(state.Data, 39) != 0 ||
-		uniformValue(state.Data, 43) != 1 {
+	if render.EffectiveMaterial(draw) == key || !state.Update(draw) || uniformValue(state.Data, 19) != 0 ||
+		uniformValue(state.Data, 23) != 1 {
 		t.Fatal("explicit zero cutoff disabled the mask or reused stale state")
 	}
 
 	key = render.EffectiveMaterial(draw)
 
 	draw.AlphaMask = false
-	if render.EffectiveMaterial(draw) == key || !state.Update(draw, frame) || uniformValue(state.Data, 39) != 0 ||
-		uniformValue(state.Data, 43) != 0 {
+	if render.EffectiveMaterial(draw) == key || !state.Update(draw) || uniformValue(state.Data, 19) != 0 ||
+		uniformValue(state.Data, 23) != 0 {
 		t.Fatal("disabling cutout retained mask state")
 	}
 
 	key = render.EffectiveMaterial(draw)
 
 	draw.AlphaCutoff, draw.Color[3] = .9, .1
-	if render.EffectiveMaterial(draw) != key || state.Update(draw, frame) {
+	if render.EffectiveMaterial(draw) != key || state.Update(draw) {
 		t.Fatal("opaque alpha/cutoff changed batches or uploaded unused uniforms")
 	}
 }
@@ -101,22 +100,22 @@ func TestAlphaMaskIsExcludedFromPointShadowCasters(t *testing.T) {
 	var state render.PointShadowState
 
 	light := render.Light{GroundColor: [3]float32{10}, ShadowResolution: 256}
-	if !render.CastsPointShadow(draw) || !state.Update(frame, light) || state.Update(frame, light) {
+	if !render.CastsPointShadow(draw) || state.Update(frame, light) == 0 || state.Update(frame, light) != 0 {
 		t.Fatal("opaque caster did not retain unchanged shadow state")
 	}
 
 	frame.Draws[0].AlphaMask = true
-	if render.CastsPointShadow(frame.Draws[0]) || !state.Update(frame, light) {
+	if render.CastsPointShadow(frame.Draws[0]) || state.Update(frame, light) == 0 {
 		t.Fatal("mask transition retained a solid-card shadow caster")
 	}
 
 	frame.Draws[0].Transform[12] = 2
-	if state.Update(frame, light) {
+	if state.Update(frame, light) != 0 {
 		t.Fatal("moving excluded cutout dirtied shadow depth")
 	}
 
 	frame.Draws[0].AlphaMask = false
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("restored opaque caster did not invalidate depth")
 	}
 }
@@ -128,17 +127,17 @@ func TestAlphaMaskPreservesExactCutoffBits(t *testing.T) {
 	draw := render.DrawCall{AlphaMask: true, AlphaCutoff: cutoff, Color: [4]float32{1, 1, 1, 1}}
 
 	var state render.UniformState
-	state.Update(draw, render.Frame{})
+	state.Update(draw)
 
-	if math.Float32bits(uniformValue(state.Data, 39)) != math.Float32bits(cutoff) || uniformValue(state.Data, 43) != 1 {
+	if math.Float32bits(uniformValue(state.Data, 19)) != math.Float32bits(cutoff) || uniformValue(state.Data, 23) != 1 {
 		t.Fatal("mask encoding rounded cutoff or lost enable flag")
 	}
 
 	key := render.EffectiveMaterial(draw)
 
 	draw.AlphaCutoff = math.Nextafter32(cutoff, 1)
-	if render.EffectiveMaterial(draw) == key || !state.Update(draw, render.Frame{}) ||
-		math.Float32bits(uniformValue(state.Data, 39)) != math.Float32bits(draw.AlphaCutoff) {
+	if render.EffectiveMaterial(draw) == key || !state.Update(draw) ||
+		math.Float32bits(uniformValue(state.Data, 19)) != math.Float32bits(draw.AlphaCutoff) {
 		t.Fatal("adjacent float32 cutoff reused stale batching/uniform state")
 	}
 }

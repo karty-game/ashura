@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"slices"
 
-	geometry "github.com/karty-game/karty-webgpu/internal/levelbuild"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	geometry "github.com/karty-game/ashura/internal/levelbuild"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // StaticChunks partitions static placements without changing logical scene factories.

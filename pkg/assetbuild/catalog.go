@@ -79,6 +79,7 @@ func (catalogPlugin) Plan(plan *Plan) error {
 	}
 
 	plan.Publish(refs[0])
+	plan.inspectTextureAccessors(inputs)
 
 	return nil
 }

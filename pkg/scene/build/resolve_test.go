@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
-	logicbuild "github.com/karty-game/karty-webgpu/pkg/scene/build/logic"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
+	logicbuild "github.com/karty-game/ashura/pkg/scene/build/logic"
 )
 
 func TestResolveExportsExpandedReferencesAndOwnedInstances(t *testing.T) {

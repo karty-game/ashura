@@ -7,7 +7,7 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestCatalogRejectsAmbiguousNamesAndUnmappedPages(t *testing.T) {

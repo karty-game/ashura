@@ -24,25 +24,20 @@ For an existing game's images, a recipe can be as small as:
 
 package main
 
-import "github.com/karty-game/karty-webgpu/pkg/assetbuild"
+import "github.com/karty-game/ashura/pkg/assetbuild"
 
 func main() {
-    assetbuild.Main(func(env assetbuild.Environment) assetbuild.Config {
-        return assetbuild.Config{
-            Output: "generated/assets",
-            Pipelines: []assetbuild.Pipeline{{
-                Name: "textures", Input: []string{"assets/**"},
-                Import: []assetbuild.Plugin{assetbuild.Images()},
-                Process: []assetbuild.Plugin{
-                    assetbuild.Resize(assetbuild.ResizeOptions{MaxDimension: 1024}),
-                    assetbuild.Mipmaps(),
-                },
-                Output: []assetbuild.Plugin{
-                    assetbuild.KTX2(),
-                    assetbuild.GoCatalog(),
-                },
-            }},
-        }
+    assetbuild.Run(assetbuild.Config{
+        Output: "generated/assets",
+        Pipelines: []assetbuild.Pipeline{{
+            Name: "textures", Input: []string{"assets/**"},
+            Import: []assetbuild.Plugin{assetbuild.Images()},
+            Process: []assetbuild.Plugin{
+                assetbuild.Resize(assetbuild.ResizeOptions{MaxDimension: 1024}),
+                assetbuild.Mipmaps(),
+            },
+            Output: []assetbuild.Plugin{assetbuild.KTX2(), assetbuild.GoCatalog()},
+        }},
     })
 }
 ```
@@ -98,7 +93,7 @@ pipelines.
 `Pipelines` cannot be combined with top-level `Input` or either legacy plugin form.
 A nonempty flat `Plugins` list also cannot be mixed with nonempty top-level sections.
 These groups do not change `Environment.Phase` described below. See the
-[V5 pipeline contract](../../spec/asset-pipeline-v5.md) for scope and execution rules.
+[asset pipeline guide](../../docs/asset-pipeline/README.md).
 
 Keep this recipe and source images in Git. Ignore `generated/assets/` and
 `generated/cache/`. Run `engine assets generate --project .` before developing to
@@ -108,7 +103,9 @@ the same cached recipe; unchanged work is reused. Browser build and preview
 commands perform preparation automatically. No `generate.go` file or
 `go:generate` directive is required.
 
-`Environment.Phase` is `assetbuild.PhaseGenerate` or `assetbuild.PhaseBuild`.
+Use `assetbuild.Main` with an environment callback when recipe choices depend
+on the invocation. `Environment.Phase` is `assetbuild.PhaseGenerate` or
+`assetbuild.PhaseBuild`.
 Each invocation must publish a complete usable asset set, including declarations
 needed for compilation. Generation prepares real payloads because catalogs bind
 or embed them; it does not emit placeholder assets. Phase alone does not change
@@ -134,8 +131,8 @@ toolchain. Selected processors may additionally require external build tools:
 Materialize retains its CLI requirement; GPU preparation retains its device
 and upstream wgpu-native library requirements. UV preparation and texture encoding/transcoding use
 embedded WASM libraries through Go, without an executable installation.
-See [asset tool ownership](../../spec/asset-tools.md) and the selected plugin's
-guide. CGO-dependent recipe packages are outside this host execution profile.
+See [asset pipeline tool requirements](../../docs/asset-pipeline/tools.md).
+CGO-dependent recipe packages are outside this host execution profile.
 
 `DefaultConfig` and directory-based image preparation use the named `textures`
 pipeline. Their prepared filenames and bytes retain the image recipe contract;
@@ -159,7 +156,8 @@ data aligned. These offline steps add no mesh decoder to the game.
 | `SSBump(SSBumpOptions{...})` | Bake linear RNM/SSBump coefficients and directional visibility from normal maps or authored grayscale heights |
 | `Atlas(AtlasOptions{...})` | Explicit selected clamp-compatible groups; deterministic role-separated pages and extruded gutters |
 | `Mipmaps()` | Linear-light albedo filtering, normalized normal filtering and linear AO/SSBump filtering |
-| `KTX2()` | RGBA8 KTX2 by default; explicit `KTX2Options` selects offline BC1/BC7 with the supplied mip levels |
+| `KTX2()` | RGBA8 KTX2 by default; explicit `KTX2Options` selects offline native blocks with the supplied mip levels |
+| `KTX2Variants(primary, mobile)` | Shared image preparation, with additional mobile files and accessors for differing formats |
 | `GoCatalog()` | Named embedded prepared KTX2 assets; page declarations and source regions for atlases |
 | `ui/build.Images()` | UI-ready RGBA pages and a typed catalog; consumes regions from an optional preceding Atlas stage; no runtime source decoding |
 | `ui/build.DefaultFont()` | Prepare and publish the qualified Go Regular atlas/metrics pair using Go and embedded msdfgen WASM |
@@ -180,7 +178,7 @@ assetbuild.KTX2(assetbuild.KTX2Options{
 })
 ```
 
-Here `texture` is `github.com/karty-game/karty-webgpu/pkg/texture`. Unselected
+Here `texture` is `github.com/karty-game/ashura/pkg/texture`. Unselected
 roles remain RGBA8; `Format` selects a common default for all roles. BC output
 requires four-texel-aligned base dimensions and a device with BC compression.
 It preserves dimensions, transfer and every supplied mip. BC1 thresholds alpha
@@ -247,7 +245,7 @@ texture functions. Apply geometry UV conversion during asset preparation.
 
 ## UI PNGs and automatic atlases
 
-Use `github.com/karty-game/karty-webgpu/pkg/ui/build` (aliased `uibuild`) for UI
+Use `github.com/karty-game/ashura/pkg/ui/build` (aliased `uibuild`) for UI
 images. Keep each icon, frame and background as its own PNG source. The existing
 Atlas plugin handles placement and extruded gutters; the UI plugin emits the
 GPU-ready pages and named `*ui.ImageAsset` references:
@@ -422,7 +420,10 @@ remain recoverable.
 ## Explicit build concurrency
 
 Use `engine assets build --project ./my-game --jobs 2` to permit independent
-processors to overlap. Omission, zero and one retain serial execution. Every
+processors to overlap. `engine run web` and `engine build web` also accept
+`--jobs`; the maintained `mise run samples` task uses two action jobs and
+reduces simultaneous project recipes to keep total build concurrency bounded.
+Omission, zero and one retain serial action execution. Every
 recipe form uses one scheduler, including upfront static graph admission before
 processor callbacks; malformed references, slots and cycles fail before execution.
 Only
@@ -437,9 +438,8 @@ their serial action policy. A branch discovery boundary waits for its own preced
 actions remain global barriers. `Options.Jobs` counts actions, not
 threads or memory; native tools retain their existing thread settings. Concurrent
 admitted work increases resident memory: the measured Sponza Jobs2 comparison
-saved 17.884 s but increased GNU time maximum RSS by about 1.00 GiB. Default behavior
-is unchanged. See the [versioned execution contract](../../spec/asset-pipeline-v2.md)
-for resource limits and error precedence; the under 60 s full-bake goal is unmet.
+saved 17.884 s but increased GNU time maximum RSS by about 1.00 GiB. Serial
+execution remains the default. The under 60 s full-bake goal is unmet.
 
 Use optional `Options.Trace func(ActionEvent)` for structured start/finish times
 including cache admission. It runs on the coordinator, must return promptly and
@@ -516,9 +516,6 @@ immediately closes its newly registered finalizers. A lazy GPU or tool session
 can register its close function before allocating, so a cache-only build never
 needs to open the session.
 
-See the [design specification](../../spec/asset-pipeline-v1.md) for the broader
-contract and acceptance scenarios.
-
 The [level build guide](../level/build/README.md) composes scene/material import,
 StaticChunks, LightmapUVs with production preparation, ProductionBake and
 PublishVariants. Chunk/page discovery uses bounded
@@ -539,9 +536,8 @@ the quality settings, admission and canonical container contract.
 WASM and an offline Go coverage pass. Source alpha ≥128 becomes opaque; lower
 values become transparent. It preserves dimensions, authored mips and
 linear/sRGB transfer without resizing or runtime conversion. Base dimensions
-must be multiples of four. The impostor builder uses this for both its
-color/coverage and packed normal/depth atlases; see the
-[impostor storage contract](../../spec/decisions/0020-bc1-impostor-atlases.md).
+must be multiples of four. The [impostor format](../impostor/README.md#explicit-capture-baselines-and-compatibility)
+uses this for both its color/coverage and packed normal/depth atlases.
 
 
 ### Portable libraries and managed native dependencies
@@ -552,8 +548,8 @@ Texture/UV executable options and native qualification paths are removed. No nat
 Node runtime, source compiler or Karty release installation is required for those
 operations. One lazy Basis session belongs to each asset build and reuses its
 encoder/transcoder instances; direct standalone codec calls own temporary
-sessions. Existing action revisions and recipe identity distinguish the new
-implementation from cached native results. See [Decision 15](../../spec/decisions/0015-portable-offline-libraries.md).
+sessions. Action revisions and recipe identity distinguish portable results
+from cached native results.
 
 Remaining native modules use `Context.ManagedTool(ManagedToolSpec)` to delegate
 a module-owned pinned package to mise's HTTP backend. `Context.TrackTool` tracks
@@ -561,10 +557,9 @@ explicit executable paths; the retired codec/font alias registry is removed. Ash
 executable and loadable-component content as action dependencies. There is no
 per-project installer or game-time tool preparation. Materialize retains its
 explicit CLI selection; this provider does not select texture or UV encoders.
-See [managed tool provider revision 2](../../spec/asset-tools.md#managed-build-tool-provider-revision-2)
-for supported hosts, cancellation, dependency tracking and pending native
-releases. Mise's `MISE_DATA_DIR` and `MISE_CACHE_DIR` control installation/cache
-placement; the former `KARTY_ASSET_TOOL_CACHE` installer is retired.
+See [native dependency requirements](../../docs/asset-pipeline/tools.md).
+Mise's `MISE_DATA_DIR` and `MISE_CACHE_DIR` control installation and cache
+placement. The former `KARTY_ASSET_TOOL_CACHE` installer is retired.
 
 Offline importers with embedded source images can call `ResizeImage(image, ResizeOptions)`
 before generating mips. It uses the same filtering and bounds as Resize, accepts
@@ -578,3 +573,15 @@ installation and checksum verification. `TrackLibrary` records library content
 and resolved targets without requiring executable permissions. This explicit
 external dependency does not relax project source path confinement or install
 anything during game loading.
+
+`KTX2Options.UsageFormats` also accepts `texture.ETC2RGB` and
+`texture.ETC2RGBA` for offline mobile preparation. `CompressASTC6x6` prepares
+native ASTC RGBA KTX2 offline with authored mip levels and transfer intact; base
+dimensions must be multiples of six. It uses the same pinned portable codec and
+bounded total deadline. Its default search effort is zero, with explicit 0..4
+available through `LDRQuality`. No runtime codec is required.
+
+For SSBump coefficients, `UsageFormats[UsageSSBump] = texture.ASTC4x4`
+uses the independent linear RGB coefficient encoder, without a two-channel
+normal-map preset or reconstructed Z. BC7 remains the desktop option. Both are
+lossy; coefficient fidelity still needs content-specific review.

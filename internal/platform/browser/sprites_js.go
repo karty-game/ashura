@@ -5,7 +5,7 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 type spriteGPU struct {

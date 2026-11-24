@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestParallelChunkReadKeepsContentDeduplication(t *testing.T) {
@@ -26,8 +26,8 @@ func TestParallelChunkReadKeepsContentDeduplication(t *testing.T) {
 		t.Fatal("content alias triggered another read", err)
 	}
 
-	if len(prepared.verified) != 5 || len(prepared.files) != 5 || len(prepared.images) != 3 {
-		t.Fatal("parallel reads duplicated shared content", len(prepared.verified), len(prepared.files), len(prepared.images))
+	if len(prepared.payloads) != 5 || len(prepared.images) != 3 {
+		t.Fatal("parallel reads duplicated shared content", len(prepared.payloads), len(prepared.images))
 	}
 }
 
@@ -66,7 +66,7 @@ func TestParallelChunkReadPreflightsResidentSizesBeforeIO(t *testing.T) {
 	ref := chunk.Pages[0].Maps[0]
 	resident := map[string]imageMetadata{ref.SHA256: {size: ref.Size + 1}}
 
-	prepared, err := readChunk(t.Context(), root, chunk, resident, nil, texture.RGBA8)
+	prepared, err := readChunkFixture(t.Context(), root, chunk, resident, texture.RGBA8)
 	if !errors.Is(err, ErrFormat) || prepared != nil {
 		t.Fatal("I/O started before complete resident-snapshot admission", prepared, err)
 	}

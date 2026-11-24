@@ -4,9 +4,9 @@ package draw2d
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/uipaint"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 const (

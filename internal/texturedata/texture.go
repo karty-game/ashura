@@ -5,10 +5,11 @@ package texturedata
 import "errors"
 
 const (
-	maxDimension   = 4096
-	blockDimension = 4
-	blockBytes     = 8
-	wideBlockBytes = 16
+	maxDimension       = 4096
+	blockDimension     = 4
+	astcBlockDimension = 6
+	blockBytes         = 8
+	wideBlockBytes     = 16
 	// Channels is the prepared RGBA8 channel count.
 	Channels = 4
 )
@@ -128,7 +129,17 @@ const (
 	BC7
 	ETC2RGBA
 	ASTC4x4
+	ASTC6x6
 )
+
+// BlockDimension returns the prepared format's texel block side.
+func BlockDimension(format Format) int {
+	if format == ASTC6x6 {
+		return astcBlockDimension
+	}
+
+	return blockDimension
+}
 
 // Layout returns tightly packed row bytes and block rows for one mip.
 func Layout(format Format, width, height int) (int, int) {
@@ -136,8 +147,10 @@ func Layout(format Format, width, height int) (int, int) {
 		return ((width + blockDimension - 1) / blockDimension) * blockBytes, (height + blockDimension - 1) / blockDimension
 	}
 
-	if format == BC6H || format == BC7 || format == ETC2RGBA || format == ASTC4x4 {
-		return ((width + blockDimension - 1) / blockDimension) * wideBlockBytes, (height + blockDimension - 1) / blockDimension
+	if format == BC6H || format == BC7 || format == ETC2RGBA || format == ASTC4x4 || format == ASTC6x6 {
+		side := BlockDimension(format)
+
+		return ((width + side - 1) / side) * wideBlockBytes, (height + side - 1) / side
 	}
 
 	return width * Channels, height
@@ -148,7 +161,9 @@ func Layout(format Format, width, height int) (int, int) {
 // larger than one block whose logical dimensions are not block-aligned.
 func CopyExtent(format Format, width, height int) (int, int) {
 	if format != RGBA8 {
-		return ((width + blockDimension - 1) / blockDimension) * blockDimension, ((height + blockDimension - 1) / blockDimension) * blockDimension
+		side := BlockDimension(format)
+
+		return ((width + side - 1) / side) * side, ((height + side - 1) / side) * side
 	}
 
 	return width, height
@@ -191,7 +206,8 @@ func IsStorage(image *Texture) bool { return image != nil && image.storage }
 func ByteSize(texture *Texture) uint64 { return texture.bytes }
 
 func validateRepresentation(data Data) error {
-	if data.Format > ASTC4x4 || data.Format != RGBA8 && (data.Width%blockDimension != 0 || data.Height%blockDimension != 0) {
+	side := BlockDimension(data.Format)
+	if data.Format > ASTC6x6 || data.Format != RGBA8 && (data.Width%side != 0 || data.Height%side != 0) {
 		return errMipLevels
 	}
 

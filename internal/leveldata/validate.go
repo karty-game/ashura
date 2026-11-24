@@ -4,9 +4,7 @@ import "math"
 
 // Validate proves page families, logical IDs and all external references before publication/loading.
 func Validate(doc Document) error {
-	if doc.Schema != Schema && doc.Schema != Schema2 && doc.Schema != Schema3 && doc.Schema != Schema4 && doc.Schema != Schema5 &&
-		doc.Schema != Schema6 && doc.Schema != Schema7 ||
-		!validText(doc.Source) ||
+	if !knownSchema(doc.Schema) || !validText(doc.Source) ||
 		len(doc.Chunks) > MaxChunks ||
 		len(doc.Objects) > 8192 ||
 		!finite(doc.TexelsPerUnit) ||
@@ -26,6 +24,15 @@ func Validate(doc Document) error {
 	}
 
 	return validateObjects(doc, refs)
+}
+
+func knownSchema(schema string) bool {
+	switch schema {
+	case Schema, Schema2, Schema3, Schema4, Schema5, Schema6, Schema7, Schema8:
+		return true
+	default:
+		return false
+	}
 }
 
 const chunkExtentTolerance = 1e-5
@@ -64,7 +71,7 @@ func validateChunks(doc Document, refs references) error {
 			return ErrFormat
 		}
 
-		if err := validateChunk(chunk, maximum, encodings); err != nil {
+		if _, err := validateChunk(chunk, maximum, encodings); err != nil {
 			return err
 		}
 
@@ -136,25 +143,33 @@ func validateOwnership(doc Document, static map[string]bool) error {
 
 // ValidateChunk admits one independently deliverable chunk and its complete reference family.
 func ValidateChunk(chunk Chunk) error {
+	_, err := ValidatedChunkReferences(chunk)
+
+	return err
+}
+
+// ValidatedChunkReferences admits a complete chunk and returns its distinct runtime dependencies.
+func ValidatedChunkReferences(chunk Chunk) ([]Ref, error) {
 	return validateChunk(chunk, 2048, make(map[string]string))
 }
 
-func validateChunk(chunk Chunk, maximum uint32, encodings map[string]string) error {
-	if !validText(chunk.ID) || !validText(chunk.Space) || len(chunk.Pages) == 0 || len(chunk.Pages) > 64 || len(chunk.Sources) > 8192 {
-		return ErrFormat
+func validateChunk(chunk Chunk, maximum uint32, encodings map[string]string) ([]Ref, error) {
+	if !validText(chunk.ID) || !validText(chunk.Space) || len(chunk.Pages) == 0 || len(chunk.Pages) > maxChunkPages ||
+		len(chunk.Sources) > 8192 {
+		return nil, ErrFormat
 	}
 
 	for axis := range 3 {
 		if !finite(chunk.Origin[axis]) || !finite(chunk.Min[axis]) || !finite(chunk.Max[axis]) ||
 			chunk.Min[axis] >= chunk.Max[axis] || chunk.Origin[axis] < chunk.Min[axis] || chunk.Origin[axis] > chunk.Max[axis] {
-			return ErrFormat
+			return nil, ErrFormat
 		}
 	}
 
 	sources := make(map[string]bool)
 	for _, source := range chunk.Sources {
 		if !validText(source) || sources[source] {
-			return ErrFormat
+			return nil, ErrFormat
 		}
 
 		sources[source] = true
@@ -162,20 +177,40 @@ func validateChunk(chunk Chunk, maximum uint32, encodings map[string]string) err
 
 	for _, page := range chunk.Pages {
 		if err := validatePage(page, maximum, encodings); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
+	return validateChunkReferences(chunk)
+}
+
+func validateChunkReferences(chunk Chunk) ([]Ref, error) {
 	roster := newReferences()
-	for _, ref := range chunkMetadataReferences(chunk) {
-		if err := roster.add(ref); err != nil {
-			return err
+
+	refs, err := collectChunkReferences(chunkReferences(chunk), roster)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, page := range chunk.Pages {
+		if page.BakeInputs != nil {
+			if err := roster.add(*page.BakeInputs); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	_, err := ChunkReferences(chunk)
+	if chunk.Bundle != nil {
+		if err := roster.add(chunk.Bundle.File); err != nil {
+			return nil, err
+		}
 
-	return err
+		if err := validateChunkBundle(chunk, refs); err != nil {
+			return nil, err
+		}
+	}
+
+	return refs, nil
 }
 
 func validatePage(page Page, maximum uint32, encodings map[string]string) error {
@@ -339,12 +374,26 @@ func hasPortableStorage(chunk Chunk) bool {
 	return false
 }
 
+func schemaAllowsBundle(schema string, chunk Chunk) bool {
+	return chunk.Bundle == nil || schema == Schema8
+}
+
 func schemaAllowsChunkProfiles(schema string, chunk Chunk) bool {
+	if !schemaAllowsBundle(schema, chunk) {
+		return false
+	}
+
+	// V8 changes chunk transport; its page and profile semantics remain V7's.
+	if schema == Schema8 {
+		schema = Schema7
+	}
+
 	if schema != Schema7 && hasLDRStorage(chunk) {
 		return false
 	}
 
-	if schema != Schema3 && schema != Schema4 && schema != Schema5 && schema != Schema6 && schema != Schema7 && hasEncodedAlbedo(chunk) {
+	if schema != Schema3 && schema != Schema4 && schema != Schema5 && schema != Schema6 && schema != Schema7 &&
+		hasEncodedAlbedo(chunk) {
 		return false
 	}
 

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/light"
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/light"
 )
 
 func TestSharedPoseKeepsModelAndImpostorCentered(t *testing.T) {

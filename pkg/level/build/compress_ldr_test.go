@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func ldrProfile(t *testing.T, family, format, transfer string) NativeTextureOptions {

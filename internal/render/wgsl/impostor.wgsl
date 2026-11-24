@@ -4,16 +4,19 @@ struct Light {
     ground: vec4f,
 }
 struct Material {
-    viewProjection: mat4x4f,
-    camera: vec4f,
     tint: vec4f,
     parameters: vec4f,
     occlusion: vec4f,
     probeOrigin: vec4f,
     probeMinimum: vec4f,
     probeMaximum: vec4f,
+}
+struct FrameUniforms {
+    viewProjection: mat4x4f,
+    camera: vec4f,
     lights: array<Light, 8>,
 }
+@group(0) @binding(8) var<uniform> sceneFrame: FrameUniforms;
 struct Capture {
     right: vec4f,
     up: vec4f,
@@ -69,13 +72,13 @@ fn vs_main(
     @location(6) model3: vec4f,
 ) -> VertexOutput {
     let model = mat4x4f(model0, model1, model2, model3);
-    let objectCamera = objectPosition(model, material.camera.xyz);
+    let objectCamera = objectPosition(model, sceneFrame.camera.xyz);
     let direction = safeNormalize(objectCamera - impostor.centerRadius.xyz);
     let mode = u32(impostor.bounds.w);
     var selected = vec4u(0u);
     var weights = vec4f(0.0);
     let worldCenter = (model * vec4f(impostor.centerRadius.xyz, 1.0)).xyz;
-    let cameraDirection = safeNormalize(material.camera.xyz - worldCenter);
+    let cameraDirection = safeNormalize(sceneFrame.camera.xyz - worldCenter);
     var referenceUp = vec3f(0.0, 1.0, 0.0);
     if abs(cameraDirection.y) > 0.999 { referenceUp = vec3f(0.0, 0.0, 1.0); }
     let right = safeNormalize(cross(referenceUp, cameraDirection));
@@ -83,7 +86,7 @@ fn vs_main(
     let worldRadius = impostor.centerRadius.w * max(length(model0.xyz), max(length(model1.xyz), length(model2.xyz)));
     var radiusSpan = worldRadius;
     if mode == 5u || mode == 4u {
-        let cameraDelta = material.camera.xyz - worldCenter;
+        let cameraDelta = sceneFrame.camera.xyz - worldCenter;
         let distanceSquared = dot(cameraDelta, cameraDelta);
         if distanceSquared > worldRadius * worldRadius * 1.000001 {
             radiusSpan = worldRadius * sqrt(distanceSquared / (distanceSquared - worldRadius * worldRadius));
@@ -140,7 +143,7 @@ fn vs_main(
         weights = sharpWeights / max(dot(sharpWeights, vec4f(1.0)), 1e-8);
     }
     var output: VertexOutput;
-    output.position = material.viewProjection * vec4f(worldPoint, 1.0);
+    output.position = sceneFrame.viewProjection * vec4f(worldPoint, 1.0);
     output.objectPoint = objectPosition(model, worldPoint);
     output.objectCamera = objectCamera;
     output.model0 = model0;
@@ -552,13 +555,13 @@ fn sampleSurface(input: VertexOutput) -> Surface {
     return sampleAngularSurface(input);
 }
 fn illuminate(base: vec3f, normal: vec3f, worldPosition: vec3f) -> vec3f {
-    let view = safeNormalize(material.camera.xyz - worldPosition);
+    let view = safeNormalize(sceneFrame.camera.xyz - worldPosition);
     let roughness = clamp(impostor.settings.z, 0.0, 1.0);
     var ambient = vec3f(0.02);
     var diffuse = vec3f(0.0);
     var specular = vec3f(0.0);
-    for (var index = 0u; index < u32(material.camera.w); index++) {
-        let light = material.lights[index];
+    for (var index = 0u; index < u32(sceneFrame.camera.w); index++) {
+        let light = sceneFrame.lights[index];
         let direction = safeNormalize(light.direction.xyz);
         if light.direction.w == 1.0 {
             ambient += mix(light.ground.rgb, light.color.rgb, clamp(dot(normal,direction)*0.5+0.5,0.0,1.0)) * light.color.w;
@@ -595,7 +598,7 @@ fn fragment(input: VertexOutput, encodeSRGB: bool) -> FragmentOutput {
     if encodeSRGB {
         color = select(1.055*pow(color,vec3f(1.0/2.4))-vec3f(0.055),12.92*color,color<=vec3f(0.0031308));
     }
-    let clip = material.viewProjection * world;
+    let clip = sceneFrame.viewProjection * world;
     var output: FragmentOutput;
     output.color = vec4f(color,1.0);
     output.depth = clamp(clip.z/clip.w,0.0,1.0);

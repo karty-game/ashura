@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/xatlas"
+	"github.com/karty-game/ashura/internal/lightmapper"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/xatlas"
 )
 
 // UVPage retains exact footprint preparation without a visibility hierarchy,

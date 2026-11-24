@@ -7,13 +7,14 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/lightmapper"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func productionSamplePagesFixture() []pageRecord {
@@ -98,6 +99,33 @@ func TestProductionSampleBatchIdentityIncludesOrderedRosterAndBackendPolicy(t *t
 	plugin.options.BackendIdentity = "fixture-device@1"
 	if action := plugin.sampleBatchAction("fixture", "room", pages, scene); action.Cache != assetbuild.CacheAutomatic {
 		t.Fatal("explicit backend identity did not enable ordinary action caching")
+	}
+}
+
+func TestProductionGPUActionsDependOnDetectedBackend(t *testing.T) {
+	t.Parallel()
+
+	var plan assetbuild.Plan
+
+	plugin := productionPlugin{}
+	if err := plugin.planBackend(&plan, "fixture"); err != nil {
+		t.Fatal(err)
+	}
+
+	ref := plugin.backend
+	if schema, err := plan.SlotSchema(ref); err != nil || schema != "karty.lightmapper-backend@1" {
+		t.Fatalf("missing backend output: %q %v", schema, err)
+	}
+
+	scene := assetbuild.Ref{Action: "scene", Slot: slot}
+	pages := productionSamplePagesFixture()
+	sample := plugin.sampleBatchAction("fixture", "room", pages, scene)
+	resolve := plugin.chunkResolveAction("fixture", chunkRecord{Pages: pages}, scene, nil, assetbuild.Ref{})
+
+	for _, action := range []assetbuild.Action{sample, resolve} {
+		if action.Cache != assetbuild.CacheAutomatic || !slices.Contains(action.Inputs, ref) {
+			t.Fatalf("%s does not use the detected backend for cache lookup", action.Processor)
+		}
 	}
 }
 

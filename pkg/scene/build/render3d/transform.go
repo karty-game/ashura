@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math"
 
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
 )
 
 type matrix [16]float64

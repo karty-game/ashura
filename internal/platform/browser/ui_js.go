@@ -6,7 +6,7 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 type uiGPU struct {

@@ -3,8 +3,8 @@ package render_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func TestSourceRNMSnapshotsTexturesScaleAndReplacesFallback(t *testing.T) {
@@ -15,28 +15,28 @@ func TestSourceRNMSnapshotsTexturesScaleAndReplacesFallback(t *testing.T) {
 	original := render.EffectiveMaterial(draw)
 
 	var state render.UniformState
-	state.Update(draw, render.Frame{})
+	state.Update(draw)
 
-	if uniformValue(state.Data, 19) != 2 {
+	if uniformValue(state.Data, 3) != 2 {
 		t.Fatal("Source RNM scale missing from uniform")
 	}
 
 	draw.AmbientColors[0][0] = 88
 
-	if render.EffectiveMaterial(draw) != original || state.Update(draw, render.Frame{}) {
+	if render.EffectiveMaterial(draw) != original || state.Update(draw) {
 		t.Fatal("fallback ambient affects mapped Source lighting")
 	}
 
 	draw.RNMScale = 3
 
-	if render.EffectiveMaterial(draw) == original || !state.Update(draw, render.Frame{}) {
+	if render.EffectiveMaterial(draw) == original || !state.Update(draw) {
 		t.Fatal("RNM scale mutation reused stale state")
 	}
 
 	original = render.EffectiveMaterial(draw)
 
 	draw.RNMEncoding = texturedata.RNMRGBE
-	if render.EffectiveMaterial(draw) == original || !state.Update(draw, render.Frame{}) || uniformValue(state.Data, 26) != 1 {
+	if render.EffectiveMaterial(draw) == original || !state.Update(draw) || uniformValue(state.Data, 10) != 1 {
 		t.Fatal("RGBE encoding mutation reused stale state")
 	}
 
@@ -50,15 +50,15 @@ func TestSourceRNMSnapshotsTexturesScaleAndReplacesFallback(t *testing.T) {
 	// Once detached, fallback coefficients participate again.
 	draw.RNM = [3]*texturedata.Texture{}
 
-	state.Update(draw, render.Frame{})
+	state.Update(draw)
 
-	if uniformValue(state.Data, 19) != 0 {
+	if uniformValue(state.Data, 3) != 0 {
 		t.Fatal("detached RNM still samples irradiance maps")
 	}
 
 	draw.AmbientColors[0][0]++
 
-	if !state.Update(draw, render.Frame{}) {
+	if !state.Update(draw) {
 		t.Fatal("fallback ambient mutation ignored after detach")
 	}
 }

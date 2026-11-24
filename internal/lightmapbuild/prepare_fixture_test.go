@@ -6,9 +6,9 @@ import (
 	"context"
 	"crypto/sha256"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/xatlas"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/xatlas"
 )
 
 // prepareFixture assembles one complete model so direct geometry, receiver and

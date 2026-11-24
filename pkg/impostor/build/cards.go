@@ -12,11 +12,12 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/impostorbake"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/impostorbake"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 const (
@@ -43,6 +44,13 @@ const (
 // Layered must be selected explicitly; it requires closed solids, power-of-two
 // Resolution32..256 and one numeric mip, with at most MaxIntervals occupied intervals.
 type Options struct {
+	// TextureProfile publishes a separate public payload and resource descriptor
+	// under "bc" or "mobile". Empty retains the embedded catalog.
+	TextureProfile string `json:"textureProfile,omitempty"`
+	// AtlasFormat selects BC1 (the zero-value default), ETC2RGBA or ASTC6x6
+	// for view captures. Mobile formats keep RGB normals and depth alpha.
+	// Layered retains RGBA8.
+	AtlasFormat texture.Format `json:"atlasFormat,omitempty"`
 	// MaxIntervals bounds layered occupancy per axis pixel; zero selects eight.
 	MaxIntervals int      `json:"maxIntervals,omitempty"`
 	FrameGrid    int      `json:"frameGrid,omitempty"`
@@ -104,7 +112,7 @@ func (plugin cardsPlugin) Plan(plan *assetbuild.Plan) error {
 			continue
 		}
 
-		if err := addCard(plan, resource, settings); err != nil {
+		if err := addCard(plan, resource, settings, plugin.options.AtlasFormat, plugin.options.TextureProfile); err != nil {
 			return err
 		}
 	}
@@ -164,16 +172,21 @@ func BakeWithReport(ctx context.Context, preparedModel []byte, options Options) 
 		return nil, Report{}, err
 	}
 
-	return bakePreparedReport(ctx, preparedModel, settings)
+	return bakePreparedReport(ctx, preparedModel, settings, options.AtlasFormat)
 }
 
-func bakePrepared(ctx context.Context, preparedModel []byte, settings impostorbake.Options) ([]byte, error) {
-	data, _, err := bakePreparedReport(ctx, preparedModel, settings)
+func bakePrepared(ctx context.Context, preparedModel []byte, settings impostorbake.Options, format texture.Format) ([]byte, error) {
+	data, _, err := bakePreparedReport(ctx, preparedModel, settings, format)
 
 	return data, err
 }
 
-func bakePreparedReport(ctx context.Context, preparedModel []byte, settings impostorbake.Options) ([]byte, Report, error) {
+func bakePreparedReport(
+	ctx context.Context,
+	preparedModel []byte,
+	settings impostorbake.Options,
+	format texture.Format,
+) ([]byte, Report, error) {
 	source, err := modeldata.Decode(preparedModel)
 	if err != nil {
 		return nil, Report{}, err
@@ -185,7 +198,15 @@ func bakePreparedReport(ctx context.Context, preparedModel []byte, settings impo
 	}
 
 	if result.Mode != impostordata.ModeLayered {
-		result, err = compressViewAtlases(ctx, result)
+		switch format {
+		case texture.ASTC6x6:
+			result, err = compressASTCAtlases(ctx, result)
+		case texture.ETC2RGBA:
+			result, err = compressMobileAtlases(ctx, result)
+		case texture.RGBA8, texture.BC1, texture.ETC2RGB, texture.BC6H, texture.BC7, texture.ASTC4x4:
+			result, err = compressViewAtlases(ctx, result)
+		}
+
 		if err != nil {
 			return nil, report, err
 		}
@@ -196,35 +217,48 @@ func bakePreparedReport(ctx context.Context, preparedModel []byte, settings impo
 	return data, report, err
 }
 
-func addCard(plan *assetbuild.Plan, resource assetbuild.Resource, settings impostorbake.Options) error {
+func addCard(
+	plan *assetbuild.Plan,
+	resource assetbuild.Resource,
+	settings impostorbake.Options,
+	format texture.Format,
+	profile string,
+) error {
 	name := assetbuild.AssetName(strings.TrimSuffix(resource.ID, path.Ext(resource.ID)))
 
+	actionID := "impostor/" + resource.ID
+	if profile != "" {
+		actionID = "impostor/" + profile + "/" + resource.ID
+	}
+
 	refs, err := plan.Add(assetbuild.Action{
-		ID:        "impostor/" + resource.ID,
+		ID:        actionID,
 		Processor: "impostors",
-		Revision:  "bc1-view-atlases@9",
-		Options:   settings,
-		Inputs:    []assetbuild.Ref{resource.Ref},
-		Outputs:   []assetbuild.Slot{{Name: preparedSlot, Schema: PreparedSchema}, {Name: filesSlot, Schema: "karty.files@1"}},
+		Revision:  "native-view-atlases@10",
+		Options: struct {
+			Capture impostorbake.Options
+			Format  texture.Format
+			Profile string
+		}{settings, format, profile},
+		Inputs:  []assetbuild.Ref{resource.Ref},
+		Outputs: []assetbuild.Slot{{Name: preparedSlot, Schema: PreparedSchema}, {Name: filesSlot, Schema: "karty.files@1"}},
 		Run: func(ctx *assetbuild.Context) (assetbuild.Result, error) {
 			data, err := ctx.Input(resource.Ref)
 			if err != nil {
 				return nil, err
 			}
 
-			prepared, err := bakePrepared(ctx, data, settings)
+			prepared, err := bakePrepared(ctx, data, settings, format)
 			if err != nil {
 				return nil, fmt.Errorf("impostor %s: %w", resource.ID, err)
 			}
 
-			file := "impostor_" + name + ".kimp"
-
-			code, err := catalog(name, resource.ID, file)
+			files, err := cardFiles(name, resource.ID, prepared, profile)
 			if err != nil {
 				return nil, err
 			}
 
-			bundle, err := json.Marshal(assetbuild.Bundle{"impostors/" + file: prepared, "impostors/impostor_" + name + ".go": code})
+			bundle, err := json.Marshal(files)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +271,13 @@ func addCard(plan *assetbuild.Plan, resource assetbuild.Resource, settings impos
 	}
 
 	plan.Publish(refs[1])
-	plan.Resources = append(plan.Resources, assetbuild.Resource{ID: resource.ID + "/impostor", Ref: refs[0]})
+
+	identity := resource.ID + "/impostor"
+	if profile != "" {
+		identity += "/" + profile
+	}
+
+	plan.Resources = append(plan.Resources, assetbuild.Resource{ID: identity, Ref: refs[0]})
 
 	return nil
 }

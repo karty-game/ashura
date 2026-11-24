@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/karty-game/karty-webgpu/internal/uihost"
+import "github.com/karty-game/ashura/internal/uihost"
 
 // Cursor is the platform cursor requested by a UI surface.
 // Wrappers apply it to their canvas or native window, without rendering a cursor in the UI.

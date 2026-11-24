@@ -7,7 +7,7 @@ package lightmapbake
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
+	"github.com/karty-game/ashura/internal/lightmapper"
 )
 
 type Vec3 = lightmapper.Vec3

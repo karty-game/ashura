@@ -9,8 +9,9 @@ import (
 	"testing"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 const shadowReviewShader = `
@@ -74,7 +75,16 @@ func TestPointShadowFacesHardware(t *testing.T) {
 	frame.Lights[0].Direction[0] = .25
 	renderShadowReview(t, driver, frame)
 	checkShadowReviewDepth(t, sampleShadowReview(t, driver), [6]float32{.225, .175, .2, .2, .2, .2})
-	t.Log("six radial depth faces, unchanged reuse, caster movement and light movement passed")
+
+	frame.Lights[0].Direction[0] = 0
+	frame.Draws[0].Transform = [16]float32{0: .25, 5: .25, 10: .25, 12: 5, 15: 1}
+	renderShadowReview(t, driver, frame)
+	checkShadowReviewDepth(t, sampleShadowReview(t, driver), [6]float32{.45, 1, 1, 1, 1, 1})
+
+	frame.Draws[0].Transform[12] = 20
+	renderShadowReview(t, driver, frame)
+	checkShadowReviewDepth(t, sampleShadowReview(t, driver), [6]float32{1, 1, 1, 1, 1, 1})
+	t.Log("six projected faces, cached reuse, caster and light movement, face and range culling passed")
 }
 
 func shadowReviewFrame() render.Frame {
@@ -90,6 +100,7 @@ func shadowReviewFrame() render.Frame {
 
 	return render.Frame{
 		Draws: []render.DrawCall{{ID: 1, Vertices: vertices,
+			Bounds: meshdata.Bounds{Minimum: [3]float32{-2, -2, -2}, Maximum: [3]float32{2, 2, 2}, Valid: true},
 			Indices: []uint32{0, 4, 6, 0, 6, 2, 1, 3, 7, 1, 7, 5, 0, 1, 5, 0, 5, 4,
 				2, 6, 7, 2, 7, 3, 0, 2, 3, 0, 3, 1, 4, 5, 7, 4, 7, 6},
 			Transform: [16]float32{0: 1, 5: 1, 10: 1, 15: 1},
@@ -117,6 +128,10 @@ func renderShadowReview(t *testing.T, driver *Driver, frame render.Frame) {
 	missingDepth := &wgpu.RenderPassDescriptor{DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{}}
 	if _, err := encoder.BeginRenderPass(missingDepth); err == nil {
 		t.Fatal("missing depth view was admitted")
+	}
+
+	if err := driver.geometry.Prepare(frame.Draws); err != nil {
+		t.Fatal(err)
 	}
 
 	if err := driver.recordPointShadow(encoder, frame); err != nil {
@@ -147,11 +162,17 @@ func checkShadowReviewDepth(t *testing.T, values []float32, want [6]float32) {
 		t.Fatal("incorrect shadow readback length", len(values))
 	}
 
-	t.Log("six-face radial depth:", values)
+	t.Log("six-face projected depth:", values)
+
+	// Convert projected depth back to the fixture's original distance
+	// fraction, preserving its world-space error tolerance.
+	const nearFraction = float32(.002)
 
 	for face, expected := range want {
-		if math.IsNaN(float64(values[face])) || math.Abs(float64(values[face]-expected)) > .001 {
-			t.Fatalf("radial depth face %d = %v, want %v", face, values[face], expected)
+		depth := values[face]
+		distance := nearFraction / (1 - depth*(1-nearFraction))
+		if math.IsNaN(float64(depth)) || math.Abs(float64(distance-expected)) > .001 {
+			t.Fatalf("face %d depth %v corresponds to %v, want distance fraction %v", face, depth, distance, expected)
 		}
 	}
 }

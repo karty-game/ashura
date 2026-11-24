@@ -9,7 +9,7 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
+	"github.com/karty-game/ashura/internal/resourcedata"
 )
 
 func TestBrowserVerifiedPayloadRequiresActualIntegrityAdmission(t *testing.T) {

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/debug"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/app"
+	"github.com/karty-game/ashura/pkg/debug"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/app"
 )
 
 func navigationApp(t *testing.T) *engine.App {

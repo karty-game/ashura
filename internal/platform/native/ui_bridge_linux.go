@@ -6,9 +6,9 @@ import (
 	"errors"
 
 	"github.com/Zyko0/go-sdl3/sdl"
-	"github.com/karty-game/karty-webgpu/internal/uihost"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/uihost"
+	"github.com/karty-game/ashura/internal/uipaint"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 var errUIAttachment = errors.New("native UI attachment requires an available native driver and a non-nil view")

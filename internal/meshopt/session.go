@@ -12,7 +12,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
+	"github.com/karty-game/ashura/internal/meshdata"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 )

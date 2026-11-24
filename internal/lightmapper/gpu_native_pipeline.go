@@ -8,14 +8,12 @@ import (
 	"strings"
 
 	"github.com/gogpu/gputypes"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 const (
 	stageGenerate = iota
 	stageIntersect
-	stageSelect
-	stageShadow
 	stageExact
 	stageContinue
 	stageReduce
@@ -26,6 +24,7 @@ const (
 	stageCompact
 	stageAdvance
 	stageSerialize
+	stageCount
 )
 const (
 	layoutStandard = iota
@@ -34,8 +33,8 @@ const (
 )
 
 func nativeStageName(index int) string {
-	return [...]string{
-		"lm_generate", "lm_intersect", "lm_select", "lm_shadow", "lm_exact", "lm_continue", "lm_reduce", "lm_resolve",
+	return [stageCount]string{
+		"lm_generate", "lm_intersect", "lm_exact", "lm_continue", "lm_reduce", "lm_resolve",
 		"lm_reconstruct", "lm_reset", "lm_dispatch", "lm_compact", "lm_advance", "lm_serialize",
 	}[index]
 }
@@ -44,7 +43,7 @@ func stageLayout(stage int) int {
 	switch stage {
 	case stageReset, stageDispatch:
 		return layoutQueue
-	case stageIntersect, stageShadow, stageExact, stageAdvance:
+	case stageIntersect, stageExact, stageAdvance:
 		return layoutTrace
 	default:
 		return layoutStandard

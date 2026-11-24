@@ -16,8 +16,8 @@ The baker is Go/WGSL code in Ashura using
 [wgpu-native](https://github.com/gfx-rs/wgpu-native) through the existing Go
 binding. It runs on the build machine's GPU in the same process as the recipe.
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`
-and `bake` from `github.com/karty-game/karty-webgpu/pkg/lightmap/bake`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`
+and `bake` from `github.com/karty-game/ashura/pkg/lightmap/bake`.
 Put this plugin in `Pipeline.Process` after [StaticChunks](../processors/level-static-chunks.md)
 with `UVs` set, or after separately staged production
 [LightmapUVs](../processors/level-lightmap-uvs.md) with `UVs` nil. Follow with a publisher.

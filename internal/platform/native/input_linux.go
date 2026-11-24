@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Zyko0/go-sdl3/sdl"
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 // More than two contacts disable gestures. Fixed slots keep contacts stable
@@ -44,9 +44,13 @@ func (driver *Driver) readInput() (platform.InputState, bool, error) {
 
 	state := &driver.navigation
 	if state.width != float32(width) || state.height != float32(height) {
-		state.touch.Reset()
 		state.width, state.height = float32(width), float32(height)
+		state.touch.Reset()
+		state.touch.BlockPointer(&input)
+		state.publishTouches(&input)
 	}
+
+	input.Touch = state.touch.Pointer()
 
 	if !state.pumpEvents(&input, driver) {
 		return input, false, nil
@@ -64,7 +68,22 @@ func (driver *Driver) readInput() (platform.InputState, bool, error) {
 func (state *nativeInput) pumpEvents(input *platform.InputState, driver *Driver) bool {
 	var event sdl.Event
 	for sdl.PollEvent(&event) {
-		if driver.uiBridge != nil && driver.uiBridge.ReadEvent(&event) {
+		consumed := driver.uiBridge != nil && driver.uiBridge.ReadEvent(&event)
+		//nolint:exhaustive // Touch releases still reach the tracker when handled by UI.
+		switch event.Type {
+		case sdl.EVENT_FINGER_DOWN, sdl.EVENT_FINGER_MOTION, sdl.EVENT_FINGER_UP, sdl.EVENT_FINGER_CANCELED:
+			if consumed || event.Type == sdl.EVENT_FINGER_CANCELED {
+				state.touch.Reset()
+				state.touch.BlockPointer(input)
+			}
+
+			state.touchEvent(input, event.TouchFingerEvent())
+
+			continue
+		default:
+		}
+
+		if consumed {
 			continue
 		}
 		//nolint:exhaustive // Other SDL event families are unrelated to navigation.
@@ -90,8 +109,6 @@ func (state *nativeInput) pumpEvents(input *platform.InputState, driver *Driver)
 			input.WheelX += wheel.X * direction
 			// SDL wheel-up is positive; normalized positive Y means zoom away/out.
 			input.WheelY -= wheel.Y * direction
-		case sdl.EVENT_FINGER_DOWN, sdl.EVENT_FINGER_MOTION, sdl.EVENT_FINGER_UP, sdl.EVENT_FINGER_CANCELED:
-			state.touchEvent(input, event.TouchFingerEvent())
 		case sdl.EVENT_WINDOW_FOCUS_LOST:
 			state.touch.Reset()
 			clear(state.fingers[:])
@@ -101,6 +118,7 @@ func (state *nativeInput) pumpEvents(input *platform.InputState, driver *Driver)
 			clear(input.DragDY[:])
 			input.TouchDX, input.TouchDY = 0, 0
 			input.TouchPanX, input.TouchPanY, input.Pinch = 0, 0, 0
+			input.Touch = platform.TouchPointer{}
 		}
 	}
 
@@ -126,6 +144,7 @@ func (state *nativeInput) touchEvent(input *platform.InputState, event *sdl.Touc
 		if empty < 0 {
 			state.overflowContacts++
 			state.touch.Reset()
+			state.touch.BlockPointer(input)
 
 			return
 		}
@@ -134,8 +153,11 @@ func (state *nativeInput) touchEvent(input *platform.InputState, event *sdl.Touc
 	}
 
 	if slot < 0 {
-		if state.overflowContacts > 0 && (event.Type == sdl.EVENT_FINGER_UP || event.Type == sdl.EVENT_FINGER_CANCELED) {
-			state.overflowContacts--
+		if event.Type == sdl.EVENT_FINGER_UP || event.Type == sdl.EVENT_FINGER_CANCELED {
+			if state.overflowContacts > 0 {
+				state.overflowContacts--
+			}
+
 			state.publishTouches(input)
 		}
 
@@ -154,7 +176,7 @@ func (state *nativeInput) touchEvent(input *platform.InputState, event *sdl.Touc
 
 func (state *nativeInput) publishTouches(input *platform.InputState) {
 	if state.overflowContacts > 0 {
-		state.touch.Reset()
+		state.touch.BlockPointer(input)
 
 		return
 	}

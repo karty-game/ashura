@@ -3,8 +3,8 @@
 package ktx2
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var (

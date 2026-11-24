@@ -81,20 +81,18 @@ func shadowPayloadShader(t *testing.T) string {
 	}
 
 	// Keep the production predicates; replace only worker stage entry points.
-	names := []string{
-		"lm_generate", "lm_intersect", "lm_select", "lm_shadow", "lm_exact", "lm_continue", "lm_reduce",
-		"lm_resolve", "lm_reconstruct", "lm_reset", "lm_dispatch", "lm_compact", "lm_advance", "lm_serialize",
-	}
-
 	shader := string(source)
-	for _, name := range names {
+
+	for stage := range stageCount {
+		name := nativeStageName(stage)
 		shader = strings.ReplaceAll(shader, "fn "+name+"(", "fn payload_original_"+name+"(")
 	}
 
 	var output strings.Builder
 	output.WriteString(shader)
 
-	for _, name := range names {
+	for stage := range stageCount {
+		name := nativeStageName(stage)
 		if name == "lm_generate" {
 			output.WriteString("\n@compute @workgroup_size(64) fn lm_generate() { if lmPoolABI!=1u{return;} }\n")
 		} else if name != "lm_intersect" && name != "lm_reset" {

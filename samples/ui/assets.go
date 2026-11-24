@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/samples/ui/generated/assets"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/samples/ui/generated/assets"
 )
 
 type artwork struct {

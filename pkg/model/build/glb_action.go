@@ -3,8 +3,8 @@
 package modelbuild
 
 import (
-	compiler "github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	compiler "github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func compileModelAction(

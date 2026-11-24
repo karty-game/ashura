@@ -5,10 +5,10 @@ package assetbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // PrepareOpaqueLDRUASTC prepares a shared offline UASTC intermediate from opaque
@@ -97,7 +97,7 @@ func ldrNativeTarget(target texture.Format, space texture.ColorSpace) (uint32, e
 		if space == texture.SRGB {
 			format = blockVKETC2RGBASRGB
 		}
-	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4, texture.ASTC6x6:
 		return 0, errBlockCompression
 	default:
 		return 0, errBlockCompression

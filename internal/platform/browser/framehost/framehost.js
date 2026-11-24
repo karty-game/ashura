@@ -92,6 +92,7 @@
     const renderPass = Object.freeze({
       setPipeline(pipeline) { call1("render", "setPipeline", pipeline); },
       setVertexBuffer(slot, buffer) { call2("render", "setVertexBuffer", slot, buffer); },
+      setVertexBufferRange(slot, buffer, offset, size) { call4("render", "setVertexBuffer", slot, buffer, offset, size); },
       setIndexBuffer(buffer, format) { call2("render", "setIndexBuffer", buffer, format); },
       setBindGroup(index, group) { call2("render", "setBindGroup", index, group); },
       setScissorRect(x, y, width, height) { call4("render", "setScissorRect", x, y, width, height); },
@@ -118,7 +119,13 @@
     });
     const encoderFacade = Object.freeze({
       beginRenderPass(descriptor) { return beginPass("render", descriptor); },
-      beginComputePass() { return beginPass("compute"); }
+      beginComputePass() { return beginPass("compute"); },
+      copyParticleState(source, destination, size) {
+        try {
+          if (closed || !encoder || pass) throw new Error("Ashura frame host: particle copy requires an idle frame encoder");
+          encoder.copyBufferToBuffer(source, 0, destination, 0, size);
+        } catch (error) { fail(error); }
+      }
     });
 
     return Object.freeze({

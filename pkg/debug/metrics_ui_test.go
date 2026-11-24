@@ -3,9 +3,9 @@ package debug
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 func TestRenderingRowsSeparateSceneSpritesAndDebugUI(t *testing.T) {

@@ -33,11 +33,14 @@ func (refs references) add(ref Ref) error {
 // ChunkReferences returns stable first-use references, deduplicated by content.
 // Conflicting path/hash descriptors and oversized aggregate requests fail before I/O.
 func ChunkReferences(chunk Chunk) ([]Ref, error) {
-	refs := newReferences()
+	return collectChunkReferences(chunkReferences(chunk), newReferences())
+}
+
+func collectChunkReferences(raw []Ref, refs references) ([]Ref, error) {
 	result := []Ref{}
 	size := uint64(0)
 
-	for _, ref := range chunkReferences(chunk) {
+	for _, ref := range raw {
 		_, exists := refs.hashes[ref.SHA256]
 		if err := refs.add(ref); err != nil {
 			return nil, err
@@ -80,6 +83,10 @@ func chunkReferences(chunk Chunk) []Ref {
 
 func chunkMetadataReferences(chunk Chunk) []Ref {
 	refs := chunkReferences(chunk)
+	if chunk.Bundle != nil {
+		refs = append(refs, chunk.Bundle.File)
+	}
+
 	for _, page := range chunk.Pages {
 		if page.BakeInputs != nil {
 			refs = append(refs, *page.BakeInputs)

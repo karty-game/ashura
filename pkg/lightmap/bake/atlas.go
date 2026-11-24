@@ -6,7 +6,7 @@ package lightmapbake
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Atlas is final RGBE data before optional offline native block encoding.

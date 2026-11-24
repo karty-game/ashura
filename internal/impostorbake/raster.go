@@ -6,7 +6,7 @@ import (
 	"context"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 const supersample = 2

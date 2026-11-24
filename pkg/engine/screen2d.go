@@ -1,8 +1,8 @@
 package engine
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/pkg/draw2d"
 )
 
 type screenLayer interface {

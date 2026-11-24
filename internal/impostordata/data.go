@@ -51,6 +51,11 @@ const (
 	StorageRGBA8 Storage = iota
 	// StorageBC1 uses punch-through color and oct-normal R/B with depth G.
 	StorageBC1
+	// StorageETC2RGBA retains straight-alpha color and RGB normals/depth alpha
+	// in native ETC2 RGBA blocks, using the existing non-BC1 shader layout.
+	StorageETC2RGBA
+	// StorageASTC6x6 retains RGB normals/depth alpha in native ASTC blocks.
+	StorageASTC6x6
 )
 
 var errFormat = errors.New("invalid prepared impostor container")
@@ -228,8 +233,14 @@ func validIdentity(document Document) bool {
 }
 
 func validStorage(document Document) bool {
-	return document.Storage == StorageRGBA8 || document.Storage == StorageBC1 && document.Mode != ModeLayered &&
-		document.AtlasWidth%4 == 0 && document.AtlasHeight%4 == 0
+	side := uint32(4)
+	if document.Storage == StorageASTC6x6 {
+		side = 6
+	}
+
+	return document.Storage == StorageRGBA8 ||
+		(document.Storage >= StorageBC1 && document.Storage <= StorageASTC6x6) && document.Mode != ModeLayered &&
+			document.AtlasWidth%side == 0 && document.AtlasHeight%side == 0
 }
 
 func validCaptureGrid(document Document) bool {

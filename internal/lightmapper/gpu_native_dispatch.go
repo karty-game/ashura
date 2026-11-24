@@ -7,7 +7,7 @@ import (
 	"context"
 	"encoding/binary"
 
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func (executor *nativeGPUExecutor) encode(ctx context.Context, operation func(*wgpu.CommandEncoder) error) error {

@@ -7,7 +7,7 @@ example, ship RNM lighting with BC textures for desktop GPUs and ETC2 textures
 for mobile GPUs. The expensive lighting bake is shared; each version receives
 the files and descriptor it needs.
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`.
 Place this plugin in `Pipeline.Output` after
 [ProductionBake](../generators/level-lightmap-bake.md).
 
@@ -40,9 +40,10 @@ quality := 0
 profile := func(name, family string) levelbuild.PublishOptions {
     return levelbuild.PublishOptions{
         Variant: name,
+        BundleChunks: true,
         Representation: "rnm-fit-v1",
         NativeTextures: &levelbuild.NativeTextureOptions{
-            Family: family, NativeAlbedo: true,
+            Family: family, NativeAlbedo: true, ProfileMaterials: true,
             Encoder: assetbuild.BlockCompressionOptions{
                 LDRQuality: &quality, SSBumpQuality: &quality,
             },
@@ -63,6 +64,14 @@ same defaults as a raw `PublishOptions` encoder with nil `SSBumpQuality`.
 Applications choose a supported descriptor after initializing the device. They
 load only the selected profile's dependencies. Publication still counts every
 exported profile toward the complete distribution size.
+
+`BundleChunks: true` groups each chunk's geometry, UVs and lightmaps into one
+uncompressed file per profile. `ProfileMaterials: true` places native albedo
+and relief under the selected `texture-profiles/bc/levels/textures/` or
+`texture-profiles/mobile/levels/textures/` directory. This option requires
+`NativeAlbedo`. Chunks in the same profile can share material textures.
+See [chunk publication](level-publish.md#load-a-chunk-as-one-unit) for the layout
+and loading costs.
 
 [Complete Sponza recipe](../../../samples/sponza/asset.config.go) ·
 [Plugin source](../../../pkg/level/build/publish_variants.go) · [Pipeline guide](../getting-started.md)

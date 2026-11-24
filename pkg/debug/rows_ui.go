@@ -1,7 +1,7 @@
 //nolint:mnd // The debug overlay uses explicit bounded text sizes and spacing.
 package debug
 
-import "github.com/karty-game/karty-webgpu/pkg/ui"
+import "github.com/karty-game/ashura/pkg/ui"
 
 const (
 	labelDrawCalls = "Draw calls"

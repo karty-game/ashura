@@ -10,7 +10,7 @@ The capture code runs in Go without a GPU capture device or an external tool.
 For reflections from an authored panorama, start with [Images](../importers/image-import.md) and
 [ReflectionProbes](../processors/image-reflection-probes.md) instead.
 
-Import `reflectionbuild "github.com/karty-game/karty-webgpu/pkg/reflection/build"`.
+Import `reflectionbuild "github.com/karty-game/ashura/pkg/reflection/build"`.
 
 ## Settings and defaults
 
@@ -39,7 +39,7 @@ the build.
 
 ## How to use it
 
-Put this pipeline in your [recipe](../getting-started.md#prepare-some-textures):
+Put this pipeline in your [recipe](../getting-started.md#add-a-recipe):
 
 ```go
 {

@@ -5,7 +5,7 @@ package lightmapbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 // RNMSession is a host-only offline worker. Browser games use lightmap.NewRNM.

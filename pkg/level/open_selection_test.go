@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 var errSelectionFixture = errors.New("selection fixture rejected residency")

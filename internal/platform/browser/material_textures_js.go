@@ -3,8 +3,8 @@
 package browser
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func (driver *Driver) standardTextureBindings(entries []any, occlusion, reflection, lightmap *texturedata.Texture) ([]any, error) {

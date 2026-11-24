@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"strconv"
 
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
 )
 
 const (
-	modulePath          = "github.com/karty-game/karty-webgpu/pkg/"
+	modulePath          = "github.com/karty-game/ashura/pkg/"
 	schemaType          = "type"
 	intensityProperty   = "intensity"
 	maxCoordinate       = 1e8

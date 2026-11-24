@@ -10,24 +10,59 @@ type TouchPoint struct {
 	X, Y float32
 }
 
+// TouchPointer describes a single-finger press in logical viewport pixels.
+// Pressed survives release until the frame consumes it.
+type TouchPointer struct {
+	X, Y          float32
+	Down, Pressed bool
+}
+
 // TouchTracker translates contact snapshots into frame gesture deltas. It retains
-// only the previous gesture baseline and allocates no memory during Update.
+// the previous gesture baseline and allocates no memory during Update.
 type TouchTracker struct {
 	count                  int
 	ids                    [touchPair]int64
 	centerX, centerY, span float32
+	pointerBlocked         bool
 }
 
 // Reset discards contact baselines on blur/cancel. The next contact starts a new gesture.
 func (tracker *TouchTracker) Reset() { *tracker = TouchTracker{} }
+
+// BlockPointer suppresses the single-finger pointer until all contacts lift.
+func (tracker *TouchTracker) BlockPointer(input *InputState) {
+	tracker.pointerBlocked = true
+	input.Touch = TouchPointer{}
+}
+
+// Pointer returns the held pointer for platforms that rebuild input each frame.
+func (tracker *TouchTracker) Pointer() TouchPointer {
+	if tracker.count != 1 || tracker.pointerBlocked {
+		return TouchPointer{}
+	}
+
+	return TouchPointer{X: tracker.centerX, Y: tracker.centerY, Down: true}
+}
 
 // Update accumulates one-finger drag, two-finger pan and logarithmic pinch.
 // Changing contact count or identity rebases without producing a jump. More than
 // two contacts suspend gestures until a supported snapshot establishes a baseline.
 func (tracker *TouchTracker) Update(input *InputState, points []TouchPoint) {
 	count := len(points)
-	if count < 1 || count > touchPair {
+	if count == 0 {
 		tracker.Reset()
+
+		input.Touch.Down = false
+
+		return
+	}
+
+	if count >= touchPair {
+		tracker.BlockPointer(input)
+	}
+
+	if count > touchPair {
+		tracker.count = 0
 
 		return
 	}
@@ -47,6 +82,10 @@ func (tracker *TouchTracker) Update(input *InputState, points []TouchPoint) {
 	sameContacts := false
 	if count == tracker.count {
 		sameContacts = ids == tracker.ids || count == touchPair && ids == ([touchPair]int64{tracker.ids[1], tracker.ids[0]})
+	}
+
+	if count == 1 && !tracker.pointerBlocked {
+		input.Touch = TouchPointer{X: centerX, Y: centerY, Down: true, Pressed: input.Touch.Pressed || !sameContacts}
 	}
 
 	if sameContacts {

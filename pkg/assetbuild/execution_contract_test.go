@@ -8,7 +8,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 type executionContractPlugin struct{ token *assetbuild.ExecutionResource }

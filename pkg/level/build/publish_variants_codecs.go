@@ -5,7 +5,7 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // Consume the declared ETC1S producer directly. The encoder and complete native

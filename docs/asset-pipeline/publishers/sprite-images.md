@@ -9,8 +9,8 @@ support, BC1/ETC2RGB for fully opaque pages, or BC7/ETC2RGBA for compressed
 pages with alpha. BC and ETC2 require their respective device features.
 Offline compression uses [Basis Universal](https://github.com/BinomialLLC/basis_universal).
 
-Import `spritebuild "github.com/karty-game/karty-webgpu/pkg/draw2d/build"` and,
-when selecting formats, `"github.com/karty-game/karty-webgpu/pkg/texture"`.
+Import `spritebuild "github.com/karty-game/ashura/pkg/draw2d/build"` and,
+when selecting formats, `"github.com/karty-game/ashura/pkg/texture"`.
 
 ## Settings and defaults
 
@@ -27,9 +27,31 @@ Pass no arguments or one `spritebuild.ImagesOptions` record.
 settings do not affect these color pages. Format selection happens per page,
 so a transparent sprite on an atlas selects `AlphaFormat` for the whole page.
 
-## How to use it
+## Prepare desktop and mobile variants
 
-Put this pipeline in the [recipe wrapper](../getting-started.md#prepare-some-textures):
+Use `spritebuild.PortableImages()` in the [recipe wrapper](../getting-started.md#add-a-recipe)
+to encode BC and ETC2 pages from one set of prepared images. The following
+pipeline packs sprites and keeps other images, such as backgrounds, standalone.
+
+```go
+{
+    Name: "sprites", Input: []string{"assets/**"},
+    Import: []assetbuild.Plugin{assetbuild.Images()},
+    Process: []assetbuild.Plugin{assetbuild.Atlas(assetbuild.AtlasOptions{
+        Name: "sprites", Include: []string{"sprites/**"}, Clamp: true,
+    })},
+    Output: []assetbuild.Plugin{spritebuild.PortableImages()},
+},
+```
+
+After `App.Run` opens the device, call `assets.LoadForDevice(app.SupportsTextureFormat)`
+from the generated package. It prefers BC when every required page format is
+supported, then checks the ETC2 catalog. It admits only the selected pages.
+You can pass one `assetbuild.BlockCompressionOptions` value to tune both
+encoders. The desktop `Load()` and the ETC2 catalog under `mobile/` are also
+available for callers that select a variant explicitly.
+
+## Choose explicit formats
 
 ```go
 {
@@ -48,12 +70,6 @@ dimensions fail rather than resizing the artwork. No runtime format fallback
 is performed. Add [Atlas](../processors/image-atlas.md) to `Process` for shared pages, optionally
 preceded by [Resize](../processors/image-resize.md). Sources must be albedo with exactly one level;
 omit `Mipmaps`, `KTX2` and `GoCatalog`.
-
-For mobile ETC2 devices, select `OpaqueFormat: texture.ETC2RGB` and
-`AlphaFormat: texture.ETC2RGBA`. Publish desktop and mobile catalogs in separate
-pipeline `Directory` values and select one after `App.Run` opens the device,
-using `App.CompressedAlbedoFormat()`. See the Sprites2D recipe and startup for
-an example; the generated `Load()` never selects or converts formats itself.
 
 The output contains `assets.go`, `pages/*.{rgba,bc1,bc7,etc2rgb,etc2rgba}` as selected, and
 `atlas.json` for packed regions. With `Config.Output: "generated"`, import

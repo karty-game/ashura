@@ -7,7 +7,7 @@ baked level profile. It packs the baked charts into final atlases and writes
 external files plus a small Go descriptor. The game loads those prepared files
 without needing the original source models.
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`.
 Place this plugin in `Pipeline.Output`, after
 [ProductionBake](../generators/level-lightmap-bake.md). Use
 [PublishVariants](level-publish-variants.md) when you need several texture formats or
@@ -24,6 +24,7 @@ lighting representations from the same bake.
 | `Package string` | `"levels"` | Generated descriptor package; must be a valid non-keyword Go identifier. |
 | `Development bool` | `false` | Also publishes per-page `.klightmap` bake inputs and retains individual development pages. Runtime loaders do not fetch these inputs. |
 | `MaxAtlasSize uint32` | `1024` | Final chart-consolidation cap; accepts 1024 or 2048. Independent of the UV preparation page cap. |
+| `BundleChunks bool` | `false` | Publish each chunk's geometry, lightmap UVs and baked lightmaps in one stored ZIP. Material textures stay separate and shared. |
 | `NativeTextures *NativeTextureOptions` | `nil` | Opt into normalized LDR GPU-native delivery, described below. |
 | `NativeHDR *NativeHDROptions` | `nil` | Alternative HDR/RGBE native delivery profile. Mutually exclusive with `NativeTextures`. |
 | `AlbedoETC1S *ETC1SOptions` | `nil` | Optional ETC1S albedo preparation. Set `Quality` explicitly from 1 to 255; zero is invalid. |
@@ -65,6 +66,39 @@ preparation requirement when enabled. Its `Encoder` takes `HDREffort` 0–4
 (default 0), `SSBumpQuality` pointer 0–4 (nil selects 4), `RGBEQuality` pointer
 0–4 (nil selects 3), and `Timeout` (zero selects 2 minutes).
 
+## Load a chunk as one unit
+
+Set `BundleChunks: true` to download a chunk's geometry, lighting coordinates
+and lightmaps together. Packing happens during publication, after geometry and
+texture preparation. The ZIP uses stored entries, so loading does no ZIP
+decompression or asset conversion.
+Bundled output requires the calibrated RGB diffuse or RNM page representation
+used by `ProductionBake`.
+
+```mermaid
+flowchart LR
+    Manifest[Level manifest] --> Pack[One ZIP per selected chunk]
+    Pack --> Geometry[Geometry]
+    Pack --> UV[Lightmap UVs]
+    Pack --> Maps[Baked lightmaps]
+    Manifest --> Materials[Shared material textures]
+```
+
+Material textures remain separate files. Neighboring chunks can reuse their
+existing downloads and GPU residency without including the same textures in
+every pack. Independent models and optional developer bake inputs also keep
+their own files. Texture atlasing and streaming policy are separate choices.
+
+The build writes entry offsets into the level manifest. The loader reads one
+pack, verifies its bounds and checksums, and uses views into the prepared bytes.
+It retains the existing stepped GPU uploads. The pack buffer can remain alive
+until its chunk resources are released. A pack is limited to 128 MiB; the
+complete chunk read remains bounded to 256 MiB. The loader rejects an invalid
+pack instead of retrying its entries as loose files.
+
+For `PublishVariants`, set the option on each profile that should use packs.
+Each GPU profile has its own packs; only the selected profile is downloaded.
+
 ## How to use it
 
 A single compressed desktop RNM profile:
@@ -75,6 +109,7 @@ Output: []assetbuild.Plugin{
         Variant: "RNMBC",
         Representation: "rnm-fit-v1",
         MaxAtlasSize: 1024,
+        BundleChunks: true,
         NativeTextures: &levelbuild.NativeTextureOptions{
             Family: "bc", NativeAlbedo: true,
         },

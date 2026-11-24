@@ -5,7 +5,7 @@ package uiapp
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/uihost"
+	"github.com/karty-game/ashura/internal/uihost"
 )
 
 var errUnsupported = errors.New("uiapp: platform backend is unavailable")

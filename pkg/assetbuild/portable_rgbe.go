@@ -5,7 +5,7 @@ package assetbuild
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 const (

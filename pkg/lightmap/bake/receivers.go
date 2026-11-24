@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/lightmapper"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // PrepareReceivers clips UV1 triangles against texel footprints. The resulting

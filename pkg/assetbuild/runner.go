@@ -59,6 +59,13 @@ func Build(ctx context.Context, config Config, options Options) (report Report, 
 		return Report{}, err
 	}
 
+	if run.identity == "" {
+		run.identity, err = ExecutableIdentity()
+		if err != nil {
+			return Report{}, err
+		}
+	}
+
 	unlock, err := acquireLock(ctx, run.project)
 	if err != nil {
 		return Report{}, err
@@ -73,13 +80,9 @@ func Build(ctx context.Context, config Config, options Options) (report Report, 
 		return Report{}, err
 	}
 
-	plan, err := run.makePlan(config, options)
+	plan, err := run.makePlan(config, options, false)
 	if plan != nil {
-		defer func() {
-			if cleanupErr := closePlanCleanups(plan); cleanupErr != nil {
-				err = errors.Join(err, cleanupErr)
-			}
-		}()
+		defer func() { err = errors.Join(err, closePlanCleanups(plan)) }()
 	}
 
 	if err != nil {
@@ -158,14 +161,6 @@ func newRunner(config Config, options Options) (*runner, error) {
 		return nil, err
 	}
 
-	identity := options.Identity
-	if identity == "" {
-		identity, err = ExecutableIdentity()
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	var snapshotMu *sync.Mutex
 	if options.Jobs > 1 {
 		snapshotMu = &sync.Mutex{}
@@ -178,7 +173,7 @@ func newRunner(config Config, options Options) (*runner, error) {
 		output:     output,
 		cache:      cache,
 		buildState: buildState,
-		identity:   identity,
+		identity:   options.Identity,
 		noCache:    options.NoCache,
 		log:        options.Log,
 		actions:    make(map[string]Action),
@@ -204,7 +199,7 @@ func ExecutableIdentity() (string, error) {
 	return digest(data), nil
 }
 
-func (run *runner) makePlan(config Config, options Options) (*Plan, error) {
+func (run *runner) makePlan(config Config, options Options, inspect bool) (*Plan, error) {
 	profile := options.Profile
 	if profile == "" {
 		profile = "dev"
@@ -216,7 +211,7 @@ func (run *runner) makePlan(config Config, options Options) (*Plan, error) {
 	}
 
 	if !slices.Contains(profiles, profile) {
-		return nil, fmt.Errorf("unsupported asset profile %q: %w", profile, errPlan)
+		return nil, fmt.Errorf("unsupported asset profile %q (available: %s): %w", profile, strings.Join(profiles, ", "), errPlan)
 	}
 
 	environment := Environment{Phase: options.Phase, Profile: profile, TargetOS: options.TargetOS, TargetArch: options.TargetArch}
@@ -233,8 +228,17 @@ func (run *runner) makePlan(config Config, options Options) (*Plan, error) {
 	}
 
 	plan := &Plan{Project: run.project, Output: run.output, Environment: environment}
+	if err := planPipelines(plan, run.pipelines, inspect); err != nil {
+		return plan, err
+	}
 
-	return plan, planPipelines(plan, run.pipelines)
+	for _, pipeline := range plan.pipelines {
+		if err := validateExpansion(pipeline, pipeline.actions); err != nil {
+			return plan, err
+		}
+	}
+
+	return plan, nil
 }
 
 func validateSourceRoots(project, output, buildState string, patterns []string) error {

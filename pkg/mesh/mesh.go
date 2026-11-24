@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"math"
 
-	engine "github.com/karty-game/karty-webgpu/pkg/engine"
+	engine "github.com/karty-game/ashura/pkg/engine"
 )
 
 const (

@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"image"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // PrepareNativeSSBumpRGBA8 writes a canonical linear RGBA8 container without

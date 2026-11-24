@@ -1,0 +1,278 @@
+{
+  "duration": 3,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 160,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 40
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "snow-far",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 40,
+          "min": -40,
+          "mode": "range"
+        },
+        "life": {
+          "max": 3,
+          "min": 2,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 7,
+          "min": 3,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 15,
+          "min": 5,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "snow-far",
+      "noise": {
+        "frequency": 0.006,
+        "octaves": 1,
+        "scrollSpeed": 0.12,
+        "strength": {
+          "mode": "constant",
+          "value": 10
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.6,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0.15
+            },
+            {
+              "a": 0.6,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.9,
+              "t": 0.85
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.95,
+              "r": 0.9,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.8
+          },
+          "gravity": {
+            "x": -8,
+            "y": 40
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 180,
+        "spread": 13
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 48,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 12
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "snow-near",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 40,
+          "min": -40,
+          "mode": "range"
+        },
+        "life": {
+          "max": 3,
+          "min": 2,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 16,
+          "min": 10,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 16,
+          "min": 6,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "snow-near",
+      "noise": {
+        "frequency": 0.006,
+        "octaves": 1,
+        "scrollSpeed": 0.12,
+        "strength": {
+          "mode": "constant",
+          "value": 18
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.9,
+              "b": 1,
+              "g": 1,
+              "r": 1,
+              "t": 0.15
+            },
+            {
+              "a": 0.9,
+              "b": 1,
+              "g": 0.96,
+              "r": 0.92,
+              "t": 0.85
+            },
+            {
+              "a": 0,
+              "b": 1,
+              "g": 0.96,
+              "r": 0.92,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.8
+          },
+          "gravity": {
+            "x": -12,
+            "y": 55
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": 90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 180,
+        "spread": 13
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Snow",
+    "notes": "Two sizes of prewarmed flakes drift through a short snowfall."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 29
+}

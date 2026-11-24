@@ -4,10 +4,10 @@ package debug
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/app"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/app"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 type panelUI struct {

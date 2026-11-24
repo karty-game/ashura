@@ -5,7 +5,7 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func (driver *pointShadowFeature) initPointShadowDebug() error {
@@ -49,7 +49,7 @@ func (driver *pointShadowFeature) initPointShadowDebug() error {
 
 	shadow.debugPipeline = pipeline
 	entries := []any{
-		jsObject(map[string]any{bindingProperty: 0, resourceProperty: shadow.cube}),
+		jsObject(map[string]any{bindingProperty: 0, resourceProperty: shadow.layers}),
 		jsObject(map[string]any{bindingProperty: 1, resourceProperty: shadow.sampler}),
 	}
 	shadow.debugGroup = driver.device.Call(

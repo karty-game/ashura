@@ -3,7 +3,7 @@
 package browser
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 // Check the complete incoming page set before any frame uploads occur.

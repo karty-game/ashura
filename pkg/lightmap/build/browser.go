@@ -19,9 +19,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 //go:embed browser.js

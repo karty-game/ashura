@@ -8,7 +8,7 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 //nolint:paralleltest // The hardware fixture owns one device and checks its complete upload/dispatch/readback boundary.

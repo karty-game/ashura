@@ -10,9 +10,10 @@ mise exec -- go run ./cmd/engine run web ./samples/basic-scene
 
 The command compiles the sample to WASM and serves a temporary browser build on a free localhost port. Open the printed URL, or forward its port when working remotely. The browser must support WebGPU. Click the canvas to capture the pointer. Use WASD to move, Space/Shift to rise and descend, and the mouse to look around. Press Escape to release the pointer.
 
-Basic Scene is the only sample compiled with TinyGo by the automatic compiler
-policy. All other samples use standard Go. The gallery ships separate matching
-runtime bridges; a standalone Basic Scene export includes its TinyGo bridge.
+The automatic compiler policy selects TinyGo for Basic Scene and standard Go
+for every other sample. Each preview includes the bridge for the selected
+compiler. Run `mise run start -- --compiler=go` to preview Basic Scene with
+standard Go.
 
 This sample has no text overlay, UI controls or debug panel. The scene stays
 focused on rendering and camera movement; control instructions live here rather

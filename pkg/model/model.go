@@ -7,14 +7,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/resourcedata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 var (
@@ -42,6 +42,7 @@ type Asset struct {
 	name     string
 	data     []byte
 	verified *resource.Payload
+	admitted *modeldata.VerifiedDocument
 }
 
 // Prepared declares an offline-prepared model. The name is diagnostic metadata,
@@ -53,6 +54,12 @@ func Prepared(name string, data []byte) Asset { return Asset{name: name, data: d
 // Unlike Prepared, no mutable caller-owned container is retained or copied.
 func Verified(name string, payload *resource.Payload) Asset {
 	return Asset{name: name, data: resourcedata.Bytes(payload), verified: payload}
+}
+
+// Admitted retains a verified model container already parsed by a resource loader.
+// Load still admits its geometry and textures before creating App resources.
+func Admitted(name string, document *modeldata.VerifiedDocument) Asset {
+	return Asset{name: name, admitted: document}
 }
 
 // Model owns shared prepared primitives and textures for one App.
@@ -107,23 +114,18 @@ func (asset Asset) load(app *engine.App, layout LightmapLayout) (*Model, error) 
 		return nil, fmt.Errorf("model %s (%d-byte maximum): %w", asset.name, modeldata.MaxBytes, errPayloadBounds)
 	}
 
-	document, err := modeldata.Decode(asset.data)
+	document, err := asset.document()
 	if err != nil {
 		return nil, fmt.Errorf("model %s: %w", asset.name, err)
 	}
 
-	geometries, images, err := admit(document, resourcedata.Valid(asset.verified))
+	geometries, images, err := admit(document, asset.admitted != nil || resourcedata.Valid(asset.verified))
 	if err != nil {
 		return nil, fmt.Errorf("model %s: %w", asset.name, err)
 	}
 
 	if layout != nil {
-		digest := resourcedata.Digest(asset.verified)
-		if !resourcedata.Valid(asset.verified) {
-			digest = sha256.Sum256(asset.data)
-		}
-
-		if layout.ModelDigest() != digest || layout.PartCount() != len(geometries) {
+		if layout.ModelDigest() != asset.digest() || layout.PartCount() != len(geometries) {
 			return nil, errLightmapMismatch
 		}
 
@@ -157,15 +159,40 @@ func (asset Asset) load(app *engine.App, layout LightmapLayout) (*Model, error) 
 	return result, nil
 }
 
+func (asset Asset) document() (modeldata.Document, error) {
+	if asset.admitted != nil {
+		document := asset.admitted.Document()
+		if document.Source == "" {
+			return modeldata.Document{}, errPayloadBounds
+		}
+
+		return document, nil
+	}
+
+	return modeldata.Decode(asset.data)
+}
+
+func (asset Asset) digest() [32]byte {
+	if asset.admitted != nil {
+		return asset.admitted.Digest()
+	}
+
+	if resourcedata.Valid(asset.verified) {
+		return resourcedata.Digest(asset.verified)
+	}
+
+	return sha256.Sum256(asset.data)
+}
+
 func admit(document modeldata.Document, immutable bool) ([]*meshdata.Geometry, []texture.Data, error) {
 	geometry := make([]*meshdata.Geometry, len(document.Parts))
 	for index, part := range document.Parts {
-		create := meshdata.New
+		create := meshdata.NewWithBounds
 		if immutable {
-			create = meshdata.FromOwned
+			create = meshdata.FromOwnedWithBounds
 		}
 
-		value, err := create(part.Vertices, part.Indices)
+		value, err := create(part.Vertices, part.Indices, part.Bounds)
 		if err != nil {
 			return nil, nil, fmt.Errorf("primitive %d (%s): %w", index, part.Name, err)
 		}

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/pkg/shader"
 )
 
 func (driver *computeBackend) validateComputeLimits(resources computedata.Resources) error {

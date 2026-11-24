@@ -8,12 +8,13 @@ import (
 	"go/format"
 	"go/token"
 	"io/fs"
+	"path"
 	"slices"
 	"strconv"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type catalogItem struct {
@@ -51,27 +52,35 @@ func catalogCode(set assetbuild.ImageSet, formats ...texture.Format) ([]byte, er
 
 	code.WriteString("}\n")
 
+	writePageEmbeds(&code, set, formats, "", "imagePage")
+	code.WriteString(
+		"\n// Load admits each GPU-ready page once and returns all named images. Call once per asset lifetime and share the catalog.\n",
+	)
+	writeCatalogLoad(&code, "Load", "imagePage", set, formats, items)
+
+	return formatCatalog(&code)
+}
+
+func writePageEmbeds(code *strings.Builder, set assetbuild.ImageSet, formats []texture.Format, directory, prefix string) {
 	for index, image := range set.Images {
 		_, _ = fmt.Fprintf(
-			&code,
-			"\n//go:embed %s\nvar imagePage%d []byte\n",
-			strconv.Quote(pageFilename(image.Name, formats[index])),
-			index,
+			code, "\n//go:embed %s\nvar %s%d []byte\n",
+			strconv.Quote(path.Join(directory, pageFilename(image.Name, formats[index]))), prefix, index,
 		)
 	}
+}
 
-	code.WriteString(
-		"\n// Load admits each GPU-ready page once and returns all named images. Call once per asset lifetime and share the catalog.\nfunc Load() (Catalog,error) {\nvar result Catalog\n",
-	)
+func writeCatalogLoad(code *strings.Builder, name, prefix string, set assetbuild.ImageSet, formats []texture.Format, items []catalogItem) {
+	_, _ = fmt.Fprintf(code, "func %s() (Catalog,error) {\nvar result Catalog\n", name)
 
 	for index, image := range set.Images {
-		writeCatalogPage(&code, index, image, formats[index])
+		writeCatalogPage(code, prefix, index, image, formats[index])
 	}
 
 	for _, item := range items {
 		if item.region {
 			_, _ = fmt.Fprintf(
-				&code,
+				code,
 				"result.%s,err=page%d.Region(%d,%d,%d,%d)\nif err!=nil { return Catalog{},err }\n",
 				item.name,
 				item.page,
@@ -81,12 +90,14 @@ func catalogCode(set assetbuild.ImageSet, formats ...texture.Format) ([]byte, er
 				item.height,
 			)
 		} else {
-			_, _ = fmt.Fprintf(&code, "result.%s=page%d\n", item.name, item.page)
+			_, _ = fmt.Fprintf(code, "result.%s=page%d\n", item.name, item.page)
 		}
 	}
 
 	code.WriteString("return result,nil\n}\n")
+}
 
+func formatCatalog(code *strings.Builder) ([]byte, error) {
 	result, err := format.Source([]byte(code.String()))
 	if err != nil {
 		return nil, fmt.Errorf("generate 2D catalog: %w", err)
@@ -100,49 +111,45 @@ func writeCatalogImports(code *strings.Builder, formats []texture.Format) {
 		return
 	}
 
-	code.WriteString("\nimport (\n_ \"embed\"\n\"github.com/karty-game/karty-webgpu/pkg/draw2d\"\n")
+	code.WriteString("\nimport (\n_ \"embed\"\n\"github.com/karty-game/ashura/pkg/draw2d\"\n")
 
 	if slices.Contains(formats, texture.BC1) || slices.Contains(formats, texture.BC7) ||
 		slices.Contains(formats, texture.ETC2RGB) || slices.Contains(formats, texture.ETC2RGBA) {
-		code.WriteString("\"github.com/karty-game/karty-webgpu/pkg/texture\"\n")
+		code.WriteString("\"github.com/karty-game/ashura/pkg/texture\"\n")
 	}
 
 	code.WriteString(")\n")
 }
 
-func writeCatalogPage(code *strings.Builder, index int, image assetbuild.Image, format texture.Format) {
+func writeCatalogPage(code *strings.Builder, prefix string, index int, image assetbuild.Image, format texture.Format) {
 	if format == texture.RGBA8 {
-		_, _ = fmt.Fprintf(code, "page%d,err:=draw2d.NewImage(%d,%d,imagePage%d)\n", index, image.Width, image.Height, index)
+		_, _ = fmt.Fprintf(code, "page%d,err:=draw2d.NewImage(%d,%d,%s%d)\n", index, image.Width, image.Height, prefix, index)
 	} else {
-		var name string
-
-		switch format {
-		case texture.BC1:
-			name = "BC1"
-		case texture.BC7:
-			name = "BC7"
-		case texture.ETC2RGB:
-			name = "ETC2RGB"
-		case texture.ETC2RGBA:
-			name = "ETC2RGBA"
-		case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
-			panic("invalid admitted sprite format")
-		default:
-			panic("invalid admitted sprite format")
-		}
-
 		_, _ = fmt.Fprintf(
 			code,
-			"page%d,err:=draw2d.NewPreparedImage(%d,%d,texture.%s,imagePage%d)\n",
-			index,
-			image.Width,
-			image.Height,
-			name,
-			index,
+			"page%d,err:=draw2d.NewPreparedImage(%d,%d,texture.%s,%s%d)\n",
+			index, image.Width, image.Height, compressedFormatName(format), prefix, index,
 		)
 	}
 
 	code.WriteString("if err!=nil { return Catalog{},err }\n")
+}
+
+func compressedFormatName(format texture.Format) string {
+	switch format {
+	case texture.BC1:
+		return "BC1"
+	case texture.BC7:
+		return "BC7"
+	case texture.ETC2RGB:
+		return "ETC2RGB"
+	case texture.ETC2RGBA:
+		return "ETC2RGBA"
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4, texture.ASTC6x6:
+		panic("invalid admitted sprite format")
+	default:
+		panic("invalid admitted sprite format")
+	}
 }
 
 func catalogItems(set assetbuild.ImageSet) ([]catalogItem, error) {

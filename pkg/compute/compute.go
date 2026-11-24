@@ -3,9 +3,9 @@
 package compute
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/pkg/shader"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // PipelineDesc describes a program, entry point and explicit group-zero layout.

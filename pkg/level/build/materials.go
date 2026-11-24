@@ -3,9 +3,9 @@
 package levelbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
 )
 
 // MaterialOptions binds processed relief resources to original model primitives.

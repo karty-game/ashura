@@ -9,13 +9,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	impostorbuild "github.com/karty-game/karty-webgpu/pkg/impostor/build"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	impostorbuild "github.com/karty-game/ashura/pkg/impostor/build"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestCardsConsumesCachedModelAndPublishesIndependentCatalog(t *testing.T) {
@@ -89,6 +90,10 @@ func TestCardsConsumesCachedModelAndPublishesIndependentCatalog(t *testing.T) {
 		t.Fatal("capture resolution did not affect prepared resource")
 	}
 
+	settings.AtlasFormat = texture.ETC2RGBA
+	config.Pipelines[0].Import = []assetbuild.Plugin{modelbuild.GLBWithOptions(modelbuild.GLBOptions{}), impostorbuild.Cards(settings)}
+	checkMobileCards(t, config, options)
+
 	if err := os.Remove(source); err != nil {
 		t.Fatal(err)
 	}
@@ -96,6 +101,33 @@ func TestCardsConsumesCachedModelAndPublishesIndependentCatalog(t *testing.T) {
 	removed, err := assetbuild.Build(t.Context(), config, options)
 	if err != nil || removed.Removed != 4 {
 		t.Fatalf("removed model retained generated impostor %+v: %v", removed, err)
+	}
+}
+
+func checkMobileCards(t *testing.T, config assetbuild.Config, options assetbuild.Options) {
+	t.Helper()
+
+	report, err := assetbuild.Build(t.Context(), config, options)
+	if err != nil || report.Executed != 1 || report.Reused != 1 {
+		t.Fatal("mobile format did not invalidate only capture output", report, err)
+	}
+
+	capture, err := impostordata.Decode(readGenerated(t, options.Project, "impostors/impostor_AssetsScene.kimp"))
+	if err != nil || capture.Storage != impostordata.StorageETC2RGBA {
+		t.Fatal("mobile capture storage", capture.Storage, err)
+	}
+
+	for index, atlas := range [][]byte{capture.Color, capture.NormalDepth} {
+		image, err := ktx2data.Decode(atlas)
+		if err != nil || image.Format != texture.ETC2RGBA || len(image.Levels) != 2 ||
+			(image.ColorSpace == texture.SRGB) != (index == 0) {
+			t.Fatal("mobile native blocks changed mip or color/normal transfer", image, err)
+		}
+	}
+
+	report, err = assetbuild.Build(t.Context(), config, options)
+	if err != nil || report.Executed != 0 || report.Reused != 2 {
+		t.Fatal("warm mobile capture repeated baking", report, err)
 	}
 }
 

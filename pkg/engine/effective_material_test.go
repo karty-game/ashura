@@ -3,8 +3,8 @@ package engine
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 type unmappedStandardFixture struct {
@@ -49,13 +49,13 @@ func TestOpaqueUnusedFieldsKeepOneInstanceBatch(t *testing.T) {
 	}
 
 	var uniforms render.UniformState
-	uniforms.Update(frame.Draws[0], frame)
+	uniforms.Update(frame.Draws[0])
 
 	stored, _ := Get[unmappedStandardFixture](world, first)
 	stored.color.A, stored.normalStrength, stored.occlusionStrength = .7, 22, 33
 
 	frame = geometryFrame(t, world)
-	if len(frame.Draws) != 1 || uniforms.Update(frame.Draws[0], frame) {
+	if len(frame.Draws) != 1 || uniforms.Update(frame.Draws[0]) {
 		t.Fatal("shader-unused field mutation split a batch or triggered uniform encoding")
 	}
 
@@ -90,13 +90,13 @@ func TestSourceUnusedFieldsKeepOneInstanceBatch(t *testing.T) {
 	}
 
 	var uniforms render.UniformState
-	uniforms.Update(frame.Draws[0], frame)
+	uniforms.Update(frame.Draws[0])
 
 	stored, _ := Get[effectiveSourceFixture](world, first)
 	stored.color.A, stored.ambient[0].A, stored.roughness, stored.strength = .9, .6, .4, 33
 
 	frame = geometryFrame(t, world)
-	if len(frame.Draws) != 1 || uniforms.Update(frame.Draws[0], frame) {
+	if len(frame.Draws) != 1 || uniforms.Update(frame.Draws[0]) {
 		t.Fatal("Source shader-unused fields changed the effective material")
 	}
 }

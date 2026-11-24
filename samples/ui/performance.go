@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 type performanceDemo struct {

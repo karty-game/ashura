@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func (driver *pointShadowFeature) initPointShadowPasses(shadow *pointShadowGPU) error {
@@ -37,7 +37,7 @@ func (driver *pointShadowFeature) initPointShadowPasses(shadow *pointShadowGPU) 
 		}
 	}
 
-	shader, err := driver.device.CreateShaderModuleWGSL(render.PointShadowShader())
+	shader, err := driver.device.CreateShaderModuleWGSL(render.ShadowDepthShader())
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (driver *pointShadowFeature) createPointShadowVariant(shadow *pointShadowGP
 
 	pipeline, err := driver.device.CreateRenderPipeline(
 		&wgpu.RenderPipelineDescriptor{
-			Label: "point shadow radial depth",
+			Label: "point shadow projected depth",
 			Vertex: wgpu.VertexState{
 				Module:     shader,
 				EntryPoint: pointShadowVertexEntry,
@@ -88,7 +88,6 @@ func (driver *pointShadowFeature) createPointShadowVariant(shadow *pointShadowGP
 					},
 				},
 			},
-			Fragment: &wgpu.FragmentState{Module: shader, EntryPoint: "fs_main"},
 			Primitive: wgpu.PrimitiveState{
 				Topology:  gputypes.PrimitiveTopologyTriangleList,
 				FrontFace: gputypes.FrontFaceCW,
@@ -98,6 +97,7 @@ func (driver *pointShadowFeature) createPointShadowVariant(shadow *pointShadowGP
 				Format:            gputypes.TextureFormatDepth32Float,
 				DepthWriteEnabled: true,
 				DepthCompare:      gputypes.CompareFunctionLess,
+				DepthBias:         render.ShadowDepthBias, DepthBiasSlopeScale: render.ShadowDepthBiasSlopeScale,
 			},
 			Multisample: wgpu.MultisampleState{Count: 1, Mask: allSampleMask},
 		},
@@ -134,57 +134,34 @@ func (driver *pointShadowFeature) recordPointShadow(encoder *wgpu.CommandEncoder
 		return render.ErrPointShadowStartup
 	}
 
-	if !enabled {
-		light.GroundColor[0] = 1
+	var dirty uint8
+	if enabled {
+		dirty = shadow.state.Update(frame, light)
 	}
 
-	data := render.PointShadowSampleUniform(light, enabled)
+	data := shadow.state.SampleUniform(light, enabled)
 	if data != shadow.sampleData {
 		if err := driver.queue.WriteBuffer(shadow.sampleUniform, 0, data[:]); err != nil {
+			shadow.state.Invalidate()
+
 			return err
 		}
 
 		shadow.sampleData = data
 	}
 
-	if !enabled {
+	if dirty == 0 {
 		return nil
 	}
 
-	if !shadow.state.Update(frame, light) {
-		return nil
-	}
-
-	if err := driver.geometry.Prepare(frame.Draws); err != nil {
-		return err
-	}
+	masks := shadow.state.FaceMasks()
 
 	for face := range render.PointShadowFaces {
-		uniform := render.PointShadowFaceUniform(light, face)
-		if err := driver.queue.WriteBuffer(shadow.uniforms[face], 0, uniform[:]); err != nil {
-			return err
+		if dirty&(1<<face) == 0 {
+			continue
 		}
 
-		pass, err := encoder.BeginRenderPass(
-			&wgpu.RenderPassDescriptor{
-				Label: "point shadow face",
-				DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{
-					View:            shadow.faces[face],
-					DepthLoadOp:     gputypes.LoadOpClear,
-					DepthStoreOp:    gputypes.StoreOpStore,
-					DepthClearValue: 1,
-				},
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		err = driver.drawPointShadowFace(pass, frame, face)
-		pass.End()
-		pass.Release()
-
-		if err != nil {
+		if err := driver.recordPointShadowFace(encoder, frame, masks, face); err != nil {
 			shadow.state.Invalidate()
 
 			return err
@@ -194,9 +171,43 @@ func (driver *pointShadowFeature) recordPointShadow(encoder *wgpu.CommandEncoder
 	return nil
 }
 
-func (driver *pointShadowFeature) drawPointShadowFace(pass *wgpu.RenderPassEncoder, frame render.Frame, face int) error {
-	for _, draw := range frame.Draws {
-		if !render.CastsPointShadow(draw) {
+func (driver *pointShadowFeature) recordPointShadowFace(
+	encoder *wgpu.CommandEncoder, frame render.Frame, masks []uint8, face int,
+) error {
+	shadow := driver.pointShadow
+
+	uniform := shadow.state.FaceUniform(face)
+	if uniform != shadow.faceData[face] {
+		if err := driver.queue.WriteBuffer(shadow.uniforms[face], 0, uniform[:]); err != nil {
+			return err
+		}
+
+		shadow.faceData[face] = uniform
+	}
+
+	pass, err := encoder.BeginRenderPass(
+		&wgpu.RenderPassDescriptor{
+			Label: "point shadow face",
+			DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{
+				View: shadow.faces[face], DepthLoadOp: gputypes.LoadOpClear,
+				DepthStoreOp: gputypes.StoreOpStore, DepthClearValue: 1,
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	err = driver.drawPointShadowFace(pass, frame, masks, face)
+	pass.End()
+	pass.Release()
+
+	return err
+}
+
+func (driver *pointShadowFeature) drawPointShadowFace(pass *wgpu.RenderPassEncoder, frame render.Frame, masks []uint8, face int) error {
+	for index, draw := range frame.Draws {
+		if masks[index]&(1<<face) == 0 {
 			continue
 		}
 

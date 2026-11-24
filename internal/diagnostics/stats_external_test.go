@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/diagnostics"
 )
 
 type observer struct {

@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"time"
+
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/mesh"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 const (
@@ -33,10 +35,7 @@ const (
 )
 
 func createScene(app *engine.App) (*engine.World, error) {
-	stone, brick, err := loadMaterials(app)
-	if err != nil {
-		return nil, err
-	}
+	stone, brick := defaultMaterialPair(stoneRoughness), defaultMaterialPair(brickRoughness)
 
 	world := engine.NewWorld()
 	projection, controls := camera.FirstPerson()
@@ -60,8 +59,9 @@ func createScene(app *engine.App) (*engine.World, error) {
 	world.Add(sun)
 
 	stone.setUVScale(engine.Vector2{X: groundTiles, Y: groundTiles})
+
 	ground := world.Add(mesh.NewPlane("stone ground", mesh.PlaneOptions{Width: groundSize, Height: groundSize}),
-		engine.DefaultTransform(), stone.standard)
+		engine.DefaultTransform())
 	cube := world.Add(
 		mesh.NewBox("brick cube", mesh.BoxOptions{Width: cubeSize, Height: cubeSize, Depth: cubeSize}),
 		engine.Transform{
@@ -69,7 +69,6 @@ func createScene(app *engine.App) (*engine.World, error) {
 			Rotation: engine.Vector3{Y: cubeYaw},
 			Scale:    engine.Vector3One(),
 		},
-		brick.standard,
 	)
 	sphereMaterial := brick
 	sphereMaterial.setUVScale(engine.Vector2{X: sphereTiles, Y: sphereTiles})
@@ -79,7 +78,6 @@ func createScene(app *engine.App) (*engine.World, error) {
 			Position: engine.Vector3{X: sphereX, Y: cubeHalfHeight, Z: sphereZ},
 			Scale:    engine.Vector3One(),
 		},
-		sphereMaterial.standard,
 	)
 
 	demo := &materialDemo{world: world, surfaces: []materialSurface{
@@ -89,7 +87,33 @@ func createScene(app *engine.App) (*engine.World, error) {
 		return nil, err
 	}
 
+	demo.prepareMaterials(app)
 	demo.attachControls(app)
 
 	return world, nil
+}
+
+func (demo *materialDemo) prepareMaterials(app *engine.App) {
+	var stop func()
+
+	stop = app.OnUpdateError(func(time.Duration) error {
+		stop()
+
+		format, err := materialFormat(app.SupportsTextureFormat)
+		if err != nil {
+			return err
+		}
+
+		stone, brick, err := loadMaterialsForFormat(app, format)
+		if err != nil {
+			return err
+		}
+
+		for index, pair := range []materialPair{stone, brick, brick} {
+			pair.setUVScale(demo.surfaces[index].pair.standard.UVScale)
+			demo.surfaces[index].pair = pair
+		}
+
+		return demo.apply(demo.useSource)
+	})
 }

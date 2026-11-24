@@ -5,7 +5,7 @@ package browser
 import (
 	"syscall/js"
 
-	ui "github.com/karty-game/karty-webgpu/internal/uihost"
+	ui "github.com/karty-game/ashura/internal/uihost"
 )
 
 func (driver *browserUIBridge) uiPointerLeave(js.Value) {

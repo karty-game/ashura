@@ -4,8 +4,8 @@ package ui
 import (
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/uihost"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/uihost"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 type capture struct {

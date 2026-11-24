@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/pkg/draw2d"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
 )
 
 func TestScreen2DAppLifetimeAndCameraFreeFrame(t *testing.T) {

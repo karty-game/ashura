@@ -1,20 +1,22 @@
 package render
 
 import (
-	"encoding/binary"
 	"errors"
 	"math"
+	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
+	"github.com/karty-game/ashura/internal/meshdata"
 )
 
 const (
-	// PointShadowFaces is the six conventional cubemap views.
+	// PointShadowFaces is the six directional views of a point light.
 	PointShadowFaces = 6
 	// PointShadowSampleSize is the sampling uniform byte count.
-	PointShadowSampleSize = 32
-	// PointShadowFaceSize is the depth-pass matrix and position/range byte count.
-	PointShadowFaceSize = 80
+	PointShadowSampleSize = pointShadowHeaderBytes + PointShadowFaces*SpotMatrixBytes
+	// PointShadowFaceSize is the depth-pass matrix byte count.
+	PointShadowFaceSize     = SpotMatrixBytes
+	pointShadowHeaderFloats = 8
+	pointShadowHeaderBytes  = pointShadowHeaderFloats * 4
 )
 
 var (
@@ -102,7 +104,7 @@ func ShadowLight(frame Frame) (Light, bool) {
 	return Light{}, false
 }
 
-type shadowCaster struct {
+type ShadowCasterKey struct {
 	id                      uint32
 	prepared                *meshdata.Geometry
 	vertices                *Vertex
@@ -121,63 +123,58 @@ func CastsPointShadow(draw DrawCall) bool {
 	return HasGeometry(draw) && draw.Impostor == nil && !draw.AlphaMask
 }
 
-// PointShadowState compares retained draw metadata, never vertex/index payloads.
-// Camera, light color/intensity and unrelated material edits do not dirty depth.
+// PointShadowState retains physical face masks across camera-only changes.
 type PointShadowState struct {
 	position   [3]float32
 	rangeValue float32
 	resolution uint32
 	ready      bool
-	casters    []shadowCaster
+	revision   uint64
+	camera     shadowCamera
+	casters    []ShadowCasterKey
+	faceMasks  []uint8
+	fixed      [PointShadowFaces][16]float32
+	views      [PointShadowFaces][16]float32
+	sampleData [PointShadowSampleSize]byte
+	header     [pointShadowHeaderFloats]float32
 }
 
-// Update reports whether the shadow depth must be regenerated this submission.
-func (state *PointShadowState) Update(frame Frame, light Light) bool {
-	dirty := !state.ready || state.position != light.Direction || state.rangeValue != light.GroundColor[0] ||
+// FaceMasks returns the retained draw-indexed masks for the six physical faces.
+func (state *PointShadowState) FaceMasks() []uint8 { return state.faceMasks }
+
+// Update returns the bitmask of faces whose projected depth is stale.
+func (state *PointShadowState) Update(frame Frame, light Light) uint8 {
+	moved := !state.ready || state.position != light.Direction || state.rangeValue != light.GroundColor[0] ||
 		state.resolution != light.ShadowResolution
-	count := 0
+	camera := cameraForShadows(frame)
 
-	for _, draw := range frame.Draws {
-		if !CastsPointShadow(draw) {
-			continue
+	var dirty uint8
+
+	if moved {
+		dirty = allShadowFaces
+
+		for face := range state.fixed {
+			state.fixed[face] = pointShadowFaceMatrix(light, face)
 		}
-
-		key := shadowCaster{
-			id:          draw.ID,
-			prepared:    draw.Prepared,
-			vertexCount: len(draw.Vertices),
-			indexCount:  IndexCount(draw),
-			transform:   draw.Transform,
-			version:     draw.InstanceVersion,
-			instances:   len(draw.Instances),
-			cull:        draw.CullBackfaces,
-		}
-		if len(draw.Vertices) > 0 {
-			key.vertices = &draw.Vertices[0]
-		}
-
-		if len(draw.Indices) > 0 {
-			key.indices = &draw.Indices[0]
-		}
-
-		if count < len(state.casters) {
-			if state.casters[count] != key {
-				dirty = true
-			}
-
-			state.casters[count] = key
-		} else {
-			state.casters = append(state.casters, key)
-			dirty = true
-		}
-
-		count++
 	}
 
-	if count != len(state.casters) {
-		clear(state.casters[count:])
-		state.casters = state.casters[:count]
-		dirty = true
+	if moved || camera != state.camera {
+		for face, fixed := range state.fixed {
+			view := shadowProjection(camera, light.Direction, fixed)
+			if state.views[face] != view {
+				offset := pointShadowHeaderBytes + face*SpotMatrixBytes
+				encodeUniform(state.sampleData[offset:offset+SpotMatrixBytes], view[:])
+				state.views[face] = view
+				dirty |= 1 << face
+			}
+		}
+
+		state.camera = camera
+	}
+
+	if moved || frame.ShadowCasterRevision == 0 || frame.ShadowCasterRevision != state.revision {
+		dirty |= state.updateCasters(frame.Draws, light, moved)
+		state.revision = frame.ShadowCasterRevision
 	}
 
 	state.position, state.rangeValue, state.resolution = light.Direction, light.GroundColor[0], light.ShadowResolution
@@ -186,70 +183,129 @@ func (state *PointShadowState) Update(frame Frame, light Light) bool {
 	return dirty
 }
 
+// CasterKey compares retained geometry and instances without reading their payloads.
+func CasterKey(draw DrawCall) ShadowCasterKey {
+	if !CastsPointShadow(draw) {
+		return ShadowCasterKey{}
+	}
+
+	key := ShadowCasterKey{
+		id:          draw.ID,
+		prepared:    draw.Prepared,
+		vertexCount: len(draw.Vertices),
+		indexCount:  IndexCount(draw),
+		transform:   draw.Transform,
+		version:     draw.InstanceVersion,
+		instances:   len(draw.Instances),
+		cull:        draw.CullBackfaces,
+	}
+	if len(draw.Vertices) > 0 {
+		key.vertices = &draw.Vertices[0]
+	}
+
+	if len(draw.Indices) > 0 {
+		key.indices = &draw.Indices[0]
+	}
+
+	return key
+}
+
 // Invalidate ensures recreated resources receive a complete six-face render.
 func (state *PointShadowState) Invalidate() { state.ready = false }
 
-// PointShadowSampleUniform contains position/range, world-space comparison bias
-// and an enabled flag. It is shared by all Standard material pipeline variants.
-func PointShadowSampleUniform(light Light, enabled bool) [PointShadowSampleSize]byte {
-	values := [8]float32{light.Direction[0], light.Direction[1], light.Direction[2], light.GroundColor[0], light.ShadowBias, 0, 0, 0}
-	if enabled {
-		values[5] = 1
+// SampleUniform packs the same face matrices used to record the depth passes.
+func (state *PointShadowState) SampleUniform(light Light, enabled bool) [PointShadowSampleSize]byte {
+	if !enabled {
+		return [PointShadowSampleSize]byte{}
 	}
 
-	var data [PointShadowSampleSize]byte
-	for i, v := range values {
-		binary.LittleEndian.PutUint32(data[i*4:], math.Float32bits(v))
+	header := [pointShadowHeaderFloats]float32{
+		light.Direction[0], light.Direction[1], light.Direction[2], light.GroundColor[0], light.ShadowBias, 1,
+	}
+	if header != state.header {
+		encodeUniform(state.sampleData[:pointShadowHeaderBytes], header[:])
+		state.header = header
 	}
 
-	return data
+	return state.sampleData
 }
 
-// PointShadowFaceUniform uses WebGPU's cube convention (+X,-X,+Y,-Y,+Z,-Z).
-// The fragment shader stores radial distance/range instead of projected depth.
-func PointShadowFaceUniform(light Light, face int) [PointShadowFaceSize]byte {
+func (state *PointShadowState) FaceUniform(face int) [PointShadowFaceSize]byte {
+	offset := pointShadowHeaderBytes + face*SpotMatrixBytes
+
+	return [PointShadowFaceSize]byte(state.sampleData[offset : offset+PointShadowFaceSize])
+}
+
+func (state *PointShadowState) updateCasters(draws []DrawCall, light Light, moved bool) uint8 {
+	count := len(draws)
+	oldCount := len(state.casters)
+
+	var dirty uint8
+
+	if count < oldCount {
+		for _, mask := range state.faceMasks[count:] {
+			dirty |= mask
+		}
+
+		clear(state.casters[count:])
+	}
+
+	state.casters = slices.Grow(state.casters, max(0, count-oldCount))[:count]
+
+	state.faceMasks = slices.Grow(state.faceMasks, max(0, count-oldCount))[:count]
+	if count > oldCount {
+		clear(state.faceMasks[oldCount:])
+	}
+
+	for index, draw := range draws {
+		key := CasterKey(draw)
+
+		changed := index >= oldCount || state.casters[index] != key
+		if !changed && !moved {
+			continue
+		}
+
+		oldMask := state.faceMasks[index]
+		state.faceMasks[index] = 0
+		state.casters[index] = key
+
+		if key != (ShadowCasterKey{}) {
+			state.faceMasks[index] = PointShadowFaceMask(draw, light)
+		}
+
+		dirty |= oldMask | state.faceMasks[index]
+	}
+
+	return dirty
+}
+
+const pointFaceGuard = 1.04
+
+// Each face covers one dominant world direction, with overlapping edges
+// for bilinear depth comparison where the receiver crosses onto another face.
+func pointShadowFaceMatrix(light Light, face int) [16]float32 {
 	directions := [6][3]float32{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}
 	ups := [6][3]float32{{0, -1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}, {0, -1, 0}, {0, -1, 0}}
-	direction, up := directions[face], ups[face]
-	cross := func(a, b [3]float32) [3]float32 {
-		return [3]float32{a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]}
-	}
-	right := cross(direction, up)
-	// Look-at RH rows: right, corrected up, -forward.
-	corrected := cross(right, direction)
-
-	var view [16]float32
-	for i := range 3 {
-		view[i*4] = right[i]
-		view[i*4+1] = corrected[i]
-		view[i*4+2] = -direction[i]
-	}
-
-	view[15] = 1
-	for row := range 3 {
-		view[12+row] = -(view[row]*light.Direction[0] + view[4+row]*light.Direction[1] + view[8+row]*light.Direction[2])
-	}
+	forward := directions[face]
+	right := cross3(forward, ups[face])
+	lightUp := cross3(forward, right)
 
 	near, far := float32(.02), light.GroundColor[0]
-	projection := [16]float32{0: 1, 5: -1, 10: far / (near - far), 11: -1, 14: near * far / (near - far)}
+	depthScale := far / (far - near)
+	scale := float32(1.0 / pointFaceGuard)
 
-	var result [20]float32
-
-	for column := range 4 {
-		for row := range 4 {
-			for inner := range 4 {
-				result[column*4+row] += projection[inner*4+row] * view[column*4+inner]
-			}
-		}
+	var result [16]float32
+	for axis := range 3 {
+		result[axis*4] = right[axis] * scale
+		result[axis*4+1] = lightUp[axis] * scale
+		result[axis*4+2] = forward[axis] * depthScale
+		result[axis*4+3] = forward[axis]
 	}
 
-	copy(result[16:19], light.Direction[:])
-	result[19] = far
+	result[12] = -dot3(right, light.Direction) * scale
+	result[13] = -dot3(lightUp, light.Direction) * scale
+	result[14] = (-dot3(forward, light.Direction) - near) * depthScale
+	result[15] = -dot3(forward, light.Direction)
 
-	var data [PointShadowFaceSize]byte
-	for i, v := range result {
-		binary.LittleEndian.PutUint32(data[i*4:], math.Float32bits(v))
-	}
-
-	return data
+	return result
 }

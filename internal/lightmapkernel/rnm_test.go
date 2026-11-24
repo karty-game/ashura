@@ -5,9 +5,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
 )
 
 func admittedRNM(t *testing.T) *lightmapdata.Document {

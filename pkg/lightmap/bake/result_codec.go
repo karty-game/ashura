@@ -11,7 +11,7 @@ import (
 	"io"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
+	"github.com/karty-game/ashura/internal/lightmapper"
 )
 
 // EncodeScene stores the immutable scene independently from receiver jobs.

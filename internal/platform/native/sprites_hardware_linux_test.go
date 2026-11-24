@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/pkg/draw2d"
 )
 
 //nolint:paralleltest // Owns SDL and a native GPU surface on the main thread.

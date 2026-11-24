@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	engine "github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
+	engine "github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/mesh"
 )
 
 func TestBillboardOrientationOptionsAndInstanceSharing(t *testing.T) {

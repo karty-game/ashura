@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/bufferdata"
 )
 
 type dirtyFixture struct{ calls int }

@@ -15,7 +15,7 @@ The sample compares three downloaded CC0 Poly Haven models with their
 Use **Model** to select a pair. The full model is on the left, its impostor on
 the right. Both use the same prepared source, scale, camera and live lighting.
 Source geometry is preserved. The model uses prepared 256px color/normal textures;
-the impostor captures those materials into its own BC1 atlases.
+the impostor captures those materials into prepared BC1 and ASTC6x6 atlases.
 ```sh
 mise exec -- go run ./cmd/engine run web ./samples/impostors
 ```
@@ -61,20 +61,13 @@ There is no sample downloader or source converter.
 The recipe builds `assets/boulder.glb`, `assets/stool.glb` and `assets/vase.glb`.
 The procedural tree remains only a regression fixture. The retained **Model**
 dropdown switches the pair in the running scene on browser and native. Camera,
-lighting, rotation and quality settings survive the change. The previous pair is
-removed and unloaded after its replacement is ready; only the selected pair
-remains instantiated. Model changes perform prepared-asset loading and uploads
-on the App thread and can pause presentation briefly; this is not streaming.
-The sample embeds all three prepared pairs. The temporary recipe uses about
-2 MiB for full-model material textures and 13.61 MiB of BC1 block payload for the
-three impostor atlas pairs, plus original geometry and metadata. The published
-browser sample now uses standard Go for frame pacing, with a **35,000,000-byte**
-complete-file budget. Its six prepared model/impostor containers alone occupy
-20,226,921 bytes. The compiler policy preserves the temporary 256px captures,
-mip chain and all three reference models; capture-method redesign remains
-deferred. See [validation](../../spec/validation.md) for measured export sizes
-and build provenance.
-This is a comparison bundle containing both representations.
+lighting, rotation and quality settings survive the change. The sample embeds
+the prepared full models and reads the selected impostor file asynchronously.
+The previous pair remains visible while the file loads and is removed once its
+replacement is ready. The published browser sample uses standard Go and has a
+**35,000,000-byte** budget per device profile, including its WASM, common files,
+selected texture profile and shared host and runtime files. Both profiles retain
+256px captures, three mips and all three reference models.
 
 `asset.config.go` declares one `impostors` pipeline with those three GLBs as
 its inputs. `modelbuild.GLBWithOptions` imports and publishes the original prepared models;
@@ -89,8 +82,9 @@ Tracked GLB → modelbuild.GLBWithOptions → prepared model + impostorbuild.Car
                               prepared view atlases + static quad
 ```
 
-The model remains available in `generated/models`; the impostor catalog is in
-`generated/impostors`. The card baker consumes the prepared model produced by the
+The model remains available in `generated/models`. The impostor catalog is in
+`generated/impostors`, with separate files in `generated/public/texture-profiles/`.
+The card baker consumes the prepared model produced by the
 GLB plugin, so both representations come from the same input and compiler result.
 The entire `generated/` directory is disposable and ignored. Prepare it directly:
 
@@ -105,8 +99,9 @@ at 256px before mip generation, so future replacements follow the same demo
 budget. Both representations consume the same prepared model. Source decoding,
 resizing and role-aware mips are build work; there is no runtime conversion.
 
-The `dev` and `release` profiles temporarily select `Mode: impostorbuild.Octahedral`,
-`Resolution:256`, `FrameGrid:7`, `Padding:8` and `MipLevels:3`. Seven frames per
+The `dev` and `release` profiles select `Mode: impostorbuild.Octahedral`,
+`Resolution:256`, `FrameGrid:7` and `MipLevels:3`. The recipe uses 8px padding for
+BC1 and 16px padding for ASTC6x6 block alignment. Seven frames per
 axis align the full-sphere grid with poles and octahedron fold lines. The public
 zero-value `Cards()` layout remains 8×8/80px. This resolution increase keeps the
 current 49-view capture method. The proposed six-view method is deferred;
@@ -118,17 +113,17 @@ instructions. Normal/depth and color are sampled at the same final coordinate,
 with live lighting and depth intersections. All textures/mips are prepared
 offline; camera motion changes neither atlas packing nor residency.
 
-The temporary default 256px views have three mips: 256→128→64px. The 49 captures
+The default 256px views use 256px, 128px and 64px mips. The 49 desktop captures
 form two BC1 atlases with 1904×1904, 952×952 and 476×476 levels. Each pair uses
 4,758,096 block payload bytes (4.54 MiB); all three use 14,274,288 bytes (13.61 MiB).
 Metadata and executable/host files are additional; these are not complete export
 sizes. CPU copies and driver overhead are separate residency costs.
-Color carries sRGB RGB and one-bit
-silhouette coverage. The linear atlas stores oct normals in R/B and depth in G.
-The build creates and compresses every mip; there is no runtime compression or
-texture fallback. A GPU with BC support is required. `detailed` is an extended-mip
-reference at the same 256px capture resolution, with padding 16 and five mips;
-source material maps stay at 256px in every profile.
+BC1 color carries sRGB RGB and one-bit silhouette coverage. Its linear atlas
+stores oct normals in R/B and depth in G. ASTC6x6 uses RGB normals and depth
+alpha. The device must support BC or ASTC compression, and the sample selects
+BC1 when both are available. The build creates and compresses every mip.
+`detailed` is an extended-mip reference at 256px capture resolution with five
+mips. Source material maps stay at 256px in every profile.
 
 The **Reprojection controls** switch opens the advanced settings; they start hidden
 so the model comparison stays clear. Expanding them is retained across supported
@@ -172,10 +167,6 @@ or repack atlases. The sample caches its transform pointers and baked center
 once when each pair loads. Paused objects retain their existing transforms.
 
 ## Representation limits
-
-Historical fixed-correction throughput and detailed-profile measurements live in
-[benchmark evidence](../../spec/impostor-benchmarks.md). Current adaptive
-qualification is recorded in [validation](../../spec/validation.md).
 
 This remains an approximate far LOD. The bounded parallax corrections cannot recover
 hidden surfaces; close silhouettes and disocclusions can distort and material

@@ -3,9 +3,9 @@
 package native
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 type shadowBackend interface {
@@ -24,6 +24,7 @@ type pointShadowGPU struct {
 	pipelines     [2]*wgpu.RenderPipeline
 	uniforms      [render.PointShadowFaces]*wgpu.Buffer
 	groups        [2][render.PointShadowFaces]*wgpu.BindGroup
+	faceData      [render.PointShadowFaces][render.PointShadowFaceSize]byte
 }
 
 type pointShadowFeature struct {

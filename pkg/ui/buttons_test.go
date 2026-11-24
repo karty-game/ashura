@@ -3,7 +3,7 @@ package ui_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func TestButtonPriorityPreservesInteractionAndPaintOnly(t *testing.T) {

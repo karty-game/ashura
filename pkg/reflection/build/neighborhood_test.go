@@ -10,8 +10,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/reflection/scene"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/reflection/scene"
 )
 
 func TestNeighborhoodCacheKeepsDistantChunkEditsOutOfProbeBake(t *testing.T) {

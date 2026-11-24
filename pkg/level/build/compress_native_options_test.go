@@ -5,7 +5,7 @@ package levelbuild
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestPortableHDREffortBounds(t *testing.T) {

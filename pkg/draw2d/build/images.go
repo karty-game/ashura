@@ -6,15 +6,13 @@ package build
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"slices"
-	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/imagecatalog"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 const (
@@ -69,42 +67,36 @@ func (plugin imagesPlugin) Plan(plan *assetbuild.Plan) error {
 		return err
 	}
 
-	inputs := make([]assetbuild.Ref, 0, len(plan.Resources))
-	for _, resource := range plan.Resources {
-		schema, err := plan.SlotSchema(resource.Ref)
-		if err != nil {
-			return err
-		}
-
-		if schema == assetbuild.PreparedSetSchema {
-			return fmt.Errorf("draw2d/build.Images must consume images before KTX2: %w", errImages)
-		}
-
-		if schema == assetbuild.ImageSetSchema {
-			inputs = append(inputs, resource.Ref)
-		}
+	inputs, err := imagecatalog.Inputs(plan, "draw2d/build.Images", errImages)
+	if err != nil {
+		return err
 	}
 
+	if err := planImages(plan, inputs, plugin.options); err != nil {
+		return err
+	}
+
+	plan.DescribeImageFields(inputs, "assets.Load()")
+
+	return nil
+}
+
+func planImages(plan *assetbuild.Plan, inputs []assetbuild.Ref, options ImagesOptions) error {
 	refs, err := plan.Add(assetbuild.Action{
-		ID: pluginName, Processor: pluginName, Revision: "prepared-page-catalog@2-wasi1", Options: plugin.options,
+		ID: pluginName, Processor: pluginName, Revision: "prepared-page-catalog@2-wasi1", Options: options,
 		Inputs: inputs, Outputs: []assetbuild.Slot{{Name: filesSlot, Schema: "karty.files@1"}},
 		Run: func(ctx *assetbuild.Context) (assetbuild.Result, error) {
-			set, readErr := readImages(ctx, inputs)
+			set, readErr := imagecatalog.Read(ctx, inputs)
 			if readErr != nil {
 				return nil, readErr
 			}
 
-			files, catalogErr := imageCatalog(ctx, set, plugin.options)
+			files, catalogErr := imageCatalog(ctx, set, imageFormats(set, options), options.Compression)
 			if catalogErr != nil {
 				return nil, catalogErr
 			}
 
-			data, encodeErr := assetbuild.EncodeBundle(files)
-			if encodeErr != nil {
-				return nil, encodeErr
-			}
-
-			return assetbuild.Result{filesSlot: data}, nil
+			return catalogResult(files)
 		},
 	})
 	if err != nil {
@@ -116,33 +108,21 @@ func (plugin imagesPlugin) Plan(plan *assetbuild.Plan) error {
 	return nil
 }
 
-func readImages(ctx *assetbuild.Context, inputs []assetbuild.Ref) (assetbuild.ImageSet, error) {
-	var result assetbuild.ImageSet
-
-	for _, input := range inputs {
-		data, err := ctx.Input(input)
-		if err != nil {
-			return assetbuild.ImageSet{}, err
-		}
-
-		set, err := assetbuild.DecodeImageSet(data)
-		if err != nil {
-			return assetbuild.ImageSet{}, err
-		}
-
-		result.Images = append(result.Images, set.Images...)
-		result.Regions = append(result.Regions, set.Regions...)
+func catalogResult(files assetbuild.Bundle) (assetbuild.Result, error) {
+	data, err := assetbuild.EncodeBundle(files)
+	if err != nil {
+		return nil, err
 	}
 
-	slices.SortFunc(result.Images, func(a, b assetbuild.Image) int { return strings.Compare(a.Name, b.Name) })
-	slices.SortFunc(result.Regions, func(a, b assetbuild.AtlasRegion) int { return strings.Compare(a.Name, b.Name) })
-
-	return result, nil
+	return assetbuild.Result{filesSlot: data}, nil
 }
 
-func imageCatalog(ctx context.Context, set assetbuild.ImageSet, options ImagesOptions) (assetbuild.Bundle, error) {
-	formats := imageFormats(set, options)
-
+func imageCatalog(
+	ctx context.Context,
+	set assetbuild.ImageSet,
+	formats []texture.Format,
+	compression assetbuild.BlockCompressionOptions,
+) (assetbuild.Bundle, error) {
 	code, err := catalogCode(set, formats...)
 	if err != nil {
 		return nil, err
@@ -151,7 +131,7 @@ func imageCatalog(ctx context.Context, set assetbuild.ImageSet, options ImagesOp
 	files := assetbuild.Bundle{"assets.go": code}
 
 	for index, image := range set.Images {
-		pixels, err := preparePage(ctx, image, formats[index], options.Compression)
+		pixels, err := preparePage(ctx, image, formats[index], compression)
 		if err != nil {
 			return nil, fmt.Errorf("prepare 2D image %q: %w", image.Name, err)
 		}
@@ -159,13 +139,8 @@ func imageCatalog(ctx context.Context, set assetbuild.ImageSet, options ImagesOp
 		files[pageFilename(image.Name, formats[index])] = pixels
 	}
 
-	if len(set.Regions) > 0 {
-		metadata, err := json.MarshalIndent(set.Regions, "", "  ")
-		if err != nil {
-			return nil, err
-		}
-
-		files["atlas.json"] = append(metadata, '\n')
+	if err := imagecatalog.AddAtlasMetadata(files, set.Regions); err != nil {
+		return nil, err
 	}
 
 	return files, nil
@@ -183,7 +158,7 @@ func pageFilename(name string, format texture.Format) string {
 		extension = ".etc2rgb"
 	case texture.ETC2RGBA:
 		extension = ".etc2rgba"
-	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4, texture.ASTC6x6:
 		// Option admission prevents unsupported compressed formats reaching publication.
 	}
 
@@ -250,7 +225,7 @@ func preparePage(
 		encoded, err = assetbuild.CompressETC2RGB(ctx, source, options)
 	case texture.ETC2RGBA:
 		encoded, err = assetbuild.CompressETC2RGBA(ctx, source, options)
-	case texture.RGBA8, texture.BC6H, texture.ASTC4x4:
+	case texture.RGBA8, texture.BC6H, texture.ASTC4x4, texture.ASTC6x6:
 		return nil, errImages
 	default:
 		return nil, errImages

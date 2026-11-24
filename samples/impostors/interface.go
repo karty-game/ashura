@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
-	"github.com/karty-game/karty-webgpu/pkg/ui/app"
-	"github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
-	"github.com/karty-game/karty-webgpu/samples/internal/sampleui"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui/app"
+	"github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
+	"github.com/karty-game/ashura/samples/internal/sampleui"
 )
 
 const (
@@ -38,11 +38,14 @@ type comparisonUI struct {
 func showComparison(app *engine.App, presentation *comparisonPresentation) (*comparisonUI, error) {
 	controls, panel := newComparisonUI(presentation)
 
-	if err := errors.Join(
-		controls.syncModel(selectExample(presentation.examples, presentation.selected), presentation.resources.card),
-		controls.syncMotion(presentation.scene.state.lightIndex, presentation.scene.state.mode),
-	); err != nil {
+	if err := controls.syncMotion(presentation.scene.state.lightIndex, presentation.scene.state.mode); err != nil {
 		return nil, err
+	}
+
+	if presentation.resources != nil {
+		if err := controls.syncModel(selectExample(presentation.examples, presentation.selected), presentation.resources.card); err != nil {
+			return nil, err
+		}
 	}
 
 	view := uiapp.View(app)
@@ -77,7 +80,7 @@ func showComparison(app *engine.App, presentation *comparisonPresentation) (*com
 func newComparisonUI(presentation *comparisonPresentation) (*comparisonUI, *ui.Node) {
 	settings := presentation.quality
 	controls := &comparisonUI{
-		presentation: presentation, counts: ui.NewText(""), status: ui.NewText(""), mode: qualityAuto,
+		presentation: presentation, counts: ui.NewText("Loading model…"), status: ui.NewText(""), mode: qualityAuto,
 		farText: fmt.Sprint(settings.FarPixels), nearText: fmt.Sprint(settings.NearPixels), mipBias: settings.MipBias,
 	}
 
@@ -86,7 +89,12 @@ func newComparisonUI(presentation *comparisonPresentation) (*comparisonUI, *ui.N
 		options = append(options, ui.Option{Key: example.id, Label: example.label})
 	}
 
-	models := ui.NewSelect("Model", options, presentation.selected, func(change ui.Change) {
+	selected := presentation.selected
+	if selected == "" && len(presentation.examples) > 0 {
+		selected = presentation.examples[0].id
+	}
+
+	models := ui.NewSelect("Model", options, selected, func(change ui.Change) {
 		presentation.requested = change.Text
 	}).WithStyle(ui.Style{Width: 300, Grow: 1})
 	controls.light = ui.NewButton("", presentation.scene.requestLight).WithStyle(ui.Style{Width: 190})
@@ -94,8 +102,9 @@ func newComparisonUI(presentation *comparisonPresentation) (*comparisonUI, *ui.N
 	controls.buildQuality()
 	controls.qualityToggle = ui.NewSwitch("Reprojection controls", false, func(change ui.Change) {
 		controls.qualityExpanded = change.Checked
-		controls.qualityGroup.SetHidden(!change.Checked || !presentation.resources.card.SupportsQuality())
+		controls.qualityGroup.SetHidden(!change.Checked || presentation.resources == nil || !presentation.resources.card.SupportsQuality())
 	}).WithStyle(ui.Style{Width: 220})
+	controls.qualityToggle.SetHidden(presentation.resources == nil)
 	panel := ui.Column(
 		ui.NewText("Full model  /  Impostor").WithStyle(ui.Style{FontSize: 20}),
 		controls.counts,

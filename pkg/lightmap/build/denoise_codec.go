@@ -8,8 +8,8 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func denoiseDecode(pixel []byte, scale float32) [3]float64 {

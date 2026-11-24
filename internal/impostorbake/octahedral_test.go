@@ -7,8 +7,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/meshdata"
 )
 
 func TestOctahedralDirectionsCoverBothHemispheresAndPoles(t *testing.T) {

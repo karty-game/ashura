@@ -4,8 +4,54 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
+
+func TestTouchPointerTapAndGestureHandoff(t *testing.T) {
+	t.Parallel()
+
+	var tracker platform.TouchTracker
+
+	var input platform.InputState
+
+	one := []platform.TouchPoint{{ID: 1, X: 30, Y: 40}}
+	two := []platform.TouchPoint{one[0], {ID: 2, X: 60, Y: 40}}
+	tracker.Update(&input, one)
+
+	if tracker.Pointer() != (platform.TouchPointer{X: 30, Y: 40, Down: true}) {
+		t.Fatal("held touch was unavailable across frames")
+	}
+
+	tracker.Update(&input, nil)
+
+	if input.Touch != (platform.TouchPointer{X: 30, Y: 40, Pressed: true}) || tracker.Pointer().Down {
+		t.Fatal("short tap was lost or remained held")
+	}
+
+	tracker.Update(&input, one)
+	tracker.Update(&input, two)
+	tracker.Update(&input, one)
+
+	if input.Touch.Down || input.Touch.Pressed || tracker.Pointer().Down {
+		t.Fatal("lifting one finger after a pinch started a paint stroke")
+	}
+
+	tracker.Update(&input, nil)
+	tracker.Update(&input, one)
+	tracker.BlockPointer(&input)
+	tracker.Update(&input, one)
+
+	if input.Touch.Down || input.Touch.Pressed {
+		t.Fatal("blocked pointer resumed before release")
+	}
+
+	tracker.Update(&input, nil)
+	tracker.Update(&input, one)
+
+	if !input.Touch.Down || !input.Touch.Pressed {
+		t.Fatal("fresh contact failed to start a touch press")
+	}
+}
 
 func TestTouchDragAndContactTransitions(t *testing.T) {
 	t.Parallel()

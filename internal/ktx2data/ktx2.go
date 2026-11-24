@@ -7,7 +7,7 @@ import (
 	"errors"
 	"math/bits"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 const (
@@ -31,6 +31,8 @@ const (
 	vkETC2RGBA     = 151
 	vkETC2RGBASRGB = 152
 	vkASTC4x4      = 157
+	vkASTC6x6      = 165
+	vkASTC6x6SRGB  = 166
 )
 
 var (
@@ -113,7 +115,8 @@ func readHeader(encoded []byte) (format, width, height, levels uint32, err error
 		return 0, 0, 0, 0, ErrBounds
 	}
 
-	if blockFormat(format) && (width%4 != 0 || height%4 != 0) {
+	side := uint32(texturedata.BlockDimension(payloadFormat(format))) //nolint:gosec // BlockDimension returns only four or six.
+	if blockFormat(format) && (width%side != 0 || height%side != 0) {
 		return 0, 0, 0, 0, ErrBounds
 	}
 
@@ -127,7 +130,7 @@ func readHeader(encoded []byte) (format, width, height, levels uint32, err error
 func supportedFormat(format uint32) bool {
 	switch format {
 	case vkRGBA8, vkRGBA8SRGB, vkBC1, vkBC1SRGB, vkBC1RGBA, vkBC1RGBASRGB,
-		vkBC6H, vkBC7, vkBC7SRGB, vkETC2RGB, vkETC2RGBSRGB, vkETC2RGBA, vkETC2RGBASRGB, vkASTC4x4:
+		vkBC6H, vkBC7, vkBC7SRGB, vkETC2RGB, vkETC2RGBSRGB, vkETC2RGBA, vkETC2RGBASRGB, vkASTC4x4, vkASTC6x6, vkASTC6x6SRGB:
 		return true
 	default:
 		return false

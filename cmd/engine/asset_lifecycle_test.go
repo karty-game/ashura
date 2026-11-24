@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestAssetGenerateThenPlayableBuild(t *testing.T) {
@@ -17,8 +17,8 @@ func TestAssetGenerateThenPlayableBuild(t *testing.T) {
 	t.Setenv("GOFLAGS", "-mod=mod -buildvcs=false")
 	project := assetRecipeFixture(t)
 	recipe := strings.Replace(recipeFixture,
-		`import "github.com/karty-game/karty-webgpu/pkg/assetbuild"`,
-		`import ("os"; "github.com/karty-game/karty-webgpu/pkg/assetbuild")`, 1)
+		`import "github.com/karty-game/ashura/pkg/assetbuild"`,
+		`import ("os"; "github.com/karty-game/ashura/pkg/assetbuild")`, 1)
 	recipe = strings.Replace(
 		recipe,
 		"size := 2",

@@ -1,6 +1,6 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/render"
+import "github.com/karty-game/ashura/internal/render"
 
 // The outer source map owns geometry identity; this alias retains inline keys.
 type materialKey = render.MaterialKey

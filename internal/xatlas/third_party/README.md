@@ -20,5 +20,4 @@ is required. Compiled code is reused; each request owns an isolated instance.
 
 `LICENSE` retains xatlas's MIT notice and `LICENSE-wrapper` retains the wrapper's
 MIT notice. The module is unmodified. Overlap/collapse repair and bounded host
-admission are implemented in Go beside `wasi.go`. [Decision 15](../../../spec/decisions/0015-portable-offline-libraries.md)
-records that behavior, cache migration and qualification limits.
+admission are implemented in Go beside `wasi.go`. See [lightmap UV preparation](../../../docs/asset-pipeline/processors/level-lightmap-uvs.md).

@@ -5,9 +5,9 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 const (
@@ -34,7 +34,29 @@ type gpuMaterial struct {
 	source                bool
 }
 
-func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (js.Value, error) {
+func (driver *Driver) updateFrameUniform(frame render.Frame) error {
+	if driver.frameUniform.IsUndefined() {
+		driver.frameUniform = driver.device.Call("createBuffer", jsObject(map[string]any{
+			labelProperty: "scene frame uniform", sizeProperty: render.FrameUniformSize, usageProperty: uniformBufferUsage,
+		}))
+		if driver.frameUniform.IsNull() || driver.frameUniform.IsUndefined() {
+			driver.frameUniform = js.Undefined()
+
+			return errDrawBuffer
+		}
+
+		driver.frameUniformBytes = js.Global().Get("Uint8Array").New(render.FrameUniformSize)
+	}
+
+	if driver.frameUniformState.Update(frame) {
+		js.CopyBytesToJS(driver.frameUniformBytes, driver.frameUniformState.Data[:])
+		driver.queue.Call("writeBuffer", driver.frameUniform, 0, driver.frameUniformBytes)
+	}
+
+	return nil
+}
+
+func (driver *Driver) materialGroup(draw render.DrawCall) (js.Value, error) {
 	if err := driver.requireMaterialRenderer(draw); err != nil {
 		return js.Undefined(), err
 	}
@@ -65,7 +87,7 @@ func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (j
 		lightmap = driver.whiteAO
 	}
 
-	entry, size := driver.materialEntry(draw)
+	entry := driver.materialEntry(draw)
 
 	entry.seen = true
 	if entry.culled != draw.CullBackfaces {
@@ -79,8 +101,8 @@ func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (j
 		}
 	}
 
-	if entry.state.Update(draw, frame) {
-		js.CopyBytesToJS(entry.array, entry.state.Data[:size])
+	if entry.state.Update(draw) {
+		js.CopyBytesToJS(entry.array, entry.state.Data[:])
 
 		driver.queue.Call("writeBuffer", entry.uniform, 0, entry.array)
 	}
@@ -88,7 +110,7 @@ func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (j
 	return entry.group, nil
 }
 
-func (driver *Driver) materialEntry(draw render.DrawCall) (*gpuMaterial, uint32) {
+func (driver *Driver) materialEntry(draw render.DrawCall) *gpuMaterial {
 	entry := driver.materials[draw.ID]
 	if entry != nil && (entry.source != draw.Source || entry.config != draw.Impostor) {
 		entry.release()
@@ -97,15 +119,20 @@ func (driver *Driver) materialEntry(draw render.DrawCall) (*gpuMaterial, uint32)
 		entry = nil
 	}
 
-	size := render.UniformSize(draw.Source)
 	if entry == nil {
 		entry = &gpuMaterial{
 			source: draw.Source,
 			uniform: driver.device.Call(
 				"createBuffer",
-				jsObject(map[string]any{sizeProperty: size, usageProperty: uniformBufferUsage}),
+				jsObject(
+					map[string]any{
+						labelProperty: "scene material uniform",
+						sizeProperty:  render.MaterialUniformSize,
+						usageProperty: uniformBufferUsage,
+					},
+				),
 			),
-			array: js.Global().Get("Uint8Array").New(size),
+			array: js.Global().Get("Uint8Array").New(render.MaterialUniformSize),
 		}
 		if draw.Impostor != nil {
 			entry.impostor = driver.acquireImpostor(draw.Impostor)
@@ -115,7 +142,7 @@ func (driver *Driver) materialEntry(draw render.DrawCall) (*gpuMaterial, uint32)
 		driver.materials[draw.ID] = entry
 	}
 
-	return entry, size
+	return entry
 }
 
 func (driver *Driver) initMaterials() {
@@ -164,6 +191,12 @@ func (driver *Driver) bindMaterial(
 		jsObject(map[string]any{bindingProperty: 1, resourceProperty: driver.sampler}),
 		jsObject(map[string]any{bindingProperty: render.AlbedoBinding, resourceProperty: colorView}),
 		jsObject(map[string]any{bindingProperty: render.NormalBinding, resourceProperty: normalView}),
+		jsObject(
+			map[string]any{
+				bindingProperty:  render.FrameUniformBinding,
+				resourceProperty: jsObject(map[string]any{gpuBufferProperty: driver.frameUniform}),
+			},
+		),
 	}
 	switch {
 	case entry.impostor != nil:
@@ -270,6 +303,8 @@ func (driver *Driver) textureView(source *texturedata.Texture) (js.Value, error)
 
 // UnloadTexture releases the cached upload after scene references are detached.
 func (driver *Driver) UnloadTexture(source *texturedata.Texture) {
+	driver.clearDecalAtlas(source)
+
 	for id, entry := range driver.materials {
 		if entry.albedo == source || entry.normal == source || entry.occlusion == source || entry.reflection == source ||
 			entry.lightmap == source || entry.rnm[0] == source || entry.rnm[1] == source || entry.rnm[2] == source {
@@ -304,6 +339,11 @@ func (driver *Driver) releaseMaterials() {
 
 	for source := range driver.textures {
 		driver.UnloadTexture(source)
+	}
+
+	if !driver.frameUniform.IsUndefined() {
+		driver.frameUniform.Call("destroy")
+		driver.frameUniform, driver.frameUniformBytes = js.Undefined(), js.Undefined()
 	}
 }
 

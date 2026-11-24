@@ -4,13 +4,13 @@ import (
 	"math"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
-	"github.com/karty-game/karty-webgpu/pkg/light"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/light"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/mesh"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 const (
@@ -85,7 +85,13 @@ func createScene(app *engine.App) (*engine.World, *comparisonScene, error) {
 		engine.Transform{Position: engine.Vector3{Y: groundHeight}, Scale: engine.Vector3One()},
 		ground,
 	)
-	comparison := &comparisonScene{sun: sun, orbit: liveControls, view: world.Transform(view), distance: distance}
+	comparison := &comparisonScene{
+		sun:      sun,
+		orbit:    liveControls,
+		view:     world.Transform(view),
+		distance: distance,
+		center:   engine.Vector3{Y: viewTargetHeight},
+	}
 
 	sample.FitCamera(app, world, view)
 	app.OnUpdateError(func(delta time.Duration) error { return comparison.update(app.Input(), delta) })
@@ -121,7 +127,7 @@ func (comparison *comparisonScene) update(input engine.Input, delta time.Duratio
 		}
 	}
 
-	if comparison.qualityPending {
+	if comparison.qualityPending && comparison.qualityAsset != nil {
 		comparison.qualityPending = false
 		if err := comparison.qualityAsset.SetQuality(comparison.requestedQuality); err != nil {
 			return err

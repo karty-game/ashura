@@ -73,7 +73,7 @@ func planWebCompilers(ctx context.Context, packages []webPackage, requested stri
 }
 
 func stageMixedWebDistribution(ctx context.Context, root, dist string, packages []webPackage, groups []webCompilerGroup) error {
-	compilers := make(map[string]webCompiler)
+	compilers := make(map[string]webCompiler, len(packages))
 
 	for _, group := range groups {
 		runtimeDir := filepath.Join(dist, "runtimes", group.compiler.Name)
@@ -86,14 +86,16 @@ func stageMixedWebDistribution(ctx context.Context, root, dist string, packages 
 			return err
 		}
 
-		compilers[group.compiler.Name] = group.compiler
+		for _, item := range group.packages {
+			compilers[item.RelativePath] = group.compiler
+		}
 	}
 
 	receipt := webDistributionReceipt{FormatVersion: 1, Compiler: "mixed"}
 
 	samples := make([]gallerySample, 0, len(packages))
 	for _, item := range packages {
-		compiler := compilers[sampleWebCompiler(item, automaticWebCompiler)]
+		compiler := compilers[item.RelativePath]
 
 		app, err := stageMixedWebApplication(root, dist, item, compiler)
 		if err != nil {
@@ -120,25 +122,13 @@ func stageMixedWebDistribution(ctx context.Context, root, dist string, packages 
 func stageMixedWebApplication(root, dist string, item webPackage, compiler webCompiler) (webApplicationReceipt, error) {
 	path := filepath.Join("apps", item.RelativePath)
 	destination := filepath.Join(dist, path)
-	//nolint:gosec // item.RelativePath is admitted by localWebPackage inside fresh staging.
-	if err := os.MkdirAll(destination, 0o750); err != nil {
-		return webApplicationReceipt{}, fmt.Errorf("stage application: %w", err)
-	}
 
-	if err := stageWebResources(filepath.Join(root, item.RelativePath), destination); err != nil {
-		return webApplicationReceipt{}, err
-	}
-
-	runtimePath, err := filepath.Rel(destination, filepath.Join(dist, "runtimes", compiler.Name, wasmExecFile))
+	runtimePath, err := stageWebApplication(root, destination, filepath.Join(dist, "runtimes", compiler.Name, wasmExecFile), item)
 	if err != nil {
-		return webApplicationReceipt{}, fmt.Errorf("resolve compiler runtime: %w", err)
-	}
-
-	if err := writeSamplePage(destination, filepath.ToSlash(runtimePath), item.Name); err != nil {
 		return webApplicationReceipt{}, err
 	}
 
-	app := webApplicationReceipt{Path: filepath.ToSlash(path), RuntimePath: filepath.ToSlash(runtimePath), webCompiler: compiler}
+	app := webApplicationReceipt{Path: filepath.ToSlash(path), RuntimePath: runtimePath, webCompiler: compiler}
 	if err := writeMixedWebReceipt(destination, app); err != nil {
 		return webApplicationReceipt{}, err
 	}

@@ -3,7 +3,7 @@ package engine
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 type alphaMaskFixture struct {

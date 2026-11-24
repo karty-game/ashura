@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // codecActionCache shares equivalent offline encoder producers within one

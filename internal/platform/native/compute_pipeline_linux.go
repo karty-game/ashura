@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
+	"github.com/karty-game/ashura/internal/computedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
+	"github.com/karty-game/ashura/pkg/shader"
 )
 
 func (driver *computeBackend) prepareComputePipeline(source *computedata.Pipeline, limits wgpu.Limits) error {

@@ -5,8 +5,8 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func discoverNativeAlbedos(

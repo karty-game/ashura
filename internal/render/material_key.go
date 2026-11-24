@@ -1,8 +1,8 @@
 package render
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 // MaterialKey retains shader-visible identities and numbers inline (<=128 bytes).
@@ -12,6 +12,7 @@ type MaterialKey struct {
 	Impostor                                 *impostordata.Document
 	Maps                                     [5]*texturedata.Texture
 	Values                                   [16]float32
+	DecalLayers                              uint32
 	Source, HalfLambert, Cull, LightmapDebug bool
 }
 
@@ -28,6 +29,8 @@ func EffectiveMaterial(draw DrawCall) MaterialKey {
 
 		return key
 	}
+
+	key.DecalLayers = draw.DecalLayers
 
 	copy(key.Values[3:5], draw.UVScale[:])
 

@@ -5,8 +5,8 @@ package meshopt
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func admitModel(ctx context.Context, source modeldata.Document) error {

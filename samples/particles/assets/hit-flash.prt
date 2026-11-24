@@ -1,0 +1,317 @@
+{
+  "duration": 0.75,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 1,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 2,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Impact flash",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "mode": "constant",
+          "value": 0.33
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "mode": "constant",
+          "value": 235
+        },
+        "sizeParam": null,
+        "speed": {
+          "mode": "constant",
+          "value": 0
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Impact flash",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 0.83,
+              "g": 0.93,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.79,
+              "b": 0.26,
+              "g": 0.37,
+              "r": 1,
+              "t": 0.25
+            },
+            {
+              "a": 0,
+              "b": 0.17,
+              "g": 0.06,
+              "r": 0.84,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.53
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.31,
+              "v": 1.03
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 1.16
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0
+          },
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": null,
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "volume",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 0
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 44,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 56,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Impact shards",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 220,
+          "min": -220,
+          "mode": "range"
+        },
+        "life": {
+          "max": 0.68,
+          "min": 0.19,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 68,
+          "min": 24,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 340,
+          "min": 145,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Impact shards",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 0.81,
+              "g": 0.94,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.85,
+              "b": 0.35,
+              "g": 0.49,
+              "r": 1,
+              "t": 0.32
+            },
+            {
+              "a": 0,
+              "b": 0.21,
+              "g": 0.08,
+              "r": 0.79,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 1.05
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.45,
+              "v": 0.82
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 0.17
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 1.18
+          },
+          "gravity": {
+            "x": 0,
+            "y": 150
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": null,
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "volume",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 10
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "Ashura sample",
+    "name": "Hit Flash",
+    "notes": "A brighter, slower variant of the CC0 Hit Flash preset for world-space preview."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 19
+}

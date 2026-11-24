@@ -60,18 +60,21 @@ records feed SSBump directly.
 The default `dev` and `release` recipe is:
 
 ```text
-Images → SSBump (KeepNormals: true) → Mipmaps → KTX2 → GoCatalog
+Images → SSBump (KeepNormals: true) → Mipmaps → KTX2Variants → GoCatalog
 ```
 
-KTX2 output uses sRGB BC1 for albedo and linear BC7 for normal and SSBump maps.
-AO retains RGBA8. Compression runs offline with the original 256×256 dimensions
-and complete authored mip chains; loading uploads native blocks directly. The
-sample requires the device's BC texture compression feature.
+The BC profile uses sRGB BC1 for albedo and linear BC7 for normal and SSBump maps.
+The mobile profile uses sRGB ETC2 RGB for albedo, linear ETC2 RGBA for normals,
+and linear ASTC 4×4 for SSBump. Both profiles share one RGBA8 AO texture per
+material. Compression runs offline with the original 256×256 dimensions and
+complete authored mip chains. The sample selects a supported profile and uploads
+its native blocks directly.
 
 SSBump retains each normal for Standard and derives a separate linear RNM map
 for Valve / Source. Albedo/AO inputs pass through unchanged. Generated functions
 include `assets.BrickAlbedo()`, `BrickNormal()`, `BrickAO()` and `BrickSSBump()`
-(and their Stone counterparts). Runtime code loads only these declarations.
+(and their Stone counterparts). The mobile albedo, normal and SSBump
+declarations add a `Mobile` suffix.
 `generated/assets/` contains ignored, disposable GPU-ready payloads and catalog
 code; regenerate it rather than editing it:
 

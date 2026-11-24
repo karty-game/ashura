@@ -4,13 +4,17 @@ struct Light {
     ground: vec4f,
 }
 struct SourceUniforms {
-    viewProjection: mat4x4f,
-    settings: vec4f, // Light count, SSBump strength, Half-Lambert toggle, RNM decode scale.
+    settings: vec4f, // Reserved, SSBump strength, Half-Lambert toggle, RNM decode scale.
     tint: vec4f,
     uvScale: vec4f, // UV0 scale.xy, RNM encoding.z (0: linear, 1: RGBE).
     ambientColors: array<vec4f, 3>,
+}
+struct FrameUniforms {
+    viewProjection: mat4x4f,
+    camera: vec4f,
     lights: array<Light, 8>,
 }
+@group(0) @binding(8) var<uniform> sceneFrame: FrameUniforms;
 @group(0) @binding(0) var<uniform> material: SourceUniforms;
 @group(0) @binding(1) var surfaceSampler: sampler;
 @group(0) @binding(2) var albedoMap: texture_2d<f32>;
@@ -19,41 +23,6 @@ struct SourceUniforms {
 @group(0) @binding(5) var rnmMap1: texture_2d<f32>;
 @group(0) @binding(6) var rnmMap2: texture_2d<f32>;
 @group(0) @binding(7) var lightmapSampler: sampler;
-struct PointShadow { positionRange: vec4f, settings: vec4f, }
-@group(1) @binding(0) var<uniform> pointShadow: PointShadow;
-@group(1) @binding(1) var shadowSampler: sampler_comparison;
-@group(1) @binding(2) var shadowMap: texture_depth_cube;
-
-// Each PCF tap compares against the receiver plane at that tap's direction.
-// Comparing every tap with the center depth makes sloped surfaces shadow
-// themselves. A texel-sized slope allowance covers the bilinear filter footprint.
-fn pointVisibility(point: vec3f, geometricNormal: vec3f) -> f32 {
-    if pointShadow.settings.y == 0.0 { return 1.0; }
-    let offset = point - pointShadow.positionRange.xyz;
-    let distance = length(offset);
-    if distance <= 1e-5 || distance >= pointShadow.positionRange.w { return 1.0; }
-    let direction = offset / distance;
-    let axis = select(vec3f(0.0, 1.0, 0.0), vec3f(1.0, 0.0, 0.0), abs(direction.y) > 0.95);
-    let tangent = normalize(cross(direction, axis));
-    let bitangent = cross(direction, tangent);
-    let step = 2.0 / f32(textureDimensions(shadowMap).x);
-    let planeDistance = dot(geometricNormal, offset);
-    var visibility = 0.0;
-    for (var y = -1; y <= 1; y++) {
-        for (var x = -1; x <= 1; x++) {
-            let sampleDirection = normalize(direction + (tangent * f32(x) + bitangent * f32(y)) * step);
-            let cosine = dot(geometricNormal, sampleDirection);
-            let safeCosine = select(-max(abs(cosine), 0.05), max(abs(cosine), 0.05), cosine >= 0.0);
-            let receiverDistance = max(planeDistance / safeCosine, 0.0);
-            let slope = sqrt(max(1.0 - cosine * cosine, 0.0)) / max(abs(cosine), 0.05);
-            let bias = pointShadow.settings.x + receiverDistance * step * min(slope, 8.0);
-            let reference = (receiverDistance - bias) / pointShadow.positionRange.w;
-            visibility += textureSampleCompareLevel(shadowMap, shadowSampler, sampleDirection, reference);
-        }
-    }
-    return visibility / 9.0;
-}
-
 struct VertexOutput {
     @builtin(position) position: vec4f,
     @location(0) worldPosition: vec3f,
@@ -92,7 +61,7 @@ fn vs_main(
     var output: VertexOutput;
     let model = mat4x4f(model0, model1, model2, model3);
     let world = model * vec4f(position, 1.0);
-    output.position = material.viewProjection * world;
+    output.position = sceneFrame.viewProjection * world;
     output.worldPosition = world.xyz;
     let localNormal = select(normal, vec3f(0.0, 1.0, 0.0), dot(normal, normal) < 1e-10);
     output.normal = inverseTranspose(model) * localNormal;
@@ -172,13 +141,12 @@ fn sourceLighting(input: VertexOutput, frame: mat3x3f, sampled: vec3f, frontFaci
         }
     }
     var lighting = weights.x * irradiance0 + weights.y * irradiance1 + weights.z * irradiance2;
-    let triangleNormal = safeNormalize(cross(dpdx(input.worldPosition),dpdy(input.worldPosition)));
-    let visibility = pointVisibility(input.worldPosition,triangleNormal);
+    let visibility = pointVisibility(input.worldPosition);
     // Source SDK LightmappedGeneric's SSBump flashlight path projects L onto
     // the RNM basis and combines the stored coefficients without normalizing.
     // Reconstructing a unit normal here discards directional visibility.
-    for (var index = 0u; index < u32(material.settings.x); index++) {
-        let light = material.lights[index];
+    for (var index = 0u; index < u32(sceneFrame.camera.w); index++) {
+        let light = sceneFrame.lights[index];
         if light.direction.w == 1.0 { continue; }
         var towardLight = -safeNormalize(light.direction.xyz);
         var attenuation = 1.0;
@@ -203,8 +171,9 @@ fn sourceLighting(input: VertexOutput, frame: mat3x3f, sampled: vec3f, frontFaci
 }
 fn surfaceColor(input: VertexOutput, frontFacing: bool) -> vec3f {
     let base = textureSample(albedoMap, surfaceSampler, input.uv).rgb * material.tint.rgb;
+    let shadedBase = base;
     let coefficients = textureSample(ssBumpMap, surfaceSampler, input.uv).rgb;
-    return max(base * sourceLighting(input, tangentFrame(input), coefficients, frontFacing), vec3f(0.0));
+    return max(shadedBase * sourceLighting(input, tangentFrame(input), coefficients, frontFacing), vec3f(0.0));
 }
 
 // Linear output for presentation textures that perform sRGB encoding themselves.

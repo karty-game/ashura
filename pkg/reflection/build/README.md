@@ -16,7 +16,7 @@ Pipelines: []assetbuild.Pipeline{{
 }},
 ```
 
-Use `github.com/karty-game/karty-webgpu/pkg/reflection/build`. `Name` is an
+Use `github.com/karty-game/ashura/pkg/reflection/build`. `Name` is an
 exported Go identifier. The example emits `RoomScene()` (returning
 `pkg/reflection/scene.Scene`) and the regular `RoomReflection()` texture catalog.
 Source and chunk paths go through the asset pipeline's confined tracked reads.

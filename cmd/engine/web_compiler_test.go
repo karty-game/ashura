@@ -53,6 +53,7 @@ func TestParseWebOptions(t *testing.T) {
 
 func TestTinyGoEnvironmentKeepsHostFlagsOut(t *testing.T) {
 	t.Setenv("GOFLAGS", "-race -tags=nofakecgo")
+	t.Setenv("BINARYEN_CORES", "4")
 	t.Setenv("GOOS", "linux")
 	t.Setenv("GOARCH", "arm64")
 	t.Setenv("CGO_ENABLED", "1")
@@ -64,10 +65,14 @@ func TestTinyGoEnvironmentKeepsHostFlagsOut(t *testing.T) {
 		}
 	}
 
-	for _, entry := range []string{"GOOS=js", "GOARCH=wasm", "CGO_ENABLED=0"} {
+	for _, entry := range []string{"GOOS=js", "GOARCH=wasm", "CGO_ENABLED=0", "BINARYEN_CORES=1"} {
 		if !slices.Contains(environment, entry) {
 			t.Fatalf("missing target %s: %v", entry, environment)
 		}
+	}
+
+	if slices.Contains(environment, "BINARYEN_CORES=4") {
+		t.Fatal("TinyGo inherited a conflicting Binaryen worker count")
 	}
 
 	if !slices.Contains(webBuildEnvironment("go"), "GOFLAGS=-race -tags=nofakecgo") {

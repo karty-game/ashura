@@ -5,7 +5,7 @@ package lightmapbake
 import (
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // RemapReceiverMaterials binds independently triangulated receiver support to

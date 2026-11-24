@@ -1,9 +1,8 @@
 # Prepared lightmap baking
 
 The Source RNM path gathers direct light, environment and one diffuse bounce into
-three directional maps, evaluated together by Source SSBump materials. See the
-[research and format decision](../../spec/source-rnm-v1.md). The retained scalar
-baker is described below. These are historical interactive APIs. Maintained
+three directional maps, evaluated together by Source SSBump materials. The
+retained scalar baker and historical interactive APIs are described below. Maintained
 offline asset builds use [the production API](bake/README.md), production UV
 preparation and the in-process Go WebGPU baker.
 

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	spritebuild "github.com/karty-game/karty-webgpu/pkg/draw2d/build"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	spritebuild "github.com/karty-game/ashura/pkg/draw2d/build"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestCompressedSpritePagesPreserveDimensionsAndReuseBuild(t *testing.T) {
@@ -118,8 +118,8 @@ const compressedRuntimeTest = `package assets
 import (
     "testing"
 
-    "github.com/karty-game/karty-webgpu/pkg/draw2d"
-    "github.com/karty-game/karty-webgpu/pkg/texture"
+    "github.com/karty-game/ashura/pkg/draw2d"
+    "github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestCompressedCatalog(t *testing.T) {

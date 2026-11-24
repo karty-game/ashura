@@ -7,8 +7,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 // Production support depends on exact ordered immutable receiver/geometry

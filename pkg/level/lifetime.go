@@ -3,7 +3,7 @@ package level
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func (chunk *LoadedChunk) inUse() bool {

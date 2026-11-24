@@ -7,8 +7,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/impostor"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/impostor"
 )
 
 func TestQualityEditsPreservePreparedAssetAndRejectInvalidWork(t *testing.T) {

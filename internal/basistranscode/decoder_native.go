@@ -5,7 +5,7 @@ package basistranscode
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 type unsupported struct{}

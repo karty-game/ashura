@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func TestUIImagesReviewGeneratedCatalogRunsWithMultiplePagesAndStandaloneImage(t *testing.T) {
@@ -55,7 +55,7 @@ func TestUIImagesReviewGeneratedCatalogRunsWithMultiplePagesAndStandaloneImage(t
 	}
 
 	module := fmt.Sprintf(
-		"module github.com/karty-game/karty-webgpu/internal/ui-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/karty-webgpu v0.0.0\n\nreplace github.com/karty-game/karty-webgpu => %q\n",
+		"module github.com/karty-game/ashura/internal/ui-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/ashura v0.0.0\n\nreplace github.com/karty-game/ashura => %q\n",
 		root,
 	)
 	if err = os.WriteFile(filepath.Join(project, "go.mod"), []byte(module), 0o600); err != nil {
@@ -117,9 +117,9 @@ import (
     "testing"
     "time"
 
-    "github.com/karty-game/karty-webgpu/pkg/ui"
-    "github.com/karty-game/karty-webgpu/pkg/ui/fonts/defaultfont"
-    assets "github.com/karty-game/karty-webgpu/internal/ui-recipe-fixture/generated/assets"
+    "github.com/karty-game/ashura/pkg/ui"
+    "github.com/karty-game/ashura/pkg/ui/fonts/defaultfont"
+    assets "github.com/karty-game/ashura/internal/ui-recipe-fixture/generated/assets"
 )
 
 func TestGeneratedImages(t *testing.T) {

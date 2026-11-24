@@ -17,7 +17,7 @@ Choose what happens to that converted result:
 The word “prepared” describes Ashura's intermediate output. The input to both
 functions is the same ordinary GLB format.
 
-Import `modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"`.
+Import `modelbuild "github.com/karty-game/ashura/pkg/model/build"`.
 
 ## Settings and defaults
 
@@ -60,8 +60,8 @@ game doesn't open the source GLB or decode its source images.
 
 Use `PreparedGLB` when a level or impostor plugin will consume the converted
 model. The maintained level path starts like this. Import `levelbuild` from
-`github.com/karty-game/karty-webgpu/pkg/level/build` and `meshbuild` from
-`github.com/karty-game/karty-webgpu/pkg/mesh/build`:
+`github.com/karty-game/ashura/pkg/level/build` and `meshbuild` from
+`github.com/karty-game/ashura/pkg/mesh/build`:
 
 ```go
 Import: []assetbuild.Plugin{

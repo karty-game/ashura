@@ -5,8 +5,8 @@ package native
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 // RegisterStandard opts this driver into standard material pipelines and WGSL.
@@ -20,7 +20,16 @@ func RegisterStandard(host any) error {
 		return fmt.Errorf("%s: %w", platform.StandardFeature, platform.ErrFeatureDuplicate)
 	}
 
-	return createPipeline(driver, "standard.wgsl", render.StandardShader(), false)
+	shader := render.StandardShader()
+	if driver.clusteredLights != nil {
+		shader = render.ClusterMaterialShader(shader)
+	}
+
+	if driver.decals != nil {
+		shader = driver.decals.shader(shader, driver.clusteredLights != nil)
+	}
+
+	return createPipeline(driver, "standard.wgsl", shader, false)
 }
 
 // RegisterSource opts this driver into Source material pipelines and WGSL.
@@ -34,7 +43,16 @@ func RegisterSource(host any) error {
 		return fmt.Errorf("%s: %w", platform.SourceFeature, platform.ErrFeatureDuplicate)
 	}
 
-	return createPipeline(driver, "source.wgsl", render.SourceShader(), true)
+	shader := render.SourceShader()
+	if driver.clusteredLights != nil {
+		shader = render.ClusterMaterialShader(shader)
+	}
+
+	if driver.decals != nil {
+		shader = driver.decals.shader(shader, driver.clusteredLights != nil)
+	}
+
+	return createPipeline(driver, "source.wgsl", shader, true)
 }
 
 // RegisterImpostors opts this driver into the prepared impostor pipeline and WGSL.

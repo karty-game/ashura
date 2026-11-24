@@ -62,7 +62,7 @@ func await(ctx context.Context, promise js.Value) (js.Value, error) {
 	}
 }
 
-func read(ctx context.Context, base, name string, size int, expectedSHA string) ([]byte, error) {
+func read(ctx context.Context, base, name string, size int, expectedSHA string, entries []Slice) ([]byte, error) {
 	controller := js.Global().Get("AbortController").New()
 	defer controller.Call("abort")
 
@@ -108,6 +108,13 @@ func read(ctx context.Context, base, name string, size int, expectedSHA string) 
 
 	if err := verifyBrowserChecksum(ctx, data, expectedSHA); err != nil {
 		return nil, err
+	}
+
+	for _, entry := range entries {
+		view := data.Call("subarray", entry.Offset, entry.Offset+entry.Asset.Size)
+		if err := verifyBrowserChecksum(ctx, view, entry.Asset.SHA256); err != nil {
+			return nil, fmt.Errorf("slice %s: %w", entry.Asset.Path, err)
+		}
 	}
 
 	// Keep unverified payloads outside Go memory. WebCrypto hashes asynchronously;

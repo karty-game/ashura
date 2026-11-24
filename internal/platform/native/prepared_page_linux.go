@@ -4,9 +4,9 @@ package native
 
 import (
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uipaint"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // Prepared page resources are shared by the independent sprite and UI layers.

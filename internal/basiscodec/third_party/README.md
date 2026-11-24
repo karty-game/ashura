@@ -21,5 +21,4 @@ The Go host verifies each embedded hash before initializing its module.
 `LICENSE`, `NOTICE`, `LICENSES/` and `copyright` retain upstream licensing and
 attribution, including its component exceptions. The upstream source is
 unmodified. Host-side admission, channel handling and orchestration are Go code
-in this repository. [Decision 15](../../../spec/decisions/0015-portable-offline-libraries.md)
-records lifecycle, memory ceilings, cache migration and qualification limits.
+in this repository. See [codec profiles and portable library requirements](../../../pkg/assetbuild/block_compress_tools.md).

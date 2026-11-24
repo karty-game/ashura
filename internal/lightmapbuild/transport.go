@@ -13,7 +13,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapdata"
 )
 
 // Transport is a fixed-geometry, single diffuse bounce approximation. Samples

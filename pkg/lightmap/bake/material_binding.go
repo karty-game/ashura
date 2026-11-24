@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // reflectanceBinding survives independent chunk batching, texture-table remaps

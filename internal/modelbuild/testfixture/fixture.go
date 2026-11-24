@@ -15,7 +15,7 @@ import (
 	"image/png"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/mesh"
+	"github.com/karty-game/ashura/pkg/mesh"
 )
 
 // Triangle returns an independently mutable glTF document and its BIN bytes.

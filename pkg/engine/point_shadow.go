@@ -1,12 +1,16 @@
 package engine
 
-import "github.com/karty-game/karty-webgpu/internal/render"
+import "github.com/karty-game/ashura/internal/render"
 
 // Shadow pipeline/device work belongs to startup, before any animation callback.
 // Disabled declared sources are included so Live/Baked mode changes need no GPU
 // pipeline creation. The first slice pins one resolution for the App lifetime.
 func pointShadowResolution(world *World) (uint32, error) {
-	var frame render.Frame
+	return pointShadowResolutionFor(world, false)
+}
+
+func pointShadowResolutionFor(world *World, clustered bool) (uint32, error) {
+	frame := render.Frame{ClusteredLighting: clustered}
 
 	world.Each(func(entity Entity) { appendEntityLights(&frame, world, entity) })
 

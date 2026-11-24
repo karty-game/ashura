@@ -8,7 +8,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // SceneOptions identifies one authored primitive scene and its chunk records.

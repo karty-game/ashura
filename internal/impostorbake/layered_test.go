@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func TestLayeredUnionPreservesSolidsAndRejectsInvalidGeometry(t *testing.T) {

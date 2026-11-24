@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func TestPipelineImageExportersKeepIndependentRulesAndCaches(t *testing.T) {

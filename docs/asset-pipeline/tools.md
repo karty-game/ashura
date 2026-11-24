@@ -45,4 +45,6 @@ For exact module versions, licenses and checksums, see the retained notices for
 [meshoptimizer](../../internal/meshopt/third_party/README.md),
 [Basis Universal](../../internal/basiscodec/third_party/README.md) and
 [msdfgen](../../internal/msdfcodec/third_party/README.md). The
-[tool requirements](../../spec/asset-tools.md) cover the native dependencies.
+[Materialize](generators/image-materialize.md) and
+[lightmap baking](generators/level-lightmap-bake.md) plugin guides cover their
+native dependencies.

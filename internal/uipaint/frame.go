@@ -4,7 +4,7 @@ package uipaint
 import (
 	"encoding/binary"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 const (
@@ -32,7 +32,7 @@ func ValidPage(width, height int, format texturedata.Format, size int) bool {
 		if width%pageBlockDimension != 0 || height%pageBlockDimension != 0 {
 			return false
 		}
-	case texturedata.BC6H:
+	case texturedata.BC6H, texturedata.ASTC6x6:
 		return false
 	default:
 		return false

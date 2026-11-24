@@ -2,11 +2,11 @@
 
 package levelbuild
 
-import "github.com/karty-game/karty-webgpu/internal/leveldata"
+import "github.com/karty-game/ashura/internal/leveldata"
 
 func pagePublicationSchema(schema string, page leveldata.Page) string {
-	if schema == leveldata.Schema7 {
-		return leveldata.Schema7
+	if schema == leveldata.Schema7 || schema == leveldata.Schema8 {
+		return schema
 	}
 
 	if page.Representation != "" {

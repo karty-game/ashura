@@ -24,18 +24,9 @@ type pipelineCursor struct {
 }
 
 func (run *runner) executeConfiguredPlan(ctx context.Context, plan *Plan) error {
-	for _, pipeline := range plan.pipelines {
-		if err := validateExpansion(pipeline, pipeline.actions); err != nil {
-			return err
-		}
-	}
-
 	scheduler := newPipelineScheduler(run, plan)
-	if err := scheduler.execute(ctx); err != nil {
-		return err
-	}
 
-	return nil
+	return scheduler.execute(ctx)
 }
 
 // frontier admits one branch's current action region or performs cheap manifest

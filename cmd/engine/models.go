@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild"
 )
 
 var errModelArgs = errors.New("usage: engine assets model --input source.glb --output prepared.kmodel")

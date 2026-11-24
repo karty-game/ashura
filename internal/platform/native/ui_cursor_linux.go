@@ -4,7 +4,7 @@ package native
 
 import (
 	"github.com/Zyko0/go-sdl3/sdl"
-	ui "github.com/karty-game/karty-webgpu/internal/uihost"
+	ui "github.com/karty-game/ashura/internal/uihost"
 )
 
 type nativeUICursor struct {

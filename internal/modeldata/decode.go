@@ -5,7 +5,7 @@ import (
 	"math"
 	"unicode/utf8"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
+	"github.com/karty-game/ashura/internal/meshdata"
 )
 
 type reader struct {
@@ -52,6 +52,17 @@ func Decode(data []byte) (Document, error) {
 		}
 
 		part.Material = input.material()
+		if input.version == boundsVersion {
+			part.Bounds.Valid = true
+			for axis := range part.Bounds.Minimum {
+				part.Bounds.Minimum[axis] = math.Float32frombits(input.word())
+			}
+
+			for axis := range part.Bounds.Maximum {
+				part.Bounds.Maximum[axis] = math.Float32frombits(input.word())
+			}
+		}
+
 		part.Vertices = input.bytes(int(vertices) * meshdata.VertexStride)
 
 		part.Indices = input.bytes(int(indices) * meshdata.IndexStride)
@@ -149,7 +160,7 @@ func (input *reader) material() Material {
 		DoubleSided:    values[10] == 1,
 	}
 
-	if input.version == maskVersion {
+	if input.version >= maskVersion {
 		mask := input.word()
 		if mask > 1 {
 			input.err = errFormat
@@ -164,9 +175,11 @@ func (input *reader) material() Material {
 
 func validHeader(data []byte) bool {
 	if len(data) < headerSize || len(data) > MaxBytes || string(data[:len(magic)]) != magic ||
-		(binary.LittleEndian.Uint32(data[8:]) != version && binary.LittleEndian.Uint32(data[8:]) != maskVersion) || uint64(binary.LittleEndian.Uint32(data[12:])) != uint64(len(data)) {
+		uint64(binary.LittleEndian.Uint32(data[12:])) != uint64(len(data)) {
 		return false
 	}
 
-	return true
+	wireVersion := binary.LittleEndian.Uint32(data[8:])
+
+	return wireVersion >= version && wireVersion <= boundsVersion
 }

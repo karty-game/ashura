@@ -5,15 +5,17 @@ package native
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/particledata"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 // Surface loss and zero-sized windows skip presentation, but one-shot compute
 // commands have already been accepted by the App and must still be submitted.
 // Empty schedules create no encoder and never wait for GPU completion.
-func (driver *computeBackend) submitComputeOnly(schedule []computedata.Dispatch) error {
-	if len(schedule) == 0 {
+func (driver *Driver) submitComputeOnly(frame render.Frame) error {
+	particles := driver.particleBridge != nil && particledata.HasWork(frame.Particles)
+	if len(frame.Compute) == 0 && !particles {
 		return nil
 	}
 
@@ -23,8 +25,14 @@ func (driver *computeBackend) submitComputeOnly(schedule []computedata.Dispatch)
 	}
 	defer encoder.Release()
 
-	if err := driver.recordCompute(encoder, schedule); err != nil {
+	if err := driver.recordCompute(encoder, frame.Compute); err != nil {
 		return err
+	}
+
+	if particles {
+		if err := driver.particleBridge.Simulate(encoder, frame.Particles); err != nil {
+			return err
+		}
 	}
 
 	driver.metrics.Step(diagnostics.ComputePhase)

@@ -7,7 +7,7 @@ import (
 	"errors"
 	"testing"
 
-	preparation "github.com/karty-game/karty-webgpu/internal/lightmapbuild"
+	preparation "github.com/karty-game/ashura/internal/lightmapbuild"
 )
 
 func TestProductionUVSharedPreparerConcurrentLifetime(t *testing.T) {

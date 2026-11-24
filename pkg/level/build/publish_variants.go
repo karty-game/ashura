@@ -2,7 +2,12 @@
 
 package levelbuild
 
-import "github.com/karty-game/karty-webgpu/pkg/assetbuild"
+import (
+	"strings"
+
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+)
 
 // PublishVariants emits separately selected GPU profiles from the same baked
 // inputs. Geometry, UV and matching texture payloads retain one publication owner.
@@ -82,4 +87,36 @@ func publishSharedFiles(plan *assetbuild.Plan, identity string, files map[string
 	}
 
 	return nil
+}
+
+// Update the reference and its publication path together, leaving the content
+// address and the codec action's reusable artifact intact.
+func placeProfileMaterials(page *publishedPage, profile *NativeTextureOptions) {
+	if profile == nil || !profile.ProfileMaterials {
+		return
+	}
+
+	directory := profileLevelDirectory(nativeHDRFamily(nativeTextureAlbedoProfile(*profile)))
+
+	for index := range page.Page.Materials {
+		material := &page.Page.Materials[index]
+		for _, ref := range [...]*leveldata.Ref{material.Albedo, material.SSBump} {
+			if ref != nil {
+				ref.Path = profileMaterialPath(directory, ref.Path)
+			}
+		}
+	}
+
+	for index := range page.Files {
+		ref := &page.Files[index].Reference
+		ref.Path = profileMaterialPath(directory, ref.Path)
+	}
+}
+
+func profileMaterialPath(directory, name string) string {
+	if relative, ok := strings.CutPrefix(name, "levels/textures/"); ok {
+		return directory + "/textures/" + relative
+	}
+
+	return name
 }

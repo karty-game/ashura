@@ -7,7 +7,7 @@ import (
 	"context"
 	"encoding/binary"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func patchBC1Level(ctx context.Context, width, height int, pixels, blocks []byte) error {

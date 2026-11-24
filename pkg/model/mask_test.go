@@ -6,9 +6,9 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
 )
 
 func TestMaskedPreparedModelBindsCoverageAndExactModelProvenance(t *testing.T) {

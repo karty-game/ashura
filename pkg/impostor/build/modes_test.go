@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	compiler "github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	impostorbuild "github.com/karty-game/karty-webgpu/pkg/impostor/build"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/impostordata"
+	compiler "github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	impostorbuild "github.com/karty-game/ashura/pkg/impostor/build"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
 )
 
 func TestPublicBakeDefaultsToOctahedralAndPreservesLegacyAngularSettings(t *testing.T) {

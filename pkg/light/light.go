@@ -2,8 +2,8 @@
 package light
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/render"
-	engine "github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/render"
+	engine "github.com/karty-game/ashura/pkg/engine"
 )
 
 const (

@@ -40,7 +40,7 @@ Process: []assetbuild.Plugin{
 
 These are fragments for an `assetbuild.Pipeline`. Import `assetbuild`,
 `modelbuild`, `levelbuild` and `meshbuild` from their corresponding
-`github.com/karty-game/karty-webgpu/pkg/` packages.
+`github.com/karty-game/ashura/pkg/` packages.
 
 ## Cleanup
 

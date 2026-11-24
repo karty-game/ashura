@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func main() {

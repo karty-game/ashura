@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 func fmtLayerError(reason string, value float64) error {

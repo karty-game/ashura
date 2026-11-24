@@ -5,7 +5,7 @@ package assetbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // CompressETC2RGB encodes authored opaque RGBA8 mips to native ETC2 RGB offline.

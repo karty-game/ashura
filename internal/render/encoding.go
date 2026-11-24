@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
+	"github.com/karty-game/ashura/internal/impostordata"
 )
 
 const (
@@ -36,31 +36,21 @@ const (
 	// LightmapBinding and LightmapSamplerBinding bind linear clamped irradiance.
 	LightmapBinding        = 6
 	LightmapSamplerBinding = 7
-	// StandardUniformSize is the Standard material's padded uniform layout.
-	StandardUniformSize = 560
-	// SourceUniformSize is the Source material's padded uniform layout.
-	SourceUniformSize = 544
+	// MaterialUniformSize is the padded layout shared in size by the scene materials.
+	MaterialUniformSize = 112
+	decalLayerOffset    = 96
+	// FrameUniformBinding is the shared camera/light buffer in each material group.
+	FrameUniformBinding = 8
+	// FrameUniformSize is a view matrix, camera/count vec4, and eight light records.
+	FrameUniformSize = 464
 	// MaxLights bounds both materials' light arrays.
-	MaxLights            = 8
-	standardHeaderFloats = 44
-	sourceHeaderFloats   = 40
-	standardLightFloats  = 12
-	sourceLightFloats    = 12
-	floatSize            = 4
+	MaxLights        = 8
+	frameLightOffset = 20
+	lightFloats      = 12
+	floatSize        = 4
 )
 
-// AppendInstances encodes instance matrices as vertex-step GPU attributes.
 const diffuseLightmapMarker = 2
-
-func AppendInstances(data []byte, instances []InstanceTransform) []byte {
-	for _, instance := range instances {
-		for _, value := range instance.Model {
-			data = appendFloat(data, value)
-		}
-	}
-
-	return data
-}
 
 // AppendVertices encodes the common object-space vertex format without lighting.
 func AppendVertices(data []byte, vertices []Vertex) []byte {
@@ -81,117 +71,95 @@ func AppendVertices(data []byte, vertices []Vertex) []byte {
 	return data
 }
 
-// UniformSize returns the material-specific uniform buffer size.
-func UniformSize(source bool) uint32 {
-	if source {
-		return SourceUniformSize
-	}
-
-	return StandardUniformSize
-}
-
-// Uniforms encodes a draw without allocating. Only UniformSize(draw.Source)
-// bytes are uploaded; the fixed return array fits either material layout.
-func Uniforms(draw DrawCall, frame Frame) [StandardUniformSize]byte {
-	var values [StandardUniformSize / floatSize]float32
-	copy(values[:16], frame.ViewProjection[:])
-	copy(values[20:24], draw.Color[:])
-
-	header, stride := standardHeaderFloats, standardLightFloats
-
+// Uniforms encodes only the material data owned by one draw.
+func Uniforms(draw DrawCall) [MaterialUniformSize]byte {
+	var values [decalLayerOffset / floatSize]float32
 	if draw.Source {
-		sourceUniforms(&values, draw, frame)
-
-		header, stride = sourceHeaderFloats, sourceLightFloats
+		sourceUniforms(&values, draw)
 	} else {
-		standardUniforms(&values, draw, frame)
+		standardUniforms(&values, draw)
 	}
 
-	for index, light := range frame.Lights[:min(len(frame.Lights), MaxLights)] {
-		offset := header + index*stride
-		copy(values[offset:offset+3], light.Direction[:])
-		values[offset+3] = float32(light.Kind)
-		copy(values[offset+4:offset+7], light.Color[:])
+	var data [MaterialUniformSize]byte
+	encodeUniform(data[:], values[:])
 
-		values[offset+7] = light.Intensity
-		if !draw.Source || light.Kind == PointLightKind {
-			copy(values[offset+8:offset+11], light.GroundColor[:])
-		}
-	}
-
-	var data [StandardUniformSize]byte
-	for index, value := range values[:UniformSize(draw.Source)/floatSize] {
-		binary.LittleEndian.PutUint32(data[index*floatSize:], math.Float32bits(value))
+	if draw.Impostor == nil {
+		binary.LittleEndian.PutUint32(data[decalLayerOffset:], draw.DecalLayers)
 	}
 
 	return data
 }
 
-// standardUniforms packs camera, roughness, normal and AO settings only.
-func standardUniforms(values *[StandardUniformSize / floatSize]float32, draw DrawCall, frame Frame) {
-	copy(values[16:19], frame.CameraPosition[:])
-	values[19] = float32(min(len(frame.Lights), MaxLights))
+func standardUniforms(values *[decalLayerOffset / floatSize]float32, draw DrawCall) {
+	copy(values[:4], draw.Color[:])
 
 	if draw.Impostor != nil {
 		if draw.Impostor.Mode == impostordata.ModeOctahedral {
-			copy(values[24:28], draw.ImpostorQuality[:])
+			copy(values[4:8], draw.ImpostorQuality[:])
 		}
 
 		return
 	}
 
-	values[24] = draw.Roughness
+	values[4] = draw.Roughness
 	if draw.Normal != nil {
-		values[25] = draw.NormalStrength
+		values[5] = draw.NormalStrength
 	}
 
-	values[26], values[27] = draw.UVScale[0], draw.UVScale[1]
+	values[6], values[7] = draw.UVScale[0], draw.UVScale[1]
 	if draw.AO != nil {
-		values[28] = draw.AOStrength
+		values[8] = draw.AOStrength
 	}
 
-	values[29] = draw.ReflectionStrength
+	values[9] = draw.ReflectionStrength
 	if draw.Lightmap != nil {
-		values[30] = draw.LightmapScale
+		values[10] = draw.LightmapScale
 		if draw.LightmapDiffuse {
-			values[35] = diffuseLightmapMarker + float32(draw.LightmapEncoding)
+			values[15] = diffuseLightmapMarker + float32(draw.LightmapEncoding)
 		}
 	}
 
 	if draw.LightmapDebug {
-		values[31] = 1
+		values[11] = 1
 	}
 
-	copy(values[32:35], draw.ProbeOrigin[:])
-	copy(values[36:39], draw.ProbeMinimum[:])
+	copy(values[12:15], draw.ProbeOrigin[:])
+	copy(values[16:19], draw.ProbeMinimum[:])
 
 	if draw.AlphaMask {
-		values[39], values[43] = draw.AlphaCutoff, 1
+		values[19], values[23] = draw.AlphaCutoff, 1
 	}
 
-	copy(values[40:43], draw.ProbeMaximum[:])
+	copy(values[20:23], draw.ProbeMaximum[:])
 }
 
 // sourceUniforms packs RNM/SSBump settings without Standard shading parameters.
-func sourceUniforms(values *[StandardUniformSize / floatSize]float32, draw DrawCall, frame Frame) {
-	values[16] = float32(min(len(frame.Lights), MaxLights))
+func sourceUniforms(values *[decalLayerOffset / floatSize]float32, draw DrawCall) {
+	copy(values[4:8], draw.Color[:])
+
 	if draw.Normal != nil {
-		values[17] = draw.SSBumpStrength
+		values[1] = draw.SSBumpStrength
 	}
 
 	if draw.HalfLambert {
-		values[18] = 1
+		values[2] = 1
 	}
 
 	if draw.RNM[0] != nil {
-		values[19] = draw.RNMScale
-		values[26] = float32(draw.RNMEncoding)
+		values[3] = draw.RNMScale
+		values[10] = float32(draw.RNMEncoding)
 	}
 
-	values[24], values[25] = draw.UVScale[0], draw.UVScale[1]
+	values[8], values[9] = draw.UVScale[0], draw.UVScale[1]
 	for index, color := range draw.AmbientColors {
-		const ambientOffset = 28
+		const ambientOffset = 12
 		copy(values[ambientOffset+index*floatSize:ambientOffset+(index+1)*floatSize], color[:])
+	}
+}
+
+func encodeUniform(data []byte, values []float32) {
+	for index, value := range values {
+		binary.LittleEndian.PutUint32(data[index*floatSize:], math.Float32bits(value))
 	}
 }
 

@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/levelpack"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/levelpack"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func discoverConsolidatedChunks(
@@ -183,7 +183,7 @@ func storeConsolidatedPage(ctx *assetbuild.Context, atlas levelpack.Output, shar
 		},
 	}
 
-	geometry, err := modeldata.Encode(atlas.Model)
+	geometry, err := modeldata.EncodeWithBounds(atlas.Model)
 	if err != nil {
 		return output, err
 	}
@@ -295,7 +295,7 @@ func addConsolidation(
 ) ([]assetbuild.Ref, error) {
 	return options.sharedAtlases.add(plan, assetbuild.Action{
 		Parallel: true,
-		ID:       "level/consolidate/" + resourceID + "/" + chunkID, Processor: "level-atlas", Revision: "charts-materials@2",
+		ID:       "level/consolidate/" + resourceID + "/" + chunkID, Processor: "level-atlas", Revision: "charts-materials@3",
 		Artifacts: artifacts,
 		Options: struct {
 			Maximum     uint32

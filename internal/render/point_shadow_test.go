@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func pointFixture() render.Light {
@@ -57,7 +57,7 @@ func TestPointShadowCacheTracksCastersAndIgnoresCameraAndRadiance(t *testing.T) 
 	frame := render.Frame{Draws: []render.DrawCall{{ID: 1, Vertices: []render.Vertex{{}, {}, {}}, Indices: []uint32{0, 1, 2}}}}
 
 	var state render.PointShadowState
-	if !state.Update(frame, light) || state.Update(frame, light) {
+	if state.Update(frame, light) == 0 || state.Update(frame, light) != 0 {
 		t.Fatal("first/unchanged shadow cache incorrect")
 	}
 
@@ -67,49 +67,52 @@ func TestPointShadowCacheTracksCastersAndIgnoresCameraAndRadiance(t *testing.T) 
 	light.Color[0] = .2
 
 	light.ShadowBias = .03
-	if state.Update(frame, light) {
+	if state.Update(frame, light) != 0 {
 		t.Fatal("camera/radiance/comparison-only changes invalidate cached depth")
 	}
 
 	frame.Draws[0].Transform[12] = 1
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("moving caster did not invalidate")
 	}
 
 	frame.Draws[0].InstanceVersion++
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("instance change did not invalidate")
 	}
 
 	light.Direction[2]++
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("moving light did not invalidate")
 	}
 
 	frame.Draws = nil
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("removed caster left stale shadow")
 	}
 
-	if state.Update(frame, light) {
+	if state.Update(frame, light) != 0 {
 		t.Fatal("empty unchanged scene repeatedly invalidates")
 	}
 
 	state.Invalidate()
 
-	if !state.Update(frame, light) {
+	if state.Update(frame, light) == 0 {
 		t.Fatal("recreated depth was treated as populated")
 	}
 }
 
-func TestPointShadowFacesProjectOntoCubeConvention(t *testing.T) {
+func TestPointShadowFacesCoverWorldDirections(t *testing.T) {
 	t.Parallel()
 
 	light := pointFixture()
 
+	var state render.PointShadowState
+	state.Update(render.Frame{}, light)
+
 	directions := [6][3]float32{{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}}
 	for face, dir := range directions {
-		packed := render.PointShadowFaceUniform(light, face)
+		packed := state.FaceUniform(face)
 
 		var matrix [16]float32
 		for i := range matrix {
@@ -162,6 +165,12 @@ func TestPointShadowFacesProjectOntoCubeConvention(t *testing.T) {
 			}
 
 			clip = project(p)
+
+			const guard = 1.04
+
+			clip[0] *= guard
+
+			clip[1] *= guard
 			if math.Abs(float64(clip[0]-coordinate[0])) > 1e-4 || math.Abs(float64(-clip[1]-coordinate[1])) > 1e-4 {
 				t.Fatalf("face %d cube coordinate %v projected %v", face, coordinate, clip)
 			}
@@ -172,21 +181,18 @@ func TestPointShadowFacesProjectOntoCubeConvention(t *testing.T) {
 func TestPointUniformStateTracksRangeAndSourcePosition(t *testing.T) {
 	t.Parallel()
 
-	for _, source := range []bool{false, true} {
-		draw := render.DrawCall{Source: source}
-		frame := render.Frame{Lights: []render.Light{pointFixture()}}
+	frame := render.Frame{Lights: []render.Light{pointFixture()}}
 
-		var state render.UniformState
-		state.Update(draw, frame)
+	var state render.FrameUniformState
+	state.Update(frame)
 
-		frame.Lights[0].GroundColor[0] = 10
-		if !state.Update(draw, frame) {
-			t.Fatalf("source=%v range change did not upload", source)
-		}
+	frame.Lights[0].GroundColor[0] = 10
+	if !state.Update(frame) {
+		t.Fatal("point light range change did not upload")
+	}
 
-		frame.Lights[0].Direction[1]++
-		if !state.Update(draw, frame) {
-			t.Fatalf("source=%v position change did not upload", source)
-		}
+	frame.Lights[0].Direction[1]++
+	if !state.Update(frame) {
+		t.Fatal("point light position change did not upload")
 	}
 }

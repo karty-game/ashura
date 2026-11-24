@@ -10,10 +10,29 @@ import (
 	"os"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 var errTextureArgs = errors.New("usage: engine assets texture --input source.png --output prepared.ktx2 --usage albedo|normal|ao|ssbump")
+
+func runAssetCommand(ctx context.Context, command string, args []string) error {
+	switch command {
+	case "generate":
+		return runAssetCatalog(ctx, args, assetbuild.PhaseGenerate)
+	case "inspect":
+		return inspectAssets(ctx, args, os.Stdout)
+	case "model":
+		return buildModel(args)
+	case "lightmap":
+		return buildLightmap(ctx, args)
+	case buildCommand:
+		return buildAssetCatalog(ctx, args)
+	case "texture":
+		return buildTexture(args)
+	default:
+		return errUsage
+	}
+}
 
 func buildTexture(args []string) error {
 	flags := flag.NewFlagSet("assets texture", flag.ContinueOnError)

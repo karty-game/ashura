@@ -63,10 +63,6 @@ fn sampledDirect(id:u32){
 }
 fn consumeShadow(p:u32){if lpath.data[pathAddress(p+55u)]==0u{return;}lpath.data[pathAddress(p+55u)]=0u;lmCountRay(p,true);if occluded(pv(p+48u),pv(p+52u),pf(p+51u)){return;}if lp.spare0.y>0u{accumulateResponses(p,pv(p+116u),pv(p+120u),pf(p+119u));return;}for(var k=0u;k<4u;k++){let at=p+72u+k*3u;psv(at,pv(at)+pv(p+56u+k*3u));}let lmDiagnostic=p+84u+lpath.data[pathAddress(p+111u)]*4u;psv(lmDiagnostic,pv(lmDiagnostic)+pv(p+56u));}
 
-@compute @workgroup_size(64)
-fn lm_select(@builtin(global_invocation_id) invocation:vec3u){lmTraceLane=invocation.x%64u;let id=activeOwner(invocation.x);if id==LM_NONE{return;}let p=id*pathStride();if lpath.data[pathAddress(p+3u)]==0u{return;}let selection=selectLight(pv(p),randomDimension(id,lpath.data[pathAddress(p+7u)],3u));prepareLight(id,u32(selection.x),selection.y);}
-@compute @workgroup_size(64)
-fn lm_shadow(@builtin(global_invocation_id) invocation:vec3u){lmTraceLane=invocation.x%64u;let id=activeOwner(invocation.x);if id==LM_NONE{return;}consumeShadow(id*pathStride());}
 // The exhaustive mode is an explicit correctness oracle, never production
 // hierarchy selection. Keeping it separate avoids a hidden production scan.
 @compute @workgroup_size(64)

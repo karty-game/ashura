@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapper"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/internal/lightmapper"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 type productionResume struct {

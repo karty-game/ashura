@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/karty-game/karty-webgpu/internal/uipaint"
+import "github.com/karty-game/ashura/internal/uipaint"
 
 // ImageFit controls how an unsliced panel image fits its bounds.
 type ImageFit uint8

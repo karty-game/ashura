@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 // CompressRGBERNM decodes Karty RGBE numerics offline into normalized linear

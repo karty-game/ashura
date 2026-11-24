@@ -5,9 +5,9 @@ package assetbuild
 import (
 	"context"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // CompressBC7 encodes authored RGBA8 mip levels to GPU-ready BC7 KTX2 offline.

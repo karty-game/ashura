@@ -3,8 +3,8 @@ package engine
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 //nolint:paralleltest // AllocsPerRun must remain isolated on Go 1.27 and TinyGo.

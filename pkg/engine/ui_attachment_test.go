@@ -3,8 +3,8 @@ package engine
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/uihost"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/internal/uihost"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 // Frame tests exercise UI without creating a window or importing the optional

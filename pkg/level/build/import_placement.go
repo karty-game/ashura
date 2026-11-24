@@ -5,9 +5,9 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
 )
 
 func (state *levelImportState) importPlacement(

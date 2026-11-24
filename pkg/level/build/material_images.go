@@ -5,7 +5,7 @@ package levelbuild
 import (
 	"encoding/json"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func readSSBump(ctx *assetbuild.Context, resource assetbuild.Resource, schema string) (assetbuild.Artifact, error) {

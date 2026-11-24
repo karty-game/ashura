@@ -37,6 +37,16 @@ func (driver *Driver) ensureTargets() error {
 }
 
 func (driver *Driver) createAttachment(format string) (js.Value, js.Value, error) {
+	usage := textureUsageRenderAttachment
+
+	flags := js.Global().Get("GPUTextureUsage")
+	if !flags.IsUndefined() && !flags.IsNull() {
+		transient := flags.Get("TRANSIENT_ATTACHMENT")
+		if transient.Type() == js.TypeNumber {
+			usage |= transient.Int()
+		}
+	}
+
 	texture := driver.device.Call(
 		"createTexture",
 		jsObject(
@@ -45,7 +55,7 @@ func (driver *Driver) createAttachment(format string) (js.Value, js.Value, error
 					map[string]any{widthProperty: driver.canvasWidth, heightProperty: driver.canvasHeight, depthOrArrayLayersProperty: 1},
 				),
 				formatProperty: format,
-				usageProperty:  textureUsageRenderAttachment,
+				usageProperty:  usage,
 				"sampleCount":  driver.sampleCount,
 			},
 		),

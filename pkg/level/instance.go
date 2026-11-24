@@ -1,9 +1,9 @@
 package level
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
 )
 
 // PresentationRangesPerStep bounds newly visible prebuilt material ranges per
@@ -89,19 +89,7 @@ func (instance *Instance) PresentNext() (bool, error) {
 
 	instance.models = append(instance.models, modelInstance)
 	for offset, entity := range modelInstance.Entities() {
-		if len(page.standard) > 0 {
-			if err = instance.world.Set(entity, page.standard[instance.nextPart+offset]); err != nil {
-				instance.Remove()
-
-				return true, err
-			}
-
-			continue
-		}
-
-		engine.RemoveComponent[material.Material](instance.world, entity)
-
-		if err = instance.world.Set(entity, page.materials[instance.nextPart+offset]); err != nil {
+		if err = instance.bindPagePart(page, entity, instance.nextPart+offset); err != nil {
 			instance.Remove()
 
 			return true, err
@@ -134,9 +122,25 @@ func (instance *Instance) Remove() {
 		modelInstance.Remove()
 	}
 
+	instance.decals.Remove()
+	instance.decals = nil
 	delete(instance.chunk.instances, instance)
 	instance.models = nil
 	instance.chunk = nil
 	instance.world = nil
 	instance.presenting = false
+}
+
+func (instance *Instance) bindPagePart(page loadedPage, entity engine.Entity, index int) error {
+	if err := instance.bindDecalReceiver(entity); err != nil {
+		return err
+	}
+
+	if len(page.standard) > 0 {
+		return instance.world.Set(entity, page.standard[index])
+	}
+
+	engine.RemoveComponent[material.Material](instance.world, entity)
+
+	return instance.world.Set(entity, page.materials[index])
 }

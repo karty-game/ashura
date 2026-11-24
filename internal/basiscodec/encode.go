@@ -47,6 +47,20 @@ func (image Image) validate() bool {
 // Encode creates a KTX2 UASTC LDR/HDR intermediate. ETC1S explicitly selects
 // its 1..255 codebook quality; other profiles accept search effort 0..4.
 func (session *Session) Encode(ctx context.Context, image Image, quality int, etc1s bool) (output []byte, err error) {
+	return session.encode(ctx, image, quality, etc1s, 0)
+}
+
+// EncodeASTC6x6 writes native ASTC LDR blocks offline using the pinned encoder.
+// Authored mip levels and all four channels are retained; effort is 0..4.
+func (session *Session) EncodeASTC6x6(ctx context.Context, image Image, effort int) ([]byte, error) {
+	if image.HDR || image.Width%6 != 0 || image.Height%6 != 0 {
+		return nil, ErrInvalid
+	}
+
+	return session.encode(ctx, image, effort, false, 23)
+}
+
+func (session *Session) encode(ctx context.Context, image Image, quality int, etc1s bool, nativeFormat uint64) (output []byte, err error) {
 	if !image.validate() || etc1s && (image.HDR || quality < 1 || quality > 255) || !etc1s && (quality < 0 || quality > 4) {
 		return nil, ErrInvalid
 	}
@@ -84,20 +98,9 @@ func (session *Session) Encode(ctx context.Context, image Image, quality int, et
 			}
 		}
 
-		format, flags := uint64(1), uint64(1<<11)|uint64(quality)
-		if image.HDR {
-			format = 2
-		}
+		format, effort, flags := encodeSettings(image, quality, etc1s, nativeFormat)
 
-		if etc1s {
-			format = 0
-		}
-
-		if image.SRGB {
-			flags |= 1 << 13
-		}
-
-		if guest.call("compress_texture", parameters, format, math.MaxUint32, math.MaxUint32, flags, 0) == 0 {
+		if guest.call("compress_texture", parameters, format, math.MaxUint32, effort, flags, 0) == 0 {
 			return ErrInvalid
 		}
 
@@ -113,4 +116,25 @@ func (session *Session) Encode(ctx context.Context, image Image, quality int, et
 	}
 
 	return output, nil
+}
+
+func encodeSettings(image Image, quality int, etc1s bool, nativeFormat uint64) (format, effort, flags uint64) {
+	format, effort, flags = 1, math.MaxUint32, uint64(1<<11)|uint64(quality)
+	if image.HDR {
+		format = 2
+	}
+
+	if etc1s {
+		format = 0
+	}
+
+	if image.SRGB {
+		flags |= 1 << 13
+	}
+
+	if nativeFormat != 0 {
+		format, effort = nativeFormat, uint64(quality)
+	}
+
+	return format, effort, flags
 }

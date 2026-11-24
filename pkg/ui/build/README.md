@@ -1,9 +1,8 @@
 # Prepared UI assets
 
-`ui/build` is a host-only plugin for the project asset pipeline. Keep individual
-PNG/JPEG files as authoring inputs; the existing `assetbuild.Atlas` plugin packs
-them offline. `ui/build.Images` publishes the UI-specific GPU-ready payloads and
-typed image catalog.
+`ui/build` prepares authored PNG and JPEG artwork offline. `uibuild.Atlas`
+imports the images, packs the selected group, and emits GPU-ready pages with
+a typed UI catalog.
 
 ```go
 //go:build ignore
@@ -11,33 +10,25 @@ typed image catalog.
 package main
 
 import (
-    "github.com/karty-game/karty-webgpu/pkg/assetbuild"
-    uibuild "github.com/karty-game/karty-webgpu/pkg/ui/build"
+    "github.com/karty-game/ashura/pkg/assetbuild"
+    uibuild "github.com/karty-game/ashura/pkg/ui/build"
 )
 
 func main() {
-    assetbuild.Main(func(assetbuild.Environment) assetbuild.Config {
-        return assetbuild.Config{
-            Output: "generated/assets",
-            Pipelines: []assetbuild.Pipeline{{
-                Name: "ui", Input: []string{"assets/**"},
-                Import: []assetbuild.Plugin{assetbuild.Images()},
-                Process: []assetbuild.Plugin{assetbuild.Atlas(assetbuild.AtlasOptions{
-                    Name: "ui", Include: []string{"ui/**"}, Clamp: true,
-                    MaxSize: 1024, Padding: 2,
-                })},
-                Output: []assetbuild.Plugin{uibuild.Images()},
-            }},
-        }
+    assetbuild.Run(assetbuild.Config{
+        Output: "generated/assets",
+        Pipelines: []assetbuild.Pipeline{
+            uibuild.Atlas(uibuild.AtlasOptions{Name: "ui", Include: "ui/**", MaxSize: 512, Padding: 2}),
+        },
     })
 }
 ```
 
-Put the recipe in `asset.config.go`. `engine run web` and `engine assets build`
-run it before compiling the game. `Resize` may precede `Atlas` when appropriate;
-9-slice source border cuts must use the resulting image dimensions. The UI
-consumer requires a single albedo RGBA8 level, so omit `Mipmaps`, `KTX2` and
-`GoCatalog` for these images. Repeating material textures are not UI atlases.
+Put the recipe in `asset.config.go`. `engine assets generate` runs it directly,
+and `engine run web` runs it before compiling the game. For custom input roots
+or resizing, compose the explicit image stages and use `uibuild.Images()` as
+the publisher. Nine-slice border cuts use the resulting image dimensions. The
+UI publisher consumes one albedo RGBA8 level per image or page.
 
 For `assets/ui/gold-frame.png`, the generated runtime API is:
 
@@ -87,9 +78,8 @@ color. Independent Go outline coverage provides regression evidence.
 
 One operation owns a bounded instance; cancellation returns no partial pair.
 Warm-cache reuse initializes no module. The runtime uses prepared glyphs and
-performs no rasterization or packing. The [library provenance and limits](../../../internal/msdfcodec/third_party/README.md)
-and [Decision 15](../../../spec/decisions/0015-portable-offline-libraries.md)
-record the implementation and qualification limits.
+performs no rasterization or packing. See the embedded font module's
+[provenance and limits](../../../internal/msdfcodec/third_party/README.md).
 
 The bundled font owns a normal `asset.config.go` recipe with `Output: "prepared"`
 and one pipeline whose output is `uibuild.DefaultFont()`. The bundled font keeps

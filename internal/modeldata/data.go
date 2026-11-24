@@ -5,6 +5,8 @@ package modeldata
 import (
 	"errors"
 	"math"
+
+	"github.com/karty-game/ashura/internal/meshdata"
 )
 
 const (
@@ -16,6 +18,8 @@ const (
 	maxText         = 4096
 	version         = 1
 	maskVersion     = 2
+	boundsVersion   = 3
+	boundsWords     = 6
 	maskWords       = 2
 	headerSize      = 24
 	wordSize        = 4
@@ -62,6 +66,7 @@ type Part struct {
 	Name              string
 	Vertices, Indices []byte
 	Material          Material
+	Bounds            meshdata.Bounds
 }
 
 // Document contains prepared parts and shared immutable textures.
@@ -102,11 +107,17 @@ func validTexture(index int32, role TextureRole, textures []Texture) bool {
 }
 
 func documentVersion(document Document) uint32 {
+	result := uint32(version)
+
 	for _, part := range document.Parts {
+		if part.Bounds.Valid {
+			return boundsVersion
+		}
+
 		if part.Material.AlphaMask {
-			return maskVersion
+			result = maskVersion
 		}
 	}
 
-	return version
+	return result
 }

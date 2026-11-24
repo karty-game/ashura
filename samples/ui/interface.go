@@ -4,7 +4,7 @@ package main
 import (
 	"unicode/utf8"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func buildInterface(art artwork, check func(error)) (*ui.Node, func(*ui.View)) {

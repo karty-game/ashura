@@ -1,0 +1,394 @@
+{
+  "duration": 2.5,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 64,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 26
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "motes-rising",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 1.8,
+          "min": 1.2,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 5,
+          "min": 3,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 55,
+          "min": 25,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "motes-rising",
+      "noise": {
+        "frequency": 0.02,
+        "octaves": 1,
+        "scrollSpeed": 0.25,
+        "strength": {
+          "mode": "constant",
+          "value": 12
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.5,
+              "g": 1,
+              "r": 0.4,
+              "t": 0
+            },
+            {
+              "a": 0.9,
+              "b": 0.7,
+              "g": 1,
+              "r": 0.6,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.9,
+              "g": 1,
+              "r": 0.9,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.6
+            },
+            {
+              "t": 0.3,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.4
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 45,
+        "spread": 24
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-hard"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 16,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 8
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "plus-glints",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 1.2,
+          "min": 0.8,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 90
+        },
+        "size": {
+          "max": 12,
+          "min": 8,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 50,
+          "min": 30,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "plus-glints",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.9,
+              "g": 1,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 0.9,
+              "b": 0.9,
+              "g": 1,
+              "r": 1,
+              "t": 0.2
+            },
+            {
+              "a": 0.8,
+              "b": 0.7,
+              "g": 1,
+              "r": 0.7,
+              "t": 0.8
+            },
+            {
+              "a": 0,
+              "b": 0.6,
+              "g": 1,
+              "r": 0.6,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 45,
+        "spread": 24
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 12,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 4
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "base-glow",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 2.2,
+          "min": 1.5,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 100,
+          "min": 70,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 0,
+          "min": 0,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "base-glow",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.4,
+              "g": 0.8,
+              "r": 0.3,
+              "t": 0
+            },
+            {
+              "a": 0.25,
+              "b": 0.5,
+              "g": 0.9,
+              "r": 0.4,
+              "t": 0.4
+            },
+            {
+              "a": 0,
+              "b": 0.4,
+              "g": 0.7,
+              "r": 0.3,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeInOut",
+              "t": 0,
+              "v": 0.7
+            },
+            {
+              "t": 0.5,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.7
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "kind": "point"
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Healing aura",
+    "notes": "Prewarmed motes rise above a base glow with authored gravity and drag."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 15
+}

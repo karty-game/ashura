@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/internal/uipaint"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func reviewChartData() ui.ChartData {

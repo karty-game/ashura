@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 var errUpdateFixture = errors.New("update fixture failed")

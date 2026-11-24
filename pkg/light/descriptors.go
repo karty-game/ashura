@@ -1,6 +1,6 @@
 package light
 
-import "github.com/karty-game/karty-webgpu/pkg/engine"
+import "github.com/karty-game/ashura/pkg/engine"
 
 var (
 	_ engine.LightProvider = Hemisphere{}

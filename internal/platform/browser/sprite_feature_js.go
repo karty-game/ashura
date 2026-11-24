@@ -5,8 +5,8 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 type spriteBackend interface {

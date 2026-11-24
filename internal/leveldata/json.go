@@ -124,7 +124,7 @@ func canonicalJSONKey(name string) bool {
 		"id", "space", "cell", "origin", "min", "max", "sources", "pages",
 		"geometry", "uv", "materials", "maps", "scale", "encoding", "representation", "preview", "storage", "width", "height",
 		"name", "color", "doubleSided", "albedo", "albedoEncoding", "ssbump", "path", "size", "sha256",
-		"saveId", "model", "isDynamic", "transform", "asset", "bakeInputs":
+		"saveId", "model", "isDynamic", "transform", "asset", "bakeInputs", "bundle", "file", "entries", "offset":
 		return true
 	default:
 		return false

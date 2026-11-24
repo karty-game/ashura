@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	meshbuild "github.com/karty-game/karty-webgpu/pkg/mesh/build"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	meshbuild "github.com/karty-game/ashura/pkg/mesh/build"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
 )
 
 var errFixtureModelCount = errors.New("expected one final prepared model")

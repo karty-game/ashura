@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func splitPage(pageIndex int, meshes []pageMesh, charts uint32) (Page, error) {

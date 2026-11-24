@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/internal/lightmapkernel"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	lightmapbuild "github.com/karty-game/karty-webgpu/pkg/lightmap/build"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/internal/lightmapkernel"
+	"github.com/karty-game/ashura/pkg/lightmap"
+	lightmapbuild "github.com/karty-game/ashura/pkg/lightmap/build"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // transportFixture independently integrates the tiny fixture's one analytic

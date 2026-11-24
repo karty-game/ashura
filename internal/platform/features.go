@@ -14,6 +14,9 @@ const (
 	PointShadowFeature
 	SpriteFeature
 	ComputeFeature
+	ClusteredLightsFeature
+	ParticleFeature
+	DecalFeature
 )
 
 var (
@@ -30,10 +33,10 @@ type Feature struct {
 }
 
 type FeatureConfig struct{ PointShadowResolution uint32 }
-type FeatureMask uint8
+type FeatureMask uint16
 
 func (mask FeatureMask) Has(kind FeatureKind) bool {
-	return kind >= StandardFeature && kind <= ComputeFeature && mask&(1<<(kind-1)) != 0
+	return kind >= StandardFeature && kind <= DecalFeature && mask&(1<<(kind-1)) != 0
 }
 
 // ValidateFeatures checks the complete registration batch before mutation.
@@ -41,7 +44,7 @@ func ValidateFeatures(existing FeatureMask, features []Feature) (FeatureMask, er
 	mask := existing
 
 	for _, feature := range features {
-		if feature.Kind < StandardFeature || feature.Kind > ComputeFeature || feature.Install == nil {
+		if feature.Kind < StandardFeature || feature.Kind > DecalFeature || feature.Install == nil {
 			return existing, ErrFeatureInvalid
 		}
 
@@ -66,8 +69,16 @@ func ValidateConfigFeatures(config Config) error {
 		return fmt.Errorf("%s: %w", PointShadowFeature, ErrFeatureMissing)
 	}
 
+	if mask.Has(ClusteredLightsFeature) && !mask.Has(StandardFeature) && !mask.Has(SourceFeature) {
+		return fmt.Errorf("clustered lights require a Standard or Source renderer: %w", ErrFeatureMissing)
+	}
+
 	if mask.Has(PointShadowFeature) && !mask.Has(StandardFeature) && !mask.Has(SourceFeature) {
 		return fmt.Errorf("point shadows require a Standard or Source renderer: %w", ErrFeatureMissing)
+	}
+
+	if mask.Has(DecalFeature) && !mask.Has(StandardFeature) && !mask.Has(SourceFeature) {
+		return fmt.Errorf("decals require a Standard or Source renderer: %w", ErrFeatureMissing)
 	}
 
 	return nil
@@ -87,9 +98,24 @@ func (kind FeatureKind) String() string {
 		return "sprites"
 	case ComputeFeature:
 		return "compute"
+	case ClusteredLightsFeature:
+		return "clustered lights"
+	case ParticleFeature:
+		return "particles"
+	case DecalFeature:
+		return "decals"
 	}
 
 	return "unknown feature"
+}
+
+// InstallLightingFeature prepares the opt-in material shader variant and its resources.
+func InstallLightingFeature(host any, features []Feature, config FeatureConfig) error {
+	if err := installFeatures(host, features, config, ClusteredLightsFeature, ClusteredLightsFeature); err != nil {
+		return err
+	}
+
+	return installFeatures(host, features, config, DecalFeature, DecalFeature)
 }
 
 // Materials precede shared shadow sampling; other optional implementations follow.
@@ -98,7 +124,11 @@ func InstallMaterialFeatures(host any, features []Feature, config FeatureConfig)
 }
 
 func InstallOptionalFeatures(host any, features []Feature, config FeatureConfig) error {
-	return installFeatures(host, features, config, PointShadowFeature, ComputeFeature)
+	if err := installFeatures(host, features, config, PointShadowFeature, ComputeFeature); err != nil {
+		return err
+	}
+
+	return installFeatures(host, features, config, ParticleFeature, ParticleFeature)
 }
 
 func installFeatures(host any, features []Feature, config FeatureConfig, first, last FeatureKind) error {

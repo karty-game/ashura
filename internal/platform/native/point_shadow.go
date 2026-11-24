@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 type gpuPointShadow struct {
 	resolution    uint32
 	image         *wgpu.Texture
-	cube          *wgpu.TextureView
+	layers        *wgpu.TextureView
 	sampleUniform *wgpu.Buffer
 	sampler       *wgpu.Sampler
 	sampleGroups  [4]*wgpu.BindGroup
@@ -69,9 +69,9 @@ func (driver *Driver) initPointShadow(resolution uint32) error {
 		return fmt.Errorf("create point shadow: %w", err)
 	}
 
-	shadow.cube, err = shadow.image.CreateView(
+	shadow.layers, err = shadow.image.CreateView(
 		&wgpu.TextureViewDescriptor{
-			Dimension:       gputypes.TextureViewDimensionCube,
+			Dimension:       gputypes.TextureViewDimension2DArray,
 			MipLevelCount:   1,
 			ArrayLayerCount: render.PointShadowFaces,
 		},
@@ -125,7 +125,7 @@ func (driver *Driver) initPointShadowSampleBindings(shadow *gpuPointShadow) erro
 				Entries: []wgpu.BindGroupEntry{
 					{Binding: 0, Buffer: shadow.sampleUniform, Size: render.PointShadowSampleSize},
 					{Binding: 1, Sampler: shadow.sampler},
-					{Binding: pointShadowTextureBinding, TextureView: shadow.cube},
+					{Binding: pointShadowTextureBinding, TextureView: shadow.layers},
 				},
 			},
 		)
@@ -154,6 +154,10 @@ func (driver *Driver) bindPointShadow(pass *wgpu.RenderPassEncoder, draw render.
 	}
 
 	pass.SetBindGroup(1, driver.pointShadow.sampleGroups[variant], nil)
+
+	if driver.clusteredLights != nil {
+		pass.SetBindGroup(2, driver.clusteredLights.materials[variant], nil)
+	}
 }
 
 func (shadow *gpuPointShadow) release() {
@@ -171,8 +175,8 @@ func (shadow *gpuPointShadow) release() {
 		shadow.sampler.Release()
 	}
 
-	if shadow.cube != nil {
-		shadow.cube.Release()
+	if shadow.layers != nil {
+		shadow.layers.Release()
 	}
 
 	if shadow.image != nil {

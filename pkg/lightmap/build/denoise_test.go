@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestDenoiseConstantAndNoisyIndirect(t *testing.T) {

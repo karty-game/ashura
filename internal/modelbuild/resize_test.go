@@ -7,11 +7,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
-	"github.com/karty-game/karty-webgpu/pkg/texture/ktx2"
+	"github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/texture"
+	"github.com/karty-game/ashura/pkg/texture/ktx2"
 )
 
 func TestTextureCapPreservesGeometryRolesAndSource(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 // Span describes an aligned byte interval to upload. Intervals never include
@@ -107,8 +107,6 @@ func (state *InstanceState) encode(draw DrawCall, index int) {
 
 type uniformKey struct {
 	impostorQuality               [4]float32
-	view                          [16]float32
-	camera                        [3]float32
 	color                         [4]float32
 	uv                            [2]float32
 	probeOrigin, probeMinimum     [3]float32
@@ -124,54 +122,39 @@ type uniformKey struct {
 	lightmapDebug                 bool
 	source, halfLambert           bool
 	ambient                       [3][4]float32
-	lights                        [MaxLights]Light
-	lightCount                    int
 }
 
-// UniformState skips encoding and uploading unchanged material/frame records.
-// Model transforms are vertex attributes and never invalidate material uniforms.
+// UniformState skips encoding and uploading unchanged material records.
 type UniformState struct {
 	key   uniformKey
-	Data  [StandardUniformSize]byte
+	Data  [MaterialUniformSize]byte
 	ready bool
 }
 
-// Update encodes only when shader-visible material/camera/light inputs change.
-func (state *UniformState) Update(draw DrawCall, frame Frame) bool {
+// Update encodes only when shader-visible material inputs change.
+func (state *UniformState) Update(draw DrawCall) bool {
 	key := uniformKey{
-		view:        frame.ViewProjection,
 		color:       draw.Color,
 		uv:          draw.UVScale,
 		probeOrigin: draw.ProbeOrigin, probeMinimum: draw.ProbeMinimum, probeMaximum: draw.ProbeMaximum,
 		reflection: draw.ReflectionStrength,
 		source:     draw.Source,
-		lightCount: min(len(frame.Lights), MaxLights),
 	}
 
 	key.color[3] = 0
-	for index, light := range frame.Lights[:key.lightCount] {
-		if draw.Source && light.Kind != DirectionalLightKind && light.Kind != PointLightKind {
-			light = Light{Kind: light.Kind}
-		} else if (draw.Source && light.Kind != PointLightKind) || light.Kind == DirectionalLightKind {
-			light.GroundColor = [3]float32{}
-		}
-
-		key.lights[index] = light
-	}
-
-	key.applyMaterial(draw, frame)
+	key.applyMaterial(draw)
 
 	if state.ready && state.key == key {
 		return false
 	}
 
-	state.Data = Uniforms(draw, frame)
+	state.Data = Uniforms(draw)
 	state.key, state.ready = key, true
 
 	return true
 }
 
-func (key *uniformKey) applyMaterial(draw DrawCall, frame Frame) {
+func (key *uniformKey) applyMaterial(draw DrawCall) {
 	if draw.Source {
 		key.halfLambert = draw.HalfLambert
 		if draw.RNM[0] != nil {
@@ -193,7 +176,6 @@ func (key *uniformKey) applyMaterial(draw DrawCall, frame Frame) {
 	}
 
 	if draw.Impostor != nil {
-		key.camera = frame.CameraPosition
 		if draw.Impostor.Mode == impostordata.ModeOctahedral {
 			key.impostorQuality = draw.ImpostorQuality
 		}
@@ -203,7 +185,7 @@ func (key *uniformKey) applyMaterial(draw DrawCall, frame Frame) {
 		return
 	}
 
-	key.camera, key.roughness = frame.CameraPosition, draw.Roughness
+	key.roughness = draw.Roughness
 	if draw.AlphaMask {
 		key.alphaMask, key.alphaCutoff = true, draw.AlphaCutoff
 		key.color[3] = draw.Color[3]
@@ -226,3 +208,43 @@ func (key *uniformKey) applyMaterial(draw DrawCall, frame Frame) {
 		key.ao = draw.AOStrength
 	}
 }
+
+// FrameUniformState owns one camera and light buffer for the forward scene.
+type FrameUniformState struct {
+	key   [FrameUniformSize / floatSize]float32
+	Data  [FrameUniformSize]byte
+	ready bool
+}
+
+// Update returns whether to upload the shared forward-pass buffer.
+func (state *FrameUniformState) Update(frame Frame) bool {
+	var values [FrameUniformSize / floatSize]float32
+	copy(values[:16], frame.ViewProjection[:])
+	copy(values[16:19], frame.CameraPosition[:])
+	count := min(len(frame.Lights), MaxLights)
+
+	values[19] = float32(count)
+	for index, light := range frame.Lights[:count] {
+		offset := frameLightOffset + index*lightFloats
+		copy(values[offset:offset+3], light.Direction[:])
+		values[offset+3] = float32(light.Kind)
+		copy(values[offset+4:offset+7], light.Color[:])
+
+		values[offset+7] = light.Intensity
+		if light.Kind != DirectionalLightKind {
+			copy(values[offset+8:offset+11], light.GroundColor[:])
+		}
+	}
+
+	if state.ready && state.key == values {
+		return false
+	}
+
+	encodeUniform(state.Data[:], values[:])
+	state.key, state.ready = values, true
+
+	return true
+}
+
+// Invalidate forces the next update after a failed upload.
+func (state *FrameUniformState) Invalidate() { state.ready = false }

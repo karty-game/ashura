@@ -7,8 +7,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // Keep offline preparation work independent of runtime chunk size. Each job

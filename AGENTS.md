@@ -69,8 +69,11 @@ ship the matching compiler runtime bridge with each WASM artifact.
 The default sample policy uses TinyGo only for Basic Scene and standard Go for
 every other sample. Mixed galleries retain separate compiler runtimes and
 per-application compiler receipts; never substitute one runtime for the other.
-Published sample budgets count the logical lengths of every exported file:
-WASM, all asset variants and shared host/runtime files. Ordinary samples must
+Published sample budgets apply per platform and count logical file lengths:
+WASM, every common asset, the selected prepared texture profile and shared
+host/runtime files. Separate external profiles use `texture-profiles/bc/` and
+`texture-profiles/mobile/`; every other exported file counts against both.
+The complete gallery report also counts all platform variants together. Ordinary samples must
 stay within 20,000,000 bytes; Impostors may use 35,000,000 bytes and Sponza
 45,000,000 bytes. Moving assets
 outside WASM or quoting compressed transfer sizes does not satisfy these limits.
@@ -94,6 +97,10 @@ changes and record commands, outcomes and limits in `spec/validation.md`.
 Asset transformations belong offline. New asset-loading or rendering work needs
 explicit user approval before implementation. Preserve admission bounds,
 checksums, path confinement, ownership and allocation constraints.
+Every maintained sample must be portable beyond BC-only devices. Prepare native
+mobile texture variants offline and select a supported profile after device
+initialization. Preserve independent RNM/SSBump coefficients; two-channel normal
+presets and reconstructed Z are unsuitable for those numeric maps.
 
 Local graphics review requires hardware GPU rendering and verified adapter
 identity. Report blocked hardware checks rather than silently using software.

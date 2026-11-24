@@ -12,9 +12,9 @@ import (
 	"unsafe"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // This shader reads both ends of every logical mip, including sub-block tails.

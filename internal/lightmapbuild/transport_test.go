@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	modelbuild "github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	modelbuild "github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
 )
 
 func TestPrecomputedTransportIsDeterministicAndPreservesDirectionalEnergy(t *testing.T) {

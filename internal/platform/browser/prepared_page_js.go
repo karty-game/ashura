@@ -5,8 +5,8 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 // Shared GPU declarations belong to prepared pages: sprites and retained UI
@@ -64,7 +64,7 @@ func (driver *Driver) preparedPageFormat(page *uipaint.Texture) (string, error) 
 	}
 
 	feature, format := gpuBlockFormat(page.Format)
-	if !driver.device.Get("features").Call("has", feature).Bool() {
+	if !driver.compression.has(feature) {
 		return "", errTextureUpload
 	}
 

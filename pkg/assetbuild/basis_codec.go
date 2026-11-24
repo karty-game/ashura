@@ -8,9 +8,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/basiscodec"
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/basiscodec"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 type basisSessionKey struct{}

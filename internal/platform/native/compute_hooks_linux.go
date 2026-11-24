@@ -3,10 +3,10 @@
 package native
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
+	"github.com/karty-game/ashura/internal/platform"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // PrepareCompute admits work only when compute was explicitly registered.
@@ -44,18 +44,6 @@ func (driver *Driver) recordCompute(encoder *wgpu.CommandEncoder, commands []com
 	}
 
 	return driver.computeBridge.recordCompute(encoder, commands)
-}
-
-func (driver *Driver) submitComputeOnly(schedule []computedata.Dispatch) error {
-	if len(schedule) == 0 {
-		return nil
-	}
-
-	if driver.computeBridge == nil {
-		return platform.ErrFeatureMissing
-	}
-
-	return driver.computeBridge.submitComputeOnly(schedule)
 }
 
 func (driver *Driver) UnloadBuffer(source *bufferdata.Buffer) {

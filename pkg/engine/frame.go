@@ -5,10 +5,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 var errMeshOwner = fmt.Errorf("prepared mesh is unloaded, closed or belongs to another App: %w", ErrOwner)
@@ -36,12 +36,14 @@ func (app *App) updateFrame(world *World, deltaTime time.Duration, input platfor
 
 	app.metrics.Step(diagnostics.SchedulePhase)
 
-	frame, err := makeFrame(world, width, height)
+	frame, err := makeFrameWithLighting(world, width, height, app.featureMask.Has(platform.ClusteredLightsFeature))
 	if err != nil {
 		return frame, err
 	}
 
-	frame.Compute = app.computeFrame.commands
+	frame.UnculledLights = app.unculledLights
+	app.scheduleParticles(&frame, deltaTime, width, height)
+
 	if app.screen2D != nil {
 		frame.Screen2D = app.screen2D.Frame(width, height)
 	}
@@ -51,16 +53,36 @@ func (app *App) updateFrame(world *World, deltaTime time.Duration, input platfor
 	}
 
 	frame.Uploads = app.collectUploads()
+	if err := app.validateFrameResources(frame); err != nil {
+		return frame, err
+	}
+
+	app.metrics.Loaded(len(app.textures))
+	app.metrics.Step(diagnostics.ScenePhase)
+
+	return frame, nil
+}
+
+func (app *App) validateFrameResources(frame render.Frame) error {
+	if frame.Decals != nil {
+		if !app.featureMask.Has(platform.DecalFeature) {
+			return missingFeature(platform.DecalFeature)
+		}
+
+		if err := app.validateTextures(frame.Decals.Atlas); err != nil {
+			return err
+		}
+	}
 
 	for _, draw := range frame.Draws {
 		if app.driver != nil {
 			if err := app.requireDrawFeature(draw); err != nil {
-				return frame, err
+				return err
 			}
 		}
 
 		if draw.MeshOwner != nil && (draw.MeshOwner != app || !draw.MeshValid) {
-			return frame, fmt.Errorf("mesh entity %d: %w", draw.ID, errMeshOwner)
+			return fmt.Errorf("mesh entity %d: %w", draw.ID, errMeshOwner)
 		}
 
 		if err := app.validateTextures(
@@ -73,17 +95,18 @@ func (app *App) updateFrame(world *World, deltaTime time.Duration, input platfor
 			draw.RNM[1],
 			draw.RNM[2],
 		); err != nil {
-			return frame, err
+			return err
 		}
 	}
 
-	app.metrics.Loaded(len(app.textures))
-	app.metrics.Step(diagnostics.ScenePhase)
-
-	return frame, nil
+	return nil
 }
 
 func makeFrame(world *World, width, height int) (render.Frame, error) {
+	return makeFrameWithLighting(world, width, height, false)
+}
+
+func makeFrameWithLighting(world *World, width, height int, clustered bool) (render.Frame, error) {
 	if width <= 0 || height <= 0 {
 		return render.Frame{}, errInvalidViewport
 	}
@@ -92,6 +115,21 @@ func makeFrame(world *World, width, height int) (render.Frame, error) {
 
 	storage := &world.frame
 	storage.reset()
+	storage.frame.ClusteredLighting = clustered
+	storage.frame.Decals = nil
+
+	if world.decals != nil {
+		if err := world.decals.snapshot(); err != nil {
+			return render.Frame{}, err
+		}
+
+		decals, err := world.decals.renderFrame()
+		if err != nil {
+			return render.Frame{}, err
+		}
+
+		storage.frame.Decals = decals
+	}
 
 	active, found := activeCameraEntity(world)
 	if found {
@@ -99,6 +137,7 @@ func makeFrame(world *World, width, height int) (render.Frame, error) {
 	} else {
 		storage.frame.ViewProjection = [16]float32{}
 		storage.frame.CameraPosition = [3]float32{}
+		storage.frame.CameraNear, storage.frame.CameraFar = 0, 0
 		storage.cameraReady = false
 	}
 
@@ -142,14 +181,24 @@ func (storage *frameStorage) updateCamera(world *World, entity Entity, aspect fl
 		storage.aspect != aspect {
 		storage.frame.ViewProjection = cameraViewProjection(transform, projection, aspect)
 		storage.frame.CameraPosition = vectorArray(transform.Position)
+		storage.frame.CameraNear, storage.frame.CameraFar = clipPlanes(projection.near, projection.far)
+		storage.frame.PerspectiveCamera = projectionIsPerspective(projection)
 		storage.camera, storage.cameraTransform, storage.projection, storage.aspect = entity, transform, projection, aspect
 		storage.cameraReady = true
 	}
 }
 
 func validateFrame(frame render.Frame) error {
-	if len(frame.Lights) > render.MaxLights {
+	if len(frame.Lights) > frameLightLimit(frame) {
+		if frame.ClusteredLighting {
+			return errClusterLightCapacity
+		}
+
 		return errTooManyLights
+	}
+
+	if err := render.ValidateSpots(frame.Lights, frame.ClusteredLighting); err != nil {
+		return err
 	}
 
 	if err := render.ValidatePointLights(frame.Lights); err != nil {
@@ -186,13 +235,21 @@ func validateFrame(frame render.Frame) error {
 	return nil
 }
 
+func frameLightLimit(frame render.Frame) int {
+	if frame.ClusteredLighting {
+		return render.ClusterLightLimit
+	}
+
+	return render.MaxLights
+}
+
 func appendEntityLights(frame *render.Frame, world *World, entity Entity) {
 	appendBoundLights(frame, world.bindings[entity])
 }
 
 func appendBoundLights(frame *render.Frame, entry *entityBindings) {
 	for _, provider := range entry.lights {
-		if len(frame.Lights) > render.MaxLights {
+		if len(frame.Lights) > frameLightLimit(*frame) {
 			return
 		}
 
@@ -230,6 +287,7 @@ func drawForBindings(world *World, entity Entity, entry *entityBindings) (render
 		positions, indices, normals, uvs, billboard := entry.mesh.RuntimeMesh()
 		geometry := world.meshGeometry(positions, normals, uvs, indices)
 		draw.Vertices, draw.Indices, draw.Billboard = geometry.vertices, geometry.indices, billboard
+		draw.Bounds = geometry.bounds
 	}
 
 	transform := DefaultTransform()
@@ -247,6 +305,10 @@ func drawForBindings(world *World, entity Entity, entry *entityBindings) (render
 	}
 
 	applyBoundMaterial(&draw, entry)
+
+	if entry.decalReceiver != nil && draw.Impostor == nil {
+		draw.DecalLayers = entry.decalReceiver.Layers
+	}
 
 	return draw, true
 }

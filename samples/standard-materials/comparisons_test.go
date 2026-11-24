@@ -2,10 +2,12 @@ package main
 
 import (
 	"errors"
+	"slices"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func comparisonFixture(t *testing.T) *materialDemo {
@@ -19,7 +21,7 @@ func comparisonFixture(t *testing.T) *materialDemo {
 		}
 	})
 
-	stone, brick, err := loadMaterials(app)
+	stone, brick, err := loadMaterialsForFormat(app, texture.BC1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,6 +37,29 @@ func comparisonFixture(t *testing.T) *materialDemo {
 	}
 
 	return demo
+}
+
+func TestMaterialProfileRequiresCompleteTextureSupport(t *testing.T) {
+	t.Parallel()
+
+	mobile := []texture.Format{texture.ETC2RGB, texture.ETC2RGBA, texture.ASTC4x4}
+	for _, test := range []struct {
+		supported []texture.Format
+		want      texture.Format
+	}{
+		{mobile[:2], texture.RGBA8},
+		{mobile[2:], texture.RGBA8},
+		{mobile, texture.ETC2RGB},
+		{[]texture.Format{texture.BC1}, texture.RGBA8},
+		{[]texture.Format{texture.BC1, texture.BC7}, texture.BC1},
+	} {
+		got, err := materialFormat(func(format texture.Format) bool {
+			return slices.Contains(test.supported, format)
+		})
+		if got != test.want || errors.Is(err, errMaterialCompression) != (test.want == texture.RGBA8) {
+			t.Fatalf("formats %v selected %v, %v; want %v", test.supported, got, err, test.want)
+		}
+	}
 }
 
 func TestMaterialModeSwitchKeepsOneProviderAndSharedAssets(t *testing.T) {

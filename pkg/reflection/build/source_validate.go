@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/reflection/scene"
+	"github.com/karty-game/ashura/pkg/reflection/scene"
 )
 
 func validateSettings(source settings) error {

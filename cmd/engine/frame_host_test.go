@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/platform/browser/framehost"
+	"github.com/karty-game/ashura/internal/platform/browser/framehost"
 )
 
 func TestSamplePageEmbedsFrameHostBeforeApplication(t *testing.T) {

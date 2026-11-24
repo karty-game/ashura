@@ -80,7 +80,9 @@ func TestRecipeJobsAdmission(t *testing.T) {
 	t.Parallel()
 
 	for _, jobs := range []int{0, 1, 2, maxPlanSteps} {
-		options, err := recipeOptions([]string{"--protocol=1", "--project=.", "--jobs=" + strconv.Itoa(jobs)})
+		invocation, err := recipeOptions([]string{"--protocol=1", "--project=.", "--jobs=" + strconv.Itoa(jobs)})
+
+		options := invocation.options
 		if err != nil || options.Jobs != jobs || options.Phase != PhaseBuild {
 			t.Fatal("recipe jobs changed", jobs, options.Jobs, err)
 		}

@@ -1,6 +1,6 @@
 package spritepaint
 
-import "github.com/karty-game/karty-webgpu/internal/uipaint"
+import "github.com/karty-game/ashura/internal/uipaint"
 
 // Viewport shares the attachment output flag with the UI presentation pipeline.
 func Viewport(width, height float32, linear bool) []byte {

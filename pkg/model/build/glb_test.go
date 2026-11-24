@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	modelbuild "github.com/karty-game/ashura/pkg/model/build"
 )
 
 func TestRecipePreparesCachesCatalogAndPrunesRemovedModel(t *testing.T) {
@@ -147,7 +147,7 @@ func TestMixedImageAndModelRecipeBuildsDistinctPackages(t *testing.T) {
 	}
 
 	module := fmt.Sprintf(
-		"module github.com/karty-game/karty-webgpu/internal/model-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/karty-webgpu v0.0.0\n\nreplace github.com/karty-game/karty-webgpu => %q\n",
+		"module github.com/karty-game/ashura/internal/model-recipe-fixture\n\ngo 1.27.0\n\nrequire github.com/karty-game/ashura v0.0.0\n\nreplace github.com/karty-game/ashura => %q\n",
 		root,
 	)
 	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte(module), 0o600); err != nil {

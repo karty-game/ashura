@@ -30,7 +30,7 @@ if err := uiapp.Attach(app, view); err != nil {
 ```
 
 Import `ui`, `ui/app` (package `uiapp`) and optional `ui/fonts/defaultfont` from
-`github.com/karty-game/karty-webgpu/pkg/`. Attach before `App.Run` and retrieve
+`github.com/karty-game/ashura/pkg/`. Attach before `App.Run` and retrieve
 the attached concrete view with `uiapp.View(app)`. Passing nil to
 `uiapp.Attach` detaches it before Run. The engine and platform drivers do not
 import retained UI, fonts or text shaping; apps that never attach UI leave those
@@ -172,7 +172,7 @@ exercises 10,000/100,000 rows, direct jumps and data updates.
 Author icons, frames and backgrounds as separate PNG files. An
 [asset recipe](../assetbuild/README.md#ui-pngs-and-automatic-atlases) composes
 `assetbuild.Images()`, `assetbuild.Atlas(...)` and `uibuild.Images()` from
-`github.com/karty-game/karty-webgpu/pkg/ui/build`. The host plugin writes prepared
+`github.com/karty-game/ashura/pkg/ui/build`. The host plugin writes prepared
 RGBA pages and a typed generated catalog. Load that catalog once and pass its
 named images directly to controls; all regions on a page share the same resource.
 Neither application UV coordinates nor a handwritten sample atlas are needed.
@@ -507,8 +507,7 @@ Clipboard operations can be denied by the platform. The Linux native wrapper
 uses SDL text/composition events and clipboard services. Native hardware
 presentation is currently blocked locally by a failure in adapter callback
 initialization with the selected WebGPU binding/runtime pair, before UI execution.
-Native compilation and browser execution are separate evidence; see
-[validation](../../spec/validation.md).
+Native compilation and browser execution exercise separate targets.
 
 UTF-8 byte offsets are the Go editing contract. The browser wrapper converts
 UTF-16 offsets explicitly; SDL composition offsets are converted from characters.
@@ -523,7 +522,7 @@ Native/browser screen-reader bridges are not implemented. Keyboard support and
 this projection are not claims of screen-reader support or WCAG conformance.
 Advanced semantic collections, other platform preference bridges, text
 fallback-font chains, rich text and variable-height virtualized collections
-remain future work. See [the proposal and delivery status](../../spec/ui.md).
+remain future work.
 
 ## Sample and checks
 
@@ -542,4 +541,4 @@ environment. The
 opt-in `TestUIHardwarePresentation` additionally requires a real Vulkan driver,
 matching WebGPU native library and display, and rejects software adapters. Browser
 WASM execution, GPU pixels, native presentation and physical-device interaction
-are reported separately in [validation](../../spec/validation.md).
+require separate checks.

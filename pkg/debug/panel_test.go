@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/pkg/debug"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/debug"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 func TestPanelSamplingAndLifecycle(t *testing.T) {

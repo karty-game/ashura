@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 type nativeBatchSizes struct {

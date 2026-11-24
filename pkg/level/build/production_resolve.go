@@ -3,10 +3,10 @@
 package levelbuild
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func (plugin *productionPlugin) planChunkResolve(
@@ -37,12 +37,7 @@ func (plugin *productionPlugin) chunkResolveAction(
 		artifacts = append(artifacts, page.Receivers, page.Geometry)
 	}
 
-	cache := assetbuild.CacheAutomatic
-	if plugin.options.BackendIdentity == "" {
-		cache = assetbuild.CacheDisabled
-	}
-
-	inputs := append([]assetbuild.Ref{scene}, samples...)
+	inputs, cache := plugin.gpuCacheInputs(append([]assetbuild.Ref{scene}, samples...))
 	if support.Action != "" {
 		inputs = append([]assetbuild.Ref{support}, inputs...)
 	}

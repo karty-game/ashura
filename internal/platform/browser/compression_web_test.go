@@ -6,7 +6,7 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func TestCompressedMipUploadsUsePhysicalBlockExtents(t *testing.T) {
@@ -31,6 +31,7 @@ func TestCompressedMipUploadsUsePhysicalBlockExtents(t *testing.T) {
 		{"ETC2", "texture-compression-etc2", texturedata.ETC2RGB},
 		{"ETC2RGBA", "texture-compression-etc2", texturedata.ETC2RGBA},
 		{"ASTC4x4", "texture-compression-astc", texturedata.ASTC4x4},
+		{"ASTC6x6", "texture-compression-astc", texturedata.ASTC6x6},
 		{"BC6H", "texture-compression-bc", texturedata.BC6H},
 		{"BC7", "texture-compression-bc", texturedata.BC7},
 	} {
@@ -102,7 +103,7 @@ func assertCompressedPhysicalMipUpload(t *testing.T, device js.Value, format tex
 
 	defer texturedata.Release(image)
 
-	driver := &Driver{device: device, queue: device.Get("queue")}
+	driver := &Driver{device: device, queue: device.Get("queue"), compression: enabledCompression(device)}
 	device.Call("pushErrorScope", "validation")
 
 	view, uploadErr := driver.textureView(image)

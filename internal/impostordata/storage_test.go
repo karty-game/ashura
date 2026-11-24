@@ -11,8 +11,8 @@ func TestV4StorageAndUniformLayout(t *testing.T) {
 	t.Parallel()
 
 	for _, input := range []Document{fixtureDocument(), octahedralDocument(), layeredDocument()} {
-		for _, storage := range []Storage{StorageRGBA8, StorageBC1} {
-			if input.Mode == ModeLayered && storage == StorageBC1 {
+		for _, storage := range []Storage{StorageRGBA8, StorageBC1, StorageETC2RGBA} {
+			if input.Mode == ModeLayered && storage != StorageRGBA8 {
 				continue
 			}
 
@@ -54,7 +54,7 @@ func TestV4StorageRejectsUnknownAndLossyLayeredDescriptors(t *testing.T) {
 	t.Parallel()
 
 	for _, input := range []Document{fixtureDocument(), octahedralDocument(), layeredDocument()} {
-		input.Storage = StorageBC1 + 1
+		input.Storage = StorageASTC6x6 + 1
 		if _, err := Encode(input); err == nil {
 			t.Fatal("admitted unknown storage")
 		}
@@ -65,6 +65,11 @@ func TestV4StorageRejectsUnknownAndLossyLayeredDescriptors(t *testing.T) {
 
 	if _, err := Encode(layered); err == nil {
 		t.Fatal("admitted lossy storage for exact layered intervals/hierarchy")
+	}
+
+	layered.Storage = StorageETC2RGBA
+	if _, err := Encode(layered); err == nil {
+		t.Fatal("admitted ETC2 storage for exact layered intervals/hierarchy")
 	}
 
 	// This grid is legal RGBA8, but its base atlas is not block-aligned.

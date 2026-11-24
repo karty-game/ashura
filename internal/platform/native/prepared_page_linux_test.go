@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 func TestPreparedPageRejectsUnsupportedBatchBeforeGPUWrites(t *testing.T) {

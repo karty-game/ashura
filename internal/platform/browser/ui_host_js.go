@@ -6,8 +6,8 @@ import (
 	"errors"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/uihost"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/uihost"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 // uiBackend is installed only by the optional UI attachment. Keeping its
@@ -17,6 +17,7 @@ type uiBackend interface {
 	resize(width, height float32)
 	readKey(event js.Value, down bool) bool
 	consumesPointer(event js.Value) bool
+	consumesPointerAt(x, y float32) bool
 	capturesPointer() bool
 	syncInput()
 	update(frame *uipaint.Frame) error
@@ -77,7 +78,11 @@ func (bridge *browserUIBridge) readKey(event js.Value, down bool) bool {
 func (bridge *browserUIBridge) consumesPointer(event js.Value) bool {
 	x, y := bridge.uiPoint(event)
 
-	return bridge.ui.ConsumesPointer(x, y) || bridge.ui.CapturesKeyboard()
+	return bridge.consumesPointerAt(x, y) || bridge.ui.CapturesKeyboard()
+}
+
+func (bridge *browserUIBridge) consumesPointerAt(x, y float32) bool {
+	return bridge.ui.ConsumesPointer(x, y)
 }
 
 func (bridge *browserUIBridge) capturesPointer() bool { return bridge.ui.CapturesPointer() }

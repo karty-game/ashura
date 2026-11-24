@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 func TestPagePackagingSharesOnlyIdenticalProfileInputs(t *testing.T) {

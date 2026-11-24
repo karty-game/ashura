@@ -4,7 +4,7 @@ package native
 
 import (
 	"github.com/gogpu/gputypes"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 // Empty worlds clear the drawable directly without allocating world depth/MSAA.

@@ -43,8 +43,9 @@ The sample adds no shaders, renderer extensions or runtime image processing.
 ## Artwork and build
 
 Original PNG artwork lives in [assets/](assets/). The standard recipe
-imports those sources with `Images`, packs the `sprites/**` images with `Atlas`,
-and publishes with `draw2d/build.Images`. The ocean background stays standalone.
+imports those sources with `Images` and packs the `sprites/**` images once with
+`Atlas`. `draw2d/build.PortableImages` publishes both encodings from those
+prepared pages. The ocean background stays standalone.
 There is no sample artwork generator or separate preparation command.
 The recipe encodes the opaque 1280×800 background as BC1/ETC2RGB and the
 2048×1024 sprite atlas as BC7/ETC2RGBA, preserving smooth alpha, source resolution
@@ -64,8 +65,8 @@ mise exec -- go run ./cmd/engine assets build --project ./samples/sprites2d
 Prepared BC and ETC2 pages and named catalog code remain ignored. The recipe
 publishes desktop BC1/BC7 and mobile ETC2RGB/ETC2RGBA catalogs with identical
 dimensions and source rectangles. On the first update, after device creation,
-the sample queries `App.CompressedAlbedoFormat()` once and loads only that
-catalog. Devices without BC or ETC2 are rejected explicitly. PNG decoding,
+`assets.LoadForDevice(app.SupportsTextureFormat)` checks the required formats
+and loads the selected catalog. PNG decoding,
 packing, gutter extrusion and compression are build work; there is no runtime
 transcoding. Both variants count toward the complete sample export budget.
 Fish, plankton, bubbles, kelp, pebbles, rings and markers are fixed-size pools.

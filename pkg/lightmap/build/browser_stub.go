@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
+	"github.com/karty-game/ashura/pkg/lightmap"
 )
 
 // BrowserOptions selects the host Chromium executable for offline execution.

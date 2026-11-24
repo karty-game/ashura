@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	logicbuild "github.com/karty-game/karty-webgpu/pkg/scene/build/logic"
+	logicbuild "github.com/karty-game/ashura/pkg/scene/build/logic"
 )
 
 func TestGeneratedFactoriesExecuteLifecycleAndTypedWiring(t *testing.T) {
@@ -52,12 +52,12 @@ root:
 	contents := map[string][]byte{
 		"world_gen.go": code,
 		"go.mod": []byte(
-			"module scene-fixture\n\ngo 1.27.0\nrequire github.com/karty-game/karty-webgpu v0.0.0\nreplace github.com/karty-game/karty-webgpu => " + strconv.Quote(
+			"module scene-fixture\n\ngo 1.27.0\nrequire github.com/karty-game/ashura v0.0.0\nreplace github.com/karty-game/ashura => " + strconv.Quote(
 				moduleRoot,
 			) + "\n",
 		),
 		"world_test.go": []byte(`package fixture
-import("errors";"strings";"testing";"github.com/karty-game/karty-webgpu/pkg/scene")
+import("errors";"strings";"testing";"github.com/karty-game/ashura/pkg/scene")
 func TestFactory(t *testing.T){
  started,ended:=0,0
  value,err:=NewWorld("world",WorldServices{Saves:scene.NewSaves()},func(refs *World)(func(),error){started++; return func(){ended++},nil})

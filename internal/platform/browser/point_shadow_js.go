@@ -5,15 +5,15 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 // gpuPointShadow stores only the material sampling ABI shared by optional renderers.
 type gpuPointShadow struct {
-	resolution                          uint32
-	image, cube, sampleUniform, sampler js.Value
-	sampleGroups                        [4]js.Value
-	sampleData                          [render.PointShadowSampleSize]byte
+	resolution                            uint32
+	image, layers, sampleUniform, sampler js.Value
+	sampleGroups                          [4]js.Value
+	sampleData                            [render.PointShadowSampleSize]byte
 }
 
 // preparePointShadowSampling retains the common material binding ABI only.
@@ -47,8 +47,8 @@ func (driver *Driver) initPointShadow(resolution uint32) error {
 		jsObject(
 			map[string]any{
 				labelProperty:                 "point shadow six faces",
-				"textureBindingViewDimension": "cube",
-				formatProperty:                "depth32float",
+				"textureBindingViewDimension": "2d-array",
+				formatProperty:                shadowDepthFormat,
 				usageProperty:                 pointShadowTextureUsage,
 				sizeProperty: jsObject(
 					map[string]any{
@@ -60,9 +60,9 @@ func (driver *Driver) initPointShadow(resolution uint32) error {
 			},
 		),
 	)
-	shadow.cube = shadow.image.Call(
+	shadow.layers = shadow.image.Call(
 		"createView",
-		jsObject(map[string]any{dimensionProperty: "cube", "baseArrayLayer": 0, arrayLayerCountProperty: render.PointShadowFaces}),
+		jsObject(map[string]any{dimensionProperty: "2d-array", "baseArrayLayer": 0, arrayLayerCountProperty: render.PointShadowFaces}),
 	)
 	shadow.sampler = driver.device.Call(
 		"createSampler",
@@ -98,7 +98,7 @@ func (driver *Driver) initPointShadowSampleGroups(shadow *gpuPointShadow) {
 				map[string]any{bindingProperty: 0, resourceProperty: jsObject(map[string]any{gpuBufferProperty: shadow.sampleUniform})},
 			),
 			jsObject(map[string]any{bindingProperty: 1, resourceProperty: shadow.sampler}),
-			jsObject(map[string]any{bindingProperty: pointShadowTextureBinding, resourceProperty: shadow.cube}),
+			jsObject(map[string]any{bindingProperty: pointShadowTextureBinding, resourceProperty: shadow.layers}),
 		}
 		shadow.sampleGroups[variant] = driver.device.Call(
 			"createBindGroup",
@@ -127,6 +127,10 @@ func (driver *Driver) bindPointShadow(pass js.Value, draw render.DrawCall) {
 	}
 
 	pass.Call("setBindGroup", 1, driver.pointShadow.sampleGroups[variant])
+
+	if driver.clusteredLights != nil {
+		pass.Call("setBindGroup", 2, driver.clusteredLights.materials[variant])
+	}
 }
 
 func (shadow *gpuPointShadow) release() {

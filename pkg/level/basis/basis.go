@@ -4,9 +4,9 @@
 package basis
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/level"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/level"
 )
 
 // NewLoader creates an App-owned loader with the previously approved reusable

@@ -1,6 +1,6 @@
 # Application API
 
-Import `github.com/karty-game/karty-webgpu/pkg/engine` for the application, world,
+Import `github.com/karty-game/ashura/pkg/engine` for the application, world,
 entities and shared math values. Domain packages such as `camera`, `mesh`,
 `material` and `light` supply ordinary components.
 
@@ -14,12 +14,12 @@ import (
     "log"
     "time"
 
-    "github.com/karty-game/karty-webgpu/pkg/camera"
-    "github.com/karty-game/karty-webgpu/pkg/engine"
-    "github.com/karty-game/karty-webgpu/pkg/engine/features"
-    "github.com/karty-game/karty-webgpu/pkg/light"
-    "github.com/karty-game/karty-webgpu/pkg/material"
-    "github.com/karty-game/karty-webgpu/pkg/mesh"
+    "github.com/karty-game/ashura/pkg/camera"
+    "github.com/karty-game/ashura/pkg/engine"
+    "github.com/karty-game/ashura/pkg/engine/features"
+    "github.com/karty-game/ashura/pkg/light"
+    "github.com/karty-game/ashura/pkg/material"
+    "github.com/karty-game/ashura/pkg/mesh"
 )
 
 func main() {
@@ -112,6 +112,11 @@ immediate; new callbacks registered during their own phase start next time.
 Cancel compute work before unloading the resources it uses. `App.Close` also
 releases all update and compute callbacks.
 
+Use `Input.TouchPosition` for a single-finger action in the same logical pixels
+as `Input.MousePosition`. It reports held touches and taps between updates.
+Set `camera.OrbitControls.DisableTouchRotate` to reserve one-finger dragging
+for your action while keeping two-finger pan and pinch.
+
 Use `errors.Is(err, engine.ErrInUse)` when unloading needs to wait for live users.
 `ErrClosed`, `ErrOwner` and `ErrPhase` distinguish ended lifetimes, invalid resource
 ownership and operations unavailable in the current phase. `ErrInvalidEntity`
@@ -130,14 +135,61 @@ their component or entity. Mutations belong to the App loop goroutine.
 Start from `material.DefaultStandard`, `material.DefaultSource`,
 `light.DefaultPoint`, `light.DefaultDirectional`, `light.DefaultHemisphere` or
 `reflection.DefaultProbe`, then set fields before attaching. These values let
-zero mean zero: `source.Intensity = 0` starts a light disabled. Existing options
-constructors keep their earlier defaulting rules; see [API contract](../../spec/api.md).
+zero an explicit value. For example, `source.Intensity = 0` starts a light
+disabled. Existing options constructors keep their earlier defaulting rules.
 
 For custom camera or light components implement `ProjectionProvider` or
 `LightProvider`. Return their named descriptors and use public projection/light
 kind constants. Point lights have explicit `Position`, `Range` and `Shadow`
 fields. Descriptor methods read live component values; they must not prepare
 assets or create resources. Existing tuple providers remain supported.
+
+## Dynamic lights
+
+Add `math` to the First scene imports and call `addMovingLights(app, world)`
+before `app.Run(world)`. Keep the Standard registration from First scene.
+Source materials use `features.Source()` for their material registration.
+
+```go
+func addMovingLights(app *engine.App, world *engine.World) error {
+    if err := app.Register(features.ClusteredLights(), features.PointShadows()); err != nil {
+        return err
+    }
+
+    floor := engine.DefaultTransform()
+    floor.Position.Y = -.6
+    world.Add(mesh.NewBox("floor", mesh.BoxOptions{Width: 10, Height: .2, Depth: 10}), floor, material.DefaultStandard())
+
+    point := light.DefaultPoint("amber")
+    point.Position = engine.Vector3{X: 2, Y: 2, Z: 1}
+    point.Color = engine.ColorOrange()
+    point.Range = 6
+    point.CastShadows = true
+    mover, _ := engine.Get[light.Point](world, world.Add(point))
+
+    spot := light.DefaultSpot("overhead")
+    spot.Position = engine.Vector3{Y: 4}
+    spot.CastShadows = true
+    world.Add(spot)
+
+    var elapsed float64
+
+    app.OnUpdate(func(dt time.Duration) {
+        elapsed += dt.Seconds()
+        mover.Position.X = 2 * float32(math.Cos(elapsed))
+        mover.Position.Z = 2 * float32(math.Sin(elapsed))
+    })
+
+    return nil
+}
+```
+
+`ClusteredLights` enables spotlights and raises the limit to 240 declared
+lights, including any with `Intensity = 0`. Reserve shadows by setting
+`CastShadows` before `Run` on up to one point light and two spotlights.
+The spotlights use equal-size maps and the camera-aware projection is
+automatic. See [Luminous](../../samples/luminous/) for this setup with hundreds
+of lights and a baked floor.
 
 ## UI and resources
 

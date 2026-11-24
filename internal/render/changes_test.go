@@ -3,7 +3,7 @@ package render_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func TestInstanceDirtyRanges(t *testing.T) {
@@ -54,32 +54,35 @@ func TestInstanceDirtyRanges(t *testing.T) {
 func TestUniformVisibilityChanges(t *testing.T) {
 	t.Parallel()
 
-	var state render.UniformState
+	var (
+		state  render.UniformState
+		shared render.FrameUniformState
+	)
 
 	draw := render.DrawCall{Color: [4]float32{1, 1, 1, 1}, Roughness: .5}
 
 	frame := render.Frame{Lights: []render.Light{{Kind: render.DirectionalLightKind, Intensity: 1}}}
-	if !state.Update(draw, frame) || state.Update(draw, frame) {
+	if !state.Update(draw) || state.Update(draw) || !shared.Update(frame) || shared.Update(frame) {
 		t.Fatal("initial/unchanged uniform state incorrect")
 	}
 
 	draw.Transform[12] = 3
-	if state.Update(draw, frame) {
+	if state.Update(draw) {
 		t.Fatal("model matrix invalidated material uniforms")
 	}
 
 	frame.CameraPosition[0] = 1
-	if !state.Update(draw, frame) {
-		t.Fatal("camera-aware standard material failed to update")
+	if !shared.Update(frame) || state.Update(draw) {
+		t.Fatal("camera changes must update only the shared buffer")
 	}
 
 	frame.Lights[0].Intensity = .5
-	if !state.Update(draw, frame) {
-		t.Fatal("light mutation failed to update")
+	if !shared.Update(frame) || state.Update(draw) {
+		t.Fatal("light changes must update only the shared buffer")
 	}
 
 	draw.Source = true
-	if !state.Update(draw, frame) {
+	if !state.Update(draw) {
 		t.Fatal("source material replacement failed to update")
 	}
 
@@ -87,12 +90,12 @@ func TestUniformVisibilityChanges(t *testing.T) {
 	draw.Roughness = .2
 
 	draw.AOStrength = .9
-	if state.Update(draw, frame) {
+	if state.Update(draw) {
 		t.Fatal("unused standard shading fields invalidated Source uniforms")
 	}
 
 	draw.AmbientColors[0][0] = .3
-	if !state.Update(draw, frame) {
+	if !state.Update(draw) {
 		t.Fatal("Source ambient mutation failed to update")
 	}
 }
@@ -105,17 +108,21 @@ func TestChangedInstanceAndUniformStateDoNotAllocate(t *testing.T) {
 	var (
 		instances render.InstanceState
 		uniforms  render.UniformState
+		shared    render.FrameUniformState
 	)
 
 	instances.Update(draw)
-	uniforms.Update(draw, frame)
+	uniforms.Update(draw)
+	shared.Update(frame)
 
 	allocations := testing.AllocsPerRun(100, func() {
 		draw.Instances[500].Model[12]++
 		frame.CameraPosition[0]++
+		draw.Roughness++
 
 		instances.Update(draw)
-		uniforms.Update(draw, frame)
+		uniforms.Update(draw)
+		shared.Update(frame)
 	})
 	if allocations != 0 {
 		t.Fatalf("warm dirty updates allocated %v times", allocations)
@@ -169,30 +176,30 @@ func TestUnusedLightFieldsDoNotInvalidateUniforms(t *testing.T) {
 
 	frame := render.Frame{Lights: []render.Light{{Kind: render.DirectionalLightKind}, {Kind: render.HemisphereLightKind}}}
 
-	var state render.UniformState
-
-	draw := render.DrawCall{}
-	state.Update(draw, frame)
+	var state render.FrameUniformState
+	state.Update(frame)
 
 	frame.Lights[0].GroundColor[0] = .5
-	if state.Update(draw, frame) {
+	if state.Update(frame) {
 		t.Fatal("Standard directional ground color triggered an upload")
 	}
 
-	draw.Source = true
-	state.Update(draw, frame)
 	frame.Lights[0].GroundColor[0] = .7
+	if state.Update(frame) {
+		t.Fatal("unused directional ground color triggered a shared upload")
+	}
+
 	frame.Lights[1].GroundColor[1] = .4
 	frame.Lights[1].Color[0] = .8
 	frame.Lights[1].Intensity = 2
 
 	frame.Lights[1].Direction[2] = 1
-	if state.Update(draw, frame) {
-		t.Fatal("Source shader-unused hemisphere/ground fields triggered an upload")
+	if !state.Update(frame) {
+		t.Fatal("shared frame lost Standard hemisphere changes")
 	}
 
 	frame.Lights[0].Intensity = 3
-	if !state.Update(draw, frame) {
-		t.Fatal("Source directional intensity mutation was lost")
+	if !state.Update(frame) {
+		t.Fatal("shared frame lost directional intensity changes")
 	}
 }

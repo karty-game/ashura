@@ -29,6 +29,75 @@ var (
 type Geometry struct {
 	vertices, indices []byte
 	lightmapUV        []byte
+	bounds            Bounds
+}
+
+// Bounds is a conservative local-space box prepared with the model offline.
+type Bounds struct {
+	Minimum, Maximum [3]float32
+	Valid            bool
+}
+
+// New validates and copies caller-owned GPU-ready geometry.
+func New(vertices, indices []byte) (*Geometry, error) {
+	return NewWithBounds(vertices, indices, Bounds{})
+}
+
+// NewWithBounds copies and admits a caller-owned prepared model part.
+func NewWithBounds(vertices, indices []byte, bounds Bounds) (*Geometry, error) {
+	geometry, err := FromOwnedWithBounds(vertices, indices, bounds)
+	if err != nil {
+		return nil, err
+	}
+
+	geometry.vertices = append([]byte(nil), vertices...)
+	geometry.indices = append([]byte(nil), indices...)
+
+	return geometry, nil
+}
+
+// FromOwned admits slices whose backing storage is already privately owned by
+// an internal asset loader. The caller must never change the admitted bytes.
+func FromOwned(vertices, indices []byte) (*Geometry, error) {
+	return FromOwnedWithBounds(vertices, indices, Bounds{})
+}
+
+// FromOwnedWithBounds verifies offline metadata in the existing vertex admission
+// walk. It does not derive a runtime box or make another pass over vertices.
+func FromOwnedWithBounds(vertices, indices []byte, bounds Bounds) (*Geometry, error) {
+	if len(vertices) == 0 || len(vertices)%VertexStride != 0 || len(vertices)/VertexStride > MaxVertices ||
+		len(indices) == 0 || len(indices)%IndexStride != 0 || len(indices)/IndexStride > MaxIndices ||
+		len(indices)/IndexStride%triangleIndices != 0 {
+		return nil, errBounds
+	}
+
+	if bounds.Valid && !bounds.finite() {
+		return nil, errBounds
+	}
+
+	for start := 0; start < len(vertices); start += VertexStride {
+		for component := range VertexStride / IndexStride {
+			offset := start + component*IndexStride
+
+			value := math.Float32frombits(binary.LittleEndian.Uint32(vertices[offset:]))
+			if !finite(value) {
+				return nil, fmt.Errorf("%w at byte %d", errFinite, offset)
+			}
+
+			if bounds.Valid && component < len(bounds.Minimum) && (value < bounds.Minimum[component] || value > bounds.Maximum[component]) {
+				return nil, errBounds
+			}
+		}
+	}
+
+	for offset := 0; offset < len(indices); offset += IndexStride {
+		index := binary.LittleEndian.Uint32(indices[offset:])
+		if uint64(index) >= uint64(len(vertices)/VertexStride) {
+			return nil, fmt.Errorf("%w: %d", errIndex, index)
+		}
+	}
+
+	return &Geometry{vertices: vertices, indices: indices, bounds: bounds}, nil
 }
 
 // WithLightmapUV attaches a prepared, non-repeating secondary UV stream. The
@@ -46,49 +115,31 @@ func (geometry *Geometry) WithLightmapUV(data []byte) (*Geometry, error) {
 		}
 	}
 
-	return &Geometry{vertices: geometry.vertices, indices: geometry.indices, lightmapUV: append([]byte(nil), data...)}, nil
+	return &Geometry{
+		vertices:   geometry.vertices,
+		indices:    geometry.indices,
+		lightmapUV: append([]byte(nil), data...),
+		bounds:     geometry.bounds,
+	}, nil
 }
 
 // LightmapUV returns the immutable prepared float32x2 secondary UV stream.
 func (geometry *Geometry) LightmapUV() []byte { return geometry.lightmapUV }
 
-// New validates and copies caller-owned GPU-ready geometry.
-func New(vertices, indices []byte) (*Geometry, error) {
-	geometry, err := FromOwned(vertices, indices)
-	if err != nil {
-		return nil, err
-	}
+// Bounds returns the admitted box, if the asset supplied one.
+func (geometry *Geometry) Bounds() Bounds { return geometry.bounds }
 
-	geometry.vertices = append([]byte(nil), vertices...)
-	geometry.indices = append([]byte(nil), indices...)
+func finite(value float32) bool { return !math.IsInf(float64(value), 0) && !math.IsNaN(float64(value)) }
 
-	return geometry, nil
-}
-
-// FromOwned admits slices whose backing storage is already privately owned by
-// an internal asset loader. The caller must never change the admitted bytes.
-func FromOwned(vertices, indices []byte) (*Geometry, error) {
-	if len(vertices) == 0 || len(vertices)%VertexStride != 0 || len(vertices)/VertexStride > MaxVertices ||
-		len(indices) == 0 || len(indices)%IndexStride != 0 || len(indices)/IndexStride > MaxIndices ||
-		len(indices)/IndexStride%triangleIndices != 0 {
-		return nil, errBounds
-	}
-
-	for offset := 0; offset < len(vertices); offset += IndexStride {
-		value := math.Float32frombits(binary.LittleEndian.Uint32(vertices[offset:]))
-		if math.IsInf(float64(value), 0) || math.IsNaN(float64(value)) {
-			return nil, fmt.Errorf("%w at byte %d", errFinite, offset)
+func (bounds Bounds) finite() bool {
+	for axis, minimum := range bounds.Minimum {
+		maximum := bounds.Maximum[axis]
+		if !finite(minimum) || !finite(maximum) || minimum > maximum {
+			return false
 		}
 	}
 
-	for offset := 0; offset < len(indices); offset += IndexStride {
-		index := binary.LittleEndian.Uint32(indices[offset:])
-		if uint64(index) >= uint64(len(vertices)/VertexStride) {
-			return nil, fmt.Errorf("%w: %d", errIndex, index)
-		}
-	}
-
-	return &Geometry{vertices: vertices, indices: indices}, nil
+	return true
 }
 
 // Vertices returns an immutable internal upload view, never a mutable buffer.

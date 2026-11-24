@@ -3,7 +3,7 @@
 package browser
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 const (

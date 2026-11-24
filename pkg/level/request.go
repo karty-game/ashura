@@ -1,13 +1,12 @@
 package level
 
 import (
-	"context"
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // ErrStaleRequest means a texture omitted from I/O was evicted before the load
@@ -45,6 +44,7 @@ func (shared *sharedTexture) metadata() imageMetadata {
 // metadata. It contains no App handles and is safe to pass to an I/O goroutine.
 type ReadRequest struct {
 	chunk    Chunk
+	refs     []Reference
 	resident map[string]imageMetadata
 	decoder  basistranscode.Decoder
 	format   texture.Format
@@ -57,28 +57,12 @@ func (loader *Loader) Request(chunk Chunk) (*ReadRequest, error) {
 		return nil, errLifetime
 	}
 
-	if err := leveldata.ValidateChunk(chunk); err != nil {
-		return nil, err
-	}
-
-	format := loader.app.CompressedAlbedoFormat()
-	if err := validateDeviceProfile(chunk, format, loader.decoder != nil); err != nil {
-		return nil, err
-	}
-
-	refs, err := leveldata.ChunkReferences(chunk)
+	request, err := newReadRequest(chunk, loader.app.CompressedAlbedoFormat(), loader.app.SupportsTextureFormat, loader.decoder)
 	if err != nil {
 		return nil, err
 	}
 
-	request := &ReadRequest{
-		chunk:    cloneChunk(chunk),
-		resident: make(map[string]imageMetadata),
-		decoder:  loader.decoder,
-		format:   format,
-	}
-
-	for _, ref := range refs {
+	for _, ref := range request.refs {
 		if shared := loader.textures[ref.SHA256]; shared != nil {
 			if !texturedata.Valid(shared.image) {
 				return nil, errLifetime
@@ -88,6 +72,10 @@ func (loader *Loader) Request(chunk Chunk) (*ReadRequest, error) {
 				return nil, leveldata.ErrFormat
 			}
 
+			if request.resident == nil {
+				request.resident = make(map[string]imageMetadata)
+			}
+
 			request.resident[ref.SHA256] = shared.metadata()
 		}
 	}
@@ -95,13 +83,20 @@ func (loader *Loader) Request(chunk Chunk) (*ReadRequest, error) {
 	return request, nil
 }
 
-// Read fetches only dependencies absent from the App-loop residency snapshot.
-// Cached images need neither HTTP/file reads nor KTX metadata decoding. Begin
-// checks the snapshot against current residency before acquiring any handles.
-func (request *ReadRequest) Read(ctx context.Context, base string) (*PreparedChunk, error) {
-	if request == nil {
-		return nil, leveldata.ErrFormat
+func newReadRequest(
+	chunk Chunk,
+	format texture.Format,
+	supports func(texture.Format) bool,
+	decoder basistranscode.Decoder,
+) (*ReadRequest, error) {
+	refs, err := leveldata.ValidatedChunkReferences(chunk)
+	if err != nil {
+		return nil, err
 	}
 
-	return readChunk(ctx, base, request.chunk, request.resident, request.decoder, request.format)
+	if err := validateDeviceProfile(chunk, format, supports, decoder != nil); err != nil {
+		return nil, err
+	}
+
+	return &ReadRequest{chunk: cloneChunk(chunk), refs: refs, decoder: decoder, format: format}, nil
 }

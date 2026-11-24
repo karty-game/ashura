@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 const maxSamplerLOD = 32
@@ -34,7 +34,30 @@ type gpuMaterial struct {
 	source                    bool
 }
 
-func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (*wgpu.BindGroup, error) {
+func (driver *Driver) updateFrameUniform(frame render.Frame) error {
+	if driver.frameUniform == nil {
+		buffer, err := driver.device.CreateBuffer(&wgpu.BufferDescriptor{
+			Label: "scene frame uniform", Usage: gputypes.BufferUsageUniform | gputypes.BufferUsageCopyDst, Size: render.FrameUniformSize,
+		})
+		if err != nil {
+			return fmt.Errorf("create frame uniform: %w", err)
+		}
+
+		driver.frameUniform = buffer
+	}
+
+	if driver.frameUniformState.Update(frame) {
+		if err := driver.queue.WriteBuffer(driver.frameUniform, 0, driver.frameUniformState.Data[:]); err != nil {
+			driver.frameUniformState.Invalidate()
+
+			return fmt.Errorf("write frame uniform: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (driver *Driver) materialGroup(draw render.DrawCall) (*wgpu.BindGroup, error) {
 	if err := driver.requireMaterialRenderer(draw); err != nil {
 		return nil, err
 	}
@@ -58,25 +81,12 @@ func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (*
 		entry = nil
 	}
 
-	size := render.UniformSize(draw.Source)
 	if entry == nil {
-		buffer, err := driver.device.CreateBuffer(
-			&wgpu.BufferDescriptor{Usage: gputypes.BufferUsageUniform | gputypes.BufferUsageCopyDst, Size: uint64(size)},
-		)
+		var err error
+
+		entry, err = driver.createMaterial(draw)
 		if err != nil {
-			return nil, fmt.Errorf("create material uniform: %w", err)
-		}
-
-		entry = &gpuMaterial{uniform: buffer, source: draw.Source}
-		if draw.Impostor != nil {
-			entry.impostor, err = driver.acquireImpostor(draw.Impostor)
-			if err != nil {
-				buffer.Release()
-
-				return nil, err
-			}
-
-			entry.config = draw.Impostor
+			return nil, err
 		}
 
 		driver.materials[draw.ID] = entry
@@ -98,13 +108,37 @@ func (driver *Driver) materialGroup(draw render.DrawCall, frame render.Frame) (*
 		}
 	}
 
-	if entry.state.Update(draw, frame) {
-		if err := driver.queue.WriteBuffer(entry.uniform, 0, entry.state.Data[:size]); err != nil {
+	if entry.state.Update(draw) {
+		if err := driver.queue.WriteBuffer(entry.uniform, 0, entry.state.Data[:]); err != nil {
+			entry.state = render.UniformState{}
+
 			return nil, fmt.Errorf("write material uniform: %w", err)
 		}
 	}
 
 	return entry.group, nil
+}
+
+func (driver *Driver) createMaterial(draw render.DrawCall) (*gpuMaterial, error) {
+	buffer, err := driver.device.CreateBuffer(&wgpu.BufferDescriptor{
+		Label: "scene material uniform", Usage: gputypes.BufferUsageUniform | gputypes.BufferUsageCopyDst,
+		Size: render.MaterialUniformSize,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create material uniform: %w", err)
+	}
+
+	entry := &gpuMaterial{uniform: buffer, source: draw.Source, config: draw.Impostor}
+	if draw.Impostor != nil {
+		entry.impostor, err = driver.acquireImpostor(draw.Impostor)
+		if err != nil {
+			buffer.Release()
+
+			return nil, err
+		}
+	}
+
+	return entry, nil
 }
 
 func (driver *Driver) initMaterials() error {
@@ -166,10 +200,11 @@ func (driver *Driver) bindMaterial(
 	defer layout.Release()
 
 	entries := []wgpu.BindGroupEntry{
-		{Binding: 0, Buffer: entry.uniform, Size: uint64(render.UniformSize(entry.source))},
+		{Binding: 0, Buffer: entry.uniform, Size: render.MaterialUniformSize},
 		{Binding: 1, Sampler: driver.sampler},
 		{Binding: render.AlbedoBinding, TextureView: colorView},
 		{Binding: render.NormalBinding, TextureView: normalView},
+		{Binding: render.FrameUniformBinding, Buffer: driver.frameUniform, Size: render.FrameUniformSize},
 	}
 	switch {
 	case entry.impostor != nil:
@@ -294,6 +329,8 @@ func (driver *Driver) uploadTextureMips(image *wgpu.Texture, source *texturedata
 
 // UnloadTexture retires cached bindings and the texture's GPU references.
 func (driver *Driver) UnloadTexture(source *texturedata.Texture) {
+	driver.clearDecalAtlas(source)
+
 	for id, entry := range driver.materials {
 		if entry.albedo == source || entry.normal == source || entry.occlusion == source || entry.reflection == source ||
 			entry.lightmap == source || entry.rnm[0] == source || entry.rnm[1] == source || entry.rnm[2] == source {
@@ -334,6 +371,8 @@ func (driver *Driver) pruneMaterials() {
 }
 
 func (driver *Driver) releaseMaterials() {
+	driver.closeDecals()
+
 	for id, entry := range driver.materials {
 		entry.release()
 		delete(driver.materials, id)
@@ -341,6 +380,11 @@ func (driver *Driver) releaseMaterials() {
 
 	for source := range driver.textures {
 		driver.UnloadTexture(source)
+	}
+
+	if driver.frameUniform != nil {
+		driver.frameUniform.Release()
+		driver.frameUniform = nil
 	}
 
 	if driver.sampler != nil {

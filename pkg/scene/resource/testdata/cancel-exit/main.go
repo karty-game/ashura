@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 func main() {

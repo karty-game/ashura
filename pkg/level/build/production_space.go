@@ -5,7 +5,7 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 type productionSpacePlan struct {
@@ -79,6 +79,12 @@ func (plugin *productionPlugin) planSpaceResolve(
 	combined.Pages = nil
 	for _, chunk := range group.chunks {
 		combined.Pages = append(combined.Pages, chunk.Pages...)
+	}
+
+	if len(combined.Pages) != 0 {
+		if err := plugin.planBackend(plan, identity); err != nil {
+			return err
+		}
 	}
 
 	var (

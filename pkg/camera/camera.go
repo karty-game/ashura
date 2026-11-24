@@ -3,8 +3,8 @@
 package camera
 
 import (
-	"github.com/karty-game/karty-webgpu/internal/render"
-	engine "github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/internal/render"
+	engine "github.com/karty-game/ashura/pkg/engine"
 )
 
 const (
@@ -59,6 +59,9 @@ type OrbitControls struct {
 	MaxDistance  float32
 	RotateSpeed  float32
 	ZoomSpeed    float32
+	// DisableTouchRotate reserves the one-finger drag for application tools.
+	// Two-finger pan and pinch remain available.
+	DisableTouchRotate bool
 }
 
 // PanZoomControls pans an orthographic camera in its view plane using a primary
@@ -123,6 +126,9 @@ func Orbit() (Perspective, OrbitControls) {
 func (controls *OrbitControls) RuntimeOrbitControls() (*engine.Vector3, *float32, float32, float32, float32, float32, engine.MouseButton) {
 	return &controls.Target, &controls.Distance, controls.MinDistance, controls.MaxDistance, controls.RotateSpeed, controls.ZoomSpeed, controls.RotateButton
 }
+
+// RuntimeOrbitTouchRotation reports whether a one-finger drag rotates the camera.
+func (controls *OrbitControls) RuntimeOrbitTouchRotation() bool { return !controls.DisableTouchRotate }
 
 // RuntimePanZoomControls supplies planar navigation settings to the engine loop.
 func (controls PanZoomControls) RuntimePanZoomControls() (float32, float32, float32, float32, engine.MouseButton) {

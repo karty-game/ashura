@@ -1,9 +1,8 @@
 # Asset pipeline
 
-Keep your source artwork in the project and describe how to prepare it in
-`asset.config.go`. Ashura runs that Go recipe before compiling the game. The game
-uses the prepared files, so it doesn't need PNG decoders, model importers or
-texture encoders.
+Put ordinary PNG and JPEG textures in `assets/` to use Ashura's default
+preparation. Add `asset.config.go` when the project needs custom processing or
+outputs. Ashura prepares the assets before compiling the game.
 
 ```mermaid
 flowchart LR
@@ -13,7 +12,7 @@ flowchart LR
     output --> game["Game<br/>Load prepared assets"]
 ```
 
-[Write your first recipe](getting-started.md), or browse the plugins by their main
+[Prepare your first assets](getting-started.md), or browse the plugins by their main
 job:
 
 | Category | What you'll find |
@@ -32,7 +31,8 @@ for example. Each guide shows where to put the plugin and what else it needs.
 
 | I need… | Start here |
 | --- | --- |
-| Textures for a material | [Image importer](importers/image-import.md), then [texture output](publishers/image-ktx2.md) |
+| Textures for a material | [Default texture preparation](getting-started.md#prepare-some-textures), then [texture options](publishers/image-ktx2.md) |
+| The Go name or atlas for an image | [Inspect the recipe](getting-started.md#check-what-the-recipe-will-pick-up) |
 | Icons or panel artwork | [UI images](publishers/ui-images.md) |
 | Sprites | [2D images](publishers/sprite-images.md) |
 | A GLB model to embed or use in a level/impostor recipe | [Import GLB models](importers/model-glb.md) |

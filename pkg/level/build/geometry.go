@@ -5,8 +5,8 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/meshopt"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/meshopt"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 // The level module owns its compound UV records. The independent mesh stage

@@ -1,0 +1,46 @@
+package main
+
+import (
+	"log"
+
+	"github.com/karty-game/ashura/pkg/debug"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine/features"
+	"github.com/karty-game/ashura/samples/internal/sample"
+)
+
+const (
+	windowWidth  = 1080
+	windowHeight = 680
+)
+
+func main() {
+	if err := run(); err != nil {
+		log.Print(err)
+	}
+}
+
+func run() (err error) {
+	app := engine.NewApp(engine.AppConfig{
+		Title: "Ashura / Particles", CanvasID: "game", Width: windowWidth, Height: windowHeight,
+	})
+	defer sample.Cleanup(&err, app.Close)
+
+	if err := app.Register(features.Standard(), features.Particles()); err != nil {
+		return err
+	}
+
+	world, err := createScene(app)
+	if err != nil {
+		return err
+	}
+
+	panel, err := debug.Show(app)
+	if err != nil {
+		return err
+	}
+
+	panel.Hide()
+
+	return app.Run(world)
+}

@@ -7,9 +7,9 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 func TestPreparedPageRejectsUnsupportedBatchBeforeGPUWrites(t *testing.T) {
@@ -43,6 +43,8 @@ func TestPreparedPageRejectsUnsupportedBatchBeforeGPUWrites(t *testing.T) {
 	}
 
 	features.Call("add", textureCompressionBC)
+
+	driver.compression = enabledCompression(driver.device)
 
 	format, err := driver.preparedPageFormat(compressed)
 	if err != nil || format != "bc7-rgba-unorm" {

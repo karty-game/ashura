@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/modelbuild"
-	"github.com/karty-game/karty-webgpu/internal/modelbuild/testfixture"
+	"github.com/karty-game/ashura/internal/modelbuild"
+	"github.com/karty-game/ashura/internal/modelbuild/testfixture"
 )
 
 func TestFilePreparationIsAtomicDeterministicAndConfined(t *testing.T) {

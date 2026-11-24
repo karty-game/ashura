@@ -4,7 +4,7 @@ package ui
 import (
 	"unicode/utf8"
 
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 type paintRecord struct {

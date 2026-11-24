@@ -7,7 +7,7 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 //nolint:paralleltest // One hardware device owns sequential material mutations and pixel readbacks.
@@ -37,10 +37,7 @@ func TestStandardAlphaMaskHardwareCoverage(t *testing.T) {
 				{"middle-byte cutoff above", true, math.Nextafter32(float32(128)/255, 1), 1, false, false, false, true},
 			} {
 				data := render.Uniforms(render.DrawCall{AlphaMask: test.masked, AlphaCutoff: test.cutoff,
-					Color: [4]float32{1, 1, 1, test.tint}}, render.Frame{Lights: []render.Light{{
-					Kind: render.HemisphereLightKind, Direction: [3]float32{0, 1, 0},
-					Color: [3]float32{1, 1, 1}, GroundColor: [3]float32{1, 1, 1}, Intensity: 1,
-				}}})
+					Color: [4]float32{1, 1, 1, test.tint}})
 				array := js.Global().Get("Uint8Array").New(len(data))
 				js.CopyBytesToJS(array, data[:])
 				driver.queue.Call("writeBuffer", uniform, 0, array)
@@ -88,9 +85,18 @@ func alphaMaskMaterialFixture(t *testing.T, driver *Driver, format string) (js.V
 		"fragment": jsObject(map[string]any{"module": shader, "entryPoint": render.FragmentEntry(format == "rgba8unorm"),
 			"targets": []any{jsObject(map[string]any{"format": format})}}),
 	}))
-	uniform := device.Call("createBuffer", jsObject(map[string]any{"size": render.StandardUniformSize, "usage": 72}))
+	uniform := device.Call("createBuffer", jsObject(map[string]any{"size": render.MaterialUniformSize, "usage": 72}))
 
 	t.Cleanup(func() { uniform.Call("destroy") })
+
+	if err := driver.updateFrameUniform(render.Frame{Lights: []render.Light{{
+		Kind: render.HemisphereLightKind, Direction: [3]float32{0, 1, 0},
+		Color: [3]float32{1, 1, 1}, GroundColor: [3]float32{1, 1, 1}, Intensity: 1,
+	}}}); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(driver.releaseMaterials)
 
 	albedo := device.Call("createTexture", jsObject(map[string]any{"size": []any{4, 1, 1}, "format": "rgba8unorm-srgb", "usage": 6}))
 
@@ -101,7 +107,7 @@ func alphaMaskMaterialFixture(t *testing.T, driver *Driver, format string) (js.V
 	driver.queue.Call("writeTexture", jsObject(map[string]any{"texture": albedo}), pixels,
 		jsObject(map[string]any{"bytesPerRow": 16}), []any{4, 1, 1})
 	sampler := device.Call("createSampler")
-	entries := make([]any, 0, 8)
+	entries := make([]any, 0, 9)
 
 	entries = append(entries,
 		jsObject(map[string]any{"binding": 0, "resource": jsObject(map[string]any{"buffer": uniform})}),
@@ -112,6 +118,9 @@ func alphaMaskMaterialFixture(t *testing.T, driver *Driver, format string) (js.V
 	}
 
 	entries = append(entries, jsObject(map[string]any{"binding": 7, "resource": sampler}))
+	entries = append(entries, jsObject(map[string]any{
+		"binding": render.FrameUniformBinding, "resource": jsObject(map[string]any{"buffer": driver.frameUniform}),
+	}))
 	group := device.Call("createBindGroup", jsObject(map[string]any{"layout": pipeline.Call("getBindGroupLayout", 0), "entries": entries}))
 	shadow := alphaMaskShadowFixture(t, driver, pipeline)
 

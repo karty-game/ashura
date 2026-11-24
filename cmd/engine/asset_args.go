@@ -40,6 +40,24 @@ func parseAssetRunArgs(args []string) ([]string, assetOptions, error) {
 			}
 
 			options.noCache = value
+		case argument == "--jobs":
+			if len(args) == 0 {
+				return nil, assetOptions{}, fmt.Errorf("--jobs requires a positive count: %w", errUsage)
+			}
+
+			value, err := strconv.Atoi(args[0])
+			if err != nil || value < 1 {
+				return nil, assetOptions{}, fmt.Errorf("--jobs requires a positive count: %w", errUsage)
+			}
+
+			options.jobs, args = value, args[1:]
+		case strings.HasPrefix(argument, "--jobs="):
+			value, err := strconv.Atoi(strings.TrimPrefix(argument, "--jobs="))
+			if err != nil || value < 1 {
+				return nil, assetOptions{}, fmt.Errorf("--jobs requires a positive count: %w", errUsage)
+			}
+
+			options.jobs = value
 		default:
 			remaining = append(remaining, argument)
 		}

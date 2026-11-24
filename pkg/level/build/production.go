@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 // ProductionOptions configures the shared offline RGB/RNM compute lightmapper.
@@ -19,17 +19,18 @@ type ProductionOptions struct {
 	// the existing separately prepared LightmapUVs output.
 	UVs *UVOptions
 	// ResumeSamples selects explicit checksummed fixed-count linear build inputs.
-	ResumeSamples   []string
-	Worker          bake.WorkerOptions
-	Sampling        bake.Options
-	Adaptive        *bake.AdaptivePolicy
-	Reconstruction  *bake.ReconstructionOptions
-	SurfaceEdges    bake.SurfaceEdgeOptions
-	Verification    *bake.VerificationPolicy
-	Preview         bool
-	MetresPerUnit   float32
-	Environment     *bake.Environment
-	Emitters        map[string][]bake.Emitter
+	ResumeSamples  []string
+	Worker         bake.WorkerOptions
+	Sampling       bake.Options
+	Adaptive       *bake.AdaptivePolicy
+	Reconstruction *bake.ReconstructionOptions
+	SurfaceEdges   bake.SurfaceEdgeOptions
+	Verification   *bake.VerificationPolicy
+	Preview        bool
+	MetresPerUnit  float32
+	Environment    *bake.Environment
+	Emitters       map[string][]bake.Emitter
+	// BackendIdentity overrides the identity reported by the native adapter.
 	BackendIdentity string
 }
 
@@ -39,6 +40,7 @@ type productionPlugin struct {
 	supportResource, workerResource *assetbuild.ExecutionResource
 	options                         ProductionOptions
 	worker                          *bake.Worker
+	backend                         assetbuild.Ref
 	resume                          []assetbuild.Ref
 	sceneKey                        string
 	scene                           *bake.PreparedScene
@@ -70,8 +72,9 @@ func (plugin *productionPlugin) Plan(plan *assetbuild.Plan) error {
 	plugin.earlyScenes = make(map[string]productionSceneRefs)
 	plugin.pageInputs = &productionPageCache{}
 	plugin.supportResource = assetbuild.NewExecutionResource()
-
 	plugin.workerResource = assetbuild.NewExecutionResource()
+	plugin.backend = assetbuild.Ref{}
+
 	if err := plugin.planResumeInputs(plan); err != nil {
 		return err
 	}

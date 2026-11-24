@@ -3,7 +3,7 @@ package main
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 const fullTurn = 2 * math.Pi

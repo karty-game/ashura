@@ -12,7 +12,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/internal/ssbump"
+	"github.com/karty-game/ashura/internal/ssbump"
 )
 
 var errSSBump = errors.New("invalid SSBump source image or options")

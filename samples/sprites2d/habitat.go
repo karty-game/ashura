@@ -4,7 +4,7 @@ package main
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/draw2d"
+	"github.com/karty-game/ashura/pkg/draw2d"
 )
 
 type kelpStem struct {

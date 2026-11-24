@@ -4,7 +4,7 @@ package main
 import (
 	"math"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func (study *expedition) animateRings(unit float64) {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	bake "github.com/karty-game/karty-webgpu/pkg/lightmap/bake"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 )
 
 func (plugin *productionPlugin) prepareGeometry(ctx *assetbuild.Context, record partitioned, chunk chunkRecord) (assetbuild.Result, error) {
@@ -138,13 +138,31 @@ func (plugin *productionPlugin) readScene(ctx *assetbuild.Context, ref assetbuil
 	return scene, nil
 }
 func (plugin *productionPlugin) openWorker(ctx *assetbuild.Context) error {
-	library, err := productionNativeLibrary(ctx)
+	options, err := plugin.prepareWorker(ctx)
 	if err != nil {
 		return err
 	}
 
+	if plugin.worker == nil {
+		plugin.worker, err = bake.NewWorker(ctx.Context, options)
+		if err != nil {
+			return err
+		}
+	}
+
+	return plugin.verifyWorkerBackend(ctx)
+}
+
+// Track the same native dependencies on every GPU action that opens the worker,
+// even when another action has already initialized the binding in this process.
+func (plugin *productionPlugin) prepareWorker(ctx *assetbuild.Context) (bake.WorkerOptions, error) {
+	library, err := productionNativeLibrary(ctx)
+	if err != nil {
+		return bake.WorkerOptions{}, err
+	}
+
 	if _, err = ctx.TrackLibrary(library); err != nil {
-		return err
+		return bake.WorkerOptions{}, err
 	}
 
 	for _, name := range []string{
@@ -161,21 +179,15 @@ func (plugin *productionPlugin) openWorker(ctx *assetbuild.Context) error {
 	if selection := ctx.Getenv("KARTY_LIGHTMAP_SOFTWARE_FOR_CI"); selection != "" {
 		software, parseErr := strconv.ParseBool(selection)
 		if parseErr != nil {
-			return fmt.Errorf("invalid explicit lightmap software CI selection: %w", parseErr)
+			return bake.WorkerOptions{}, fmt.Errorf("invalid explicit lightmap software CI selection: %w", parseErr)
 		}
 
 		options.SoftwareForCI = options.SoftwareForCI || software
 	}
 
-	if plugin.worker != nil {
-		return nil
-	}
-
 	if err = bake.InitializeNativeLibrary(library); err != nil {
-		return err
+		return bake.WorkerOptions{}, err
 	}
 
-	plugin.worker, err = bake.NewWorker(ctx.Context, options)
-
-	return err
+	return options, nil
 }

@@ -2,7 +2,7 @@
 // Register only what an application uses before starting its App.
 package features
 
-import "github.com/karty-game/karty-webgpu/pkg/engine"
+import "github.com/karty-game/ashura/pkg/engine"
 
 // Standard enables standard materials, including their shared texture bindings.
 func Standard() engine.Feature { return standard() }
@@ -19,5 +19,14 @@ func PointShadows() engine.Feature { return pointShadows() }
 // Sprites enables the retained Screen2D renderer.
 func Sprites() engine.Feature { return sprites() }
 
+// Particles enables GPU simulation and rendering for prepared screen-space effects.
+func Particles() engine.Feature { return particles() }
+
+// Decals enables projected albedo on opted-in Standard and Source receivers.
+func Decals() engine.Feature { return decals() }
+
 // Compute enables declared compute resources and dispatches.
 func Compute() engine.Feature { return compute() }
+
+// ClusteredLights enables GPU light culling and perspective spotlight shadows.
+func ClusteredLights() engine.Feature { return clusteredLights() }

@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/google/jsonschema-go/jsonschema"
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
-	logicbuild "github.com/karty-game/karty-webgpu/pkg/scene/build/logic"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
+	logicbuild "github.com/karty-game/ashura/pkg/scene/build/logic"
 )
 
 func compile(t *testing.T, files map[string]string, entry string, modules []scenebuild.Module) ([]byte, error) {

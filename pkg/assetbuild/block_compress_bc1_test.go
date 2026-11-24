@@ -9,8 +9,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func TestCompressBC1PreservesAuthoredCoverageWithoutExecutables(t *testing.T) {

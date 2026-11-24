@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 var errTexturePrepareFixture = errors.New("fixture upload failure")

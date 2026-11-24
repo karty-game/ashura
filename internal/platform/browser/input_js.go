@@ -5,7 +5,7 @@ package browser
 import (
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 const touchPointerType = "touch"
@@ -23,6 +23,7 @@ func (driver *Driver) installInput() {
 		driver.input.MouseButtons = [8]bool{}
 		driver.resetInputDeltas()
 		driver.touch.Reset()
+		driver.input.Touch = platform.TouchPointer{}
 	})
 }
 
@@ -162,6 +163,7 @@ func (driver *Driver) resetInputDeltas() {
 	driver.input.TouchDX, driver.input.TouchDY = 0, 0
 	driver.input.TouchPanX, driver.input.TouchPanY = 0, 0
 	driver.input.Pinch = 0
+	driver.input.Touch.Pressed = false
 }
 
 func (driver *Driver) listen(target js.Value, event string, callback func(js.Value)) {

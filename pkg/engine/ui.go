@@ -3,9 +3,9 @@ package engine
 import (
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/uihost"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/uihost"
 )
 
 // UI is the opaque retained-interface attachment installed by pkg/ui/app.
@@ -46,12 +46,18 @@ func (app *App) filterUI(input platform.InputState) platform.InputState {
 		clear(input.Keys[:])
 	}
 
-	if app.ui.CapturesPointer() || app.ui.ConsumesPointer(input.MouseX, input.MouseY) {
+	captured := app.ui.CapturesPointer()
+	if captured || app.ui.ConsumesPointer(input.MouseX, input.MouseY) {
 		clear(input.MouseButtons[:])
 		clear(input.DragDX[:])
 		clear(input.DragDY[:])
 		input.MouseDX, input.MouseDY = 0, 0
 		input.WheelX, input.WheelY = 0, 0
+	}
+
+	touch := input.Touch
+	if captured || (touch.Down || touch.Pressed) && app.ui.ConsumesPointer(touch.X, touch.Y) {
+		input.Touch = platform.TouchPointer{}
 		input.TouchDX, input.TouchDY = 0, 0
 		input.TouchPanX, input.TouchPanY, input.Pinch = 0, 0, 0
 	}

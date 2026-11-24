@@ -48,8 +48,14 @@ func (plugin atlasPlugin) Plan(plan *Plan) error {
 	}
 
 	selected, retained, err := atlasImageResources(plan, options.Include)
-	if err != nil || len(selected) == 0 {
+	if err != nil {
 		return err
+	}
+
+	plan.inspectAtlas(options, selected)
+
+	if len(selected) == 0 {
+		return nil
 	}
 
 	inputs := make([]Ref, 0, len(selected))
@@ -76,6 +82,8 @@ func (plugin atlasPlugin) Plan(plan *Plan) error {
 	if err != nil {
 		return err
 	}
+
+	plan.inspectAtlasImages(refs[0], inputs, options.Name)
 
 	retained = append(retained, Resource{ID: "atlas/" + options.Name, Ref: refs[0]})
 	plan.Resources = retained

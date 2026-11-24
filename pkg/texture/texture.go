@@ -3,7 +3,7 @@
 // Source-image decoding and preparation belong to the application or its build.
 package texture
 
-import "github.com/karty-game/karty-webgpu/internal/texturedata"
+import "github.com/karty-game/ashura/internal/texturedata"
 
 // Texture is an App-owned texture handle. Prepared textures are immutable;
 // compute output textures may be written by scheduled GPU work.
@@ -47,6 +47,7 @@ const (
 	BC7      = texturedata.BC7
 	ETC2RGBA = texturedata.ETC2RGBA
 	ASTC4x4  = texturedata.ASTC4x4
+	ASTC6x6  = texturedata.ASTC6x6
 )
 
 // ColorSpace describes RGB encoding in the prepared payload.

@@ -216,5 +216,5 @@ func planNamedPipelines(root *Plan, definitions []Pipeline) error {
 		return err
 	}
 
-	return planPipelines(root, pipelines)
+	return planPipelines(root, pipelines, false)
 }

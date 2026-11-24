@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 var errNativeLibrary = errors.New("offline baking requires the rendering binding's wgpu-native library in ./lib or WGPU_NATIVE_PATH")

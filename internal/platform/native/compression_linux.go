@@ -6,8 +6,8 @@ import (
 	"errors"
 
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/texturedata"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 var errNativeCompression = errors.New("compressed texture format is not enabled on this native device")
@@ -92,7 +92,16 @@ func (compression nativeCompression) formats(encoding texturedata.Format) (bool,
 		return compression.etc2, gputypes.TextureFormatETC2RGBA8Unorm, gputypes.TextureFormatETC2RGBA8UnormSrgb
 	case texturedata.ASTC4x4:
 		return compression.astc, gputypes.TextureFormatASTC4x4Unorm, gputypes.TextureFormatASTC4x4UnormSrgb
+	case texturedata.ASTC6x6:
+		return compression.astc, gputypes.TextureFormatASTC6x6Unorm, gputypes.TextureFormatASTC6x6UnormSrgb
 	}
 
 	return false, 0, 0
+}
+
+// SupportsTextureFormat uses the enabled-device snapshot, without GPU work.
+func (driver *Driver) SupportsTextureFormat(format texturedata.Format) bool {
+	enabled, _, _ := driver.compression.formats(format)
+
+	return enabled
 }

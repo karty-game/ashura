@@ -22,11 +22,16 @@ func (plan *Plan) scopedRef(ref Ref) Ref {
 	return ref
 }
 
-func planPipelines(root *Plan, definitions []pipelineDefinition) error {
+func planPipelines(root *Plan, definitions []pipelineDefinition, inspect bool) error {
 	for _, definition := range definitions {
 		pipeline := definition.pipeline
 		plan := &Plan{Project: root.Project, Output: root.Output, Input: slices.Clone(pipeline.Input),
 			Environment: root.Environment, namespace: definition.namespace, directory: pipeline.Directory}
+
+		if inspect {
+			plan.inspection = newPipelineInspection(pipeline.Name)
+		}
+
 		// Retain cleanup ownership even when a later plugin fails to plan.
 		root.pipelines = append(root.pipelines, plan)
 

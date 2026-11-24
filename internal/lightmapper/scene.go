@@ -29,11 +29,9 @@ func (prepared *PreparedScene) Hash() string            { return prepared.hash }
 func (prepared *PreparedScene) Nodes() []BVHNode        { return prepared.nodes }
 func (prepared *PreparedScene) Order() []uint32         { return prepared.order }
 func (prepared *PreparedScene) LightNodes() []LightNode { return prepared.lightNodes }
-func (prepared *PreparedScene) LightOrder() []uint32    { return prepared.lightOrder }
 func (prepared *PreparedScene) TriangleEmitter(index uint32) int32 {
 	return prepared.triangleEmitters[index]
 }
-func (prepared *PreparedScene) EnvironmentEmitter() int32 { return prepared.environmentEmitter }
 
 func (prepared *PreparedScene) EnvironmentRows() []float32    { return prepared.environmentRows }
 func (prepared *PreparedScene) EnvironmentColumns() []float32 { return prepared.environmentColumns }

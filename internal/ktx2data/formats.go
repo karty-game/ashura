@@ -1,6 +1,6 @@
 package ktx2data
 
-import "github.com/karty-game/karty-webgpu/internal/texturedata"
+import "github.com/karty-game/ashura/internal/texturedata"
 
 func payloadFormat(format uint32) texturedata.Format {
 	switch format {
@@ -16,6 +16,8 @@ func payloadFormat(format uint32) texturedata.Format {
 		return texturedata.ETC2RGBA
 	case vkASTC4x4:
 		return texturedata.ASTC4x4
+	case vkASTC6x6, vkASTC6x6SRGB:
+		return texturedata.ASTC6x6
 	default:
 		return texturedata.RGBA8
 	}
@@ -25,7 +27,7 @@ func blockFormat(format uint32) bool { return payloadFormat(format) != textureda
 
 func srgbFormat(format uint32) bool {
 	return format == vkRGBA8SRGB || format == vkBC1SRGB || format == vkBC1RGBASRGB || format == vkBC7SRGB || format == vkETC2RGBSRGB ||
-		format == vkETC2RGBASRGB
+		format == vkETC2RGBASRGB || format == vkASTC6x6SRGB
 }
 
 // BC1Alpha identifies the punchthrough profile of a container already admitted
@@ -61,7 +63,7 @@ func levelAlignment(format texturedata.Format) uint64 {
 		return 4
 	case texturedata.BC1, texturedata.ETC2RGB:
 		return 8
-	case texturedata.BC6H, texturedata.BC7, texturedata.ETC2RGBA, texturedata.ASTC4x4:
+	case texturedata.BC6H, texturedata.BC7, texturedata.ETC2RGBA, texturedata.ASTC4x4, texturedata.ASTC6x6:
 		return 16
 	default:
 		return 0

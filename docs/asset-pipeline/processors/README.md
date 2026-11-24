@@ -16,6 +16,7 @@ and the steps it needs before and after it.
 | --- | --- | --- |
 | Reduce texture dimensions and build size | [Resize](image-resize.md) | After import, before other image processing |
 | Share textures between icons or sprites | [Atlas](image-atlas.md) | After resizing or surface-map generation, before mipmaps |
+| Bake permanent projected markings into a receiver's albedo | [Authored decals](../../../pkg/decal/build/README.md) | After image import, before mipmaps and encoding |
 | Reduce texture shimmering in the distance | [Mipmaps](image-mipmaps.md) | After image edits and atlas packing, before encoding |
 | Convert a 360° reflection panorama to cube faces | [Reflection probes](image-reflection-probes.md) | After panorama import or capture, before KTX2 |
 

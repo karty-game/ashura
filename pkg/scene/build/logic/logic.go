@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	scenebuild "github.com/karty-game/karty-webgpu/pkg/scene/build"
+	scenebuild "github.com/karty-game/ashura/pkg/scene/build"
 )
 
 // Modules provides explicit observable boolean state, with optional persistence.

@@ -62,7 +62,8 @@ func resolveWebCompiler(ctx context.Context, name string) (webCompiler, error) {
 		}
 
 		rootVariable = "TINYGOROOT"
-		compiler.Flags = []string{"-target=wasm", "-opt=z", "-no-debug"}
+		// TinyGo 0.44.0's higher optimization levels can exhaust LLVM's native stack on the WebGPU module.
+		compiler.Flags = []string{"-target=wasm", "-opt=1", "-no-debug"}
 		// Isolated fixtures may opt out of VCS stamping. This flag is also
 		// supported by TinyGo; do not forward arbitrary standard Go flags.
 		if slices.Contains(strings.Fields(os.Getenv("GOFLAGS")), "-buildvcs=false") {
@@ -148,6 +149,10 @@ func webBuildEnvironment(compiler string) []string {
 		switch strings.ToUpper(key) {
 		case "GOOS", "GOARCH", "CGO_ENABLED":
 			continue
+		case "BINARYEN_CORES":
+			if compiler == tinyGoCompiler {
+				continue
+			}
 		case "GOFLAGS":
 			// Standard Go flags are not a TinyGo command-line contract.
 			if compiler == tinyGoCompiler {
@@ -162,6 +167,11 @@ func webBuildEnvironment(compiler string) []string {
 		}
 
 		environment = append(environment, entry)
+	}
+
+	if compiler == tinyGoCompiler {
+		// The bundled Binaryen worker threads have smaller stacks than its main thread.
+		environment = append(environment, "BINARYEN_CORES=1")
 	}
 
 	return append(environment, "GOOS=js", "GOARCH=wasm", "CGO_ENABLED=0")

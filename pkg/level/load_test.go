@@ -14,12 +14,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
 )
 
 func payload(t *testing.T, root string, data []byte) Reference {
@@ -355,7 +355,7 @@ func TestFailedLoadRollsBackSharedResourceReferences(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Inject a later-page failure to exercise rollback after sharing first-page textures.
-	changed, err := modeldata.Decode(broken.pages[1].geometry)
+	changed, err := modeldata.Decode(broken.payloadBytes(second.Geometry.SHA256))
 	if err != nil {
 		t.Fatal(err)
 	}

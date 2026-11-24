@@ -10,7 +10,7 @@ import (
 	"sync"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 //go:embed third_party/basis_transcoder.js

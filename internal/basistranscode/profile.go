@@ -10,7 +10,7 @@ import (
 	"errors"
 	"math/bits"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 var ErrProfile = errors.New("basis: expected bounded opaque sRGB ETC1S albedo with complete mip chain")

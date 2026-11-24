@@ -1,0 +1,292 @@
+{
+  "duration": 3,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 56,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 16
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "embers",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 140,
+          "min": -140,
+          "mode": "range"
+        },
+        "life": {
+          "max": 2.6,
+          "min": 1.6,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 20,
+          "min": 11,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 55,
+          "min": 20,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "embers",
+      "noise": {
+        "frequency": 0.009,
+        "octaves": 2,
+        "scrollSpeed": 0.2,
+        "strength": {
+          "mode": "constant",
+          "value": 28
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.26,
+              "g": 0.66,
+              "r": 1,
+              "t": 0
+            },
+            {
+              "a": 1,
+              "b": 0.22,
+              "g": 0.58,
+              "r": 1,
+              "t": 0.2
+            },
+            {
+              "a": 0.85,
+              "b": 0.1,
+              "g": 0.38,
+              "r": 1,
+              "t": 0.7
+            },
+            {
+              "a": 0,
+              "b": 0.01,
+              "g": 0.12,
+              "r": 0.5,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 1.2
+            },
+            {
+              "t": 0.5,
+              "v": 0.95
+            },
+            {
+              "t": 1,
+              "v": 0.325
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.5
+          },
+          "gravity": {
+            "x": 0,
+            "y": -55
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 140,
+        "spread": 24
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 15,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 6
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "warmth",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 2,
+          "min": 1.2,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 70,
+          "min": 40,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 0,
+          "min": 0,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "warmth",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.12,
+              "g": 0.4,
+              "r": 0.9,
+              "t": 0
+            },
+            {
+              "a": 0.2,
+              "b": 0.15,
+              "g": 0.45,
+              "r": 1,
+              "t": 0.4
+            },
+            {
+              "a": 0,
+              "b": 0.05,
+              "g": 0.25,
+              "r": 0.7,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeInOut",
+              "t": 0,
+              "v": 0.7
+            },
+            {
+              "t": 0.5,
+              "v": 1
+            },
+            {
+              "t": 1,
+              "v": 0.8
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 110,
+        "spread": 24
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "circle-soft"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Varied embers",
+    "notes": "Prewarmed embers use the midpoint of the authored size curves, the original color fade, and a finite emission window."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 74
+}

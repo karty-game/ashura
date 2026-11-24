@@ -14,8 +14,8 @@ import (
 	"io"
 	"math"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 var errFormat = errors.New("invalid xatlas input/output")

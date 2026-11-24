@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/computedata"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/computedata"
 )
 
 func (driver *computeBackend) uploadComputeBuffers(uploads []bufferdata.Upload) error {

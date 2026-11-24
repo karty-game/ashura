@@ -3,8 +3,8 @@ package ktx2
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // Asset is an explicit reference to embedded, prepared texture bytes. Its path

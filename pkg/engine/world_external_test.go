@@ -3,8 +3,8 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/camera"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
+	"github.com/karty-game/ashura/pkg/camera"
+	"github.com/karty-game/ashura/pkg/engine"
 )
 
 type health struct {

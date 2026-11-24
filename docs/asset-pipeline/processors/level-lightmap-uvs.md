@@ -23,7 +23,7 @@ flowchart LR
     F --> G[Publish level]
 ```
 
-Import `levelbuild` from `github.com/karty-game/karty-webgpu/pkg/level/build`.
+Import `levelbuild` from `github.com/karty-game/ashura/pkg/level/build`.
 Place it in `Pipeline.Process` after [StaticChunks](level-static-chunks.md). Use
 `Production: true` for the current production compute lightmapper. Alternatively,
 pass `UVOptions` through `ProductionBake.UVs` and omit this separate plugin.
@@ -65,7 +65,7 @@ increases receiver count, bake work and delivered texture memory. Geometry work
 is explicit: [Cleanup](mesh-cleanup.md) precedes scene import and UV generation;
 [Optimize](mesh-optimize.md) follows UV generation and precedes baking. The level
 pipeline keeps the lighting data matched to the final mesh. Import `meshbuild`
-from `github.com/karty-game/karty-webgpu/pkg/mesh/build` for these optional stages.
+from `github.com/karty-game/ashura/pkg/mesh/build` for these optional stages.
 
 [Plugin source](../../../pkg/level/build/uv.go) · [Pipeline guide](../getting-started.md)
 

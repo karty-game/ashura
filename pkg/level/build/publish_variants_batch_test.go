@@ -7,11 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
+	"strings"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/modeldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 type separateNativeVariants struct{ profiles []PublishOptions }
@@ -41,7 +43,7 @@ func variantFixtureProfiles() []PublishOptions {
 		return PublishOptions{
 			Variant: name, Representation: representation,
 			NativeTextures: &NativeTextureOptions{
-				Family: family, NativeAlbedo: true,
+				Family: family, NativeAlbedo: true, ProfileMaterials: true,
 				Encoder: assetbuild.BlockCompressionOptions{LDRQuality: &quality, SSBumpQuality: &quality},
 			},
 			AlbedoETC1S: &ETC1SOptions{Quality: 192},
@@ -108,6 +110,8 @@ func TestPortableVariantBatchMatchesCompletePreparedPayloads(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		assertNativeVariantMaterials(t, project, profiles)
+
 		current := make(map[string]string)
 
 		for _, directory := range []string{"public", "levels"} {
@@ -135,6 +139,51 @@ func TestPortableVariantBatchMatchesCompletePreparedPayloads(t *testing.T) {
 			}
 		}
 	}
+}
+
+func assertNativeVariantMaterials(t *testing.T, project string, profiles []PublishOptions) {
+	t.Helper()
+
+	for _, profile := range profiles {
+		directory := "texture-profiles/bc/levels/textures/"
+		if profile.NativeTextures.Family == nativeTextureETC2 {
+			directory = "texture-profiles/mobile/levels/textures/"
+		}
+
+		document := bundleVariantManifest(t, project, profile.Variant)
+
+		refs := nativeVariantMaterialRefs(document)
+		if len(refs) == 0 {
+			t.Fatal("fixture lost native material textures", profile.Variant)
+		}
+
+		for _, ref := range refs {
+			if !strings.HasPrefix(ref.Path, directory) {
+				t.Fatal("material published outside its device profile", ref.Path)
+			}
+
+			data := readLevelFixture(t, project, "generated/public/"+ref.Path)
+
+			actual, err := leveldata.Reference(ref.Path, data)
+			if err != nil || actual != *ref {
+				t.Fatal("material reference does not match published bytes", actual, err)
+			}
+		}
+	}
+}
+
+func nativeVariantMaterialRefs(document leveldata.Document) []*leveldata.Ref {
+	var refs []*leveldata.Ref
+
+	for _, chunk := range document.Chunks {
+		for _, page := range chunk.Pages {
+			for _, material := range page.Materials {
+				refs = append(refs, material.Albedo, material.SSBump)
+			}
+		}
+	}
+
+	return slices.DeleteFunc(refs, func(ref *leveldata.Ref) bool { return ref == nil })
 }
 
 func writeNativeVariantFixture(t *testing.T) string {

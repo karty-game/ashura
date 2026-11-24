@@ -5,7 +5,7 @@ package native
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
+	"github.com/karty-game/ashura/internal/texturedata"
 )
 
 func TestPrepareTextureReusesCachedGPUImage(t *testing.T) {

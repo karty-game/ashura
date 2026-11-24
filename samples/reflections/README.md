@@ -14,7 +14,7 @@ The sample contains no custom source-processing or code-generation package.
 
 The asset recipe imports a 512×256 equirectangular image through the shared
 [reflection build module](../../pkg/reflection/build/README.md), then runs `ReflectionProbes()`,
-`KTX2()` and `GoCatalog()`. The panorama is a small analytic diffuse bake from the
+`KTX2Variants()` and `GoCatalog()`. The panorama is a small analytic diffuse bake from the
 probe position, not a capture of the engine renderer. It uses the shared lights
 and material colors, with ideal sphere intersections; recursive reflections and
 view-dependent specular highlights are excluded. It remains a static environment
@@ -22,11 +22,10 @@ until the assets are rebuilt.
 
 `ReflectionProbes()` projects that image into a cubemap atlas and filters each
 face's mip levels offline. The resulting faces are 128×128 before mip filtering.
-KTX2 output stores the opaque reflection color in sRGB BC1, preserving the atlas
-dimensions and all filtered mip levels. Encoding runs offline; the sample requires
-the device's BC texture compression feature and uploads its native blocks directly.
-The room retains one probe; this update does not add probes to Sponza or change
-its lighting pipeline.
+KTX2 output stores the opaque reflection color in sRGB BC1 and ETC2 RGB,
+preserving the atlas dimensions and all filtered mip levels. Encoding runs
+offline. The sample selects a supported format and uploads its native blocks
+directly.
 
 ### Chunk-local incremental baking
 

@@ -9,9 +9,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/ktx2data"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/ktx2data"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
@@ -21,7 +21,7 @@ func TestCompressBC7RetainsAlphaTransferAndAuthoredMips(t *testing.T) {
 	ctx, closeCodec := buildCodecContext(t.Context())
 	defer func() { _ = closeCodec() }()
 
-	for _, target := range []texture.Format{texture.BC7, texture.ETC2RGBA} {
+	for _, target := range []texture.Format{texture.BC7, texture.ETC2RGBA, texture.ASTC6x6} {
 		checkAlphaLDRMips(t, ctx, target)
 	}
 }
@@ -32,6 +32,10 @@ func checkAlphaLDRMips(t *testing.T, ctx context.Context, target texture.Format)
 	compress := CompressBC7
 	if target == texture.ETC2RGBA {
 		compress = CompressETC2RGBA
+	}
+
+	if target == texture.ASTC6x6 {
+		compress = CompressASTC6x6
 	}
 
 	for _, space := range []texturedata.ColorSpace{texturedata.Linear, texturedata.SRGB} {
@@ -58,7 +62,9 @@ func checkAlphaLDRMips(t *testing.T, ctx context.Context, target texture.Format)
 
 		for level, blocks := range decoded.Levels {
 			side := max(1, 12>>level)
-			if len(blocks) != ((side+3)/4)*((side+3)/4)*16 {
+
+			blockSide := texturedata.BlockDimension(target)
+			if len(blocks) != ((side+blockSide-1)/blockSide)*((side+blockSide-1)/blockSide)*16 {
 				t.Fatal("BC7 block payload bound", level, len(blocks))
 			}
 		}
@@ -82,14 +88,14 @@ func checkAlphaLDRMips(t *testing.T, ctx context.Context, target texture.Format)
 func TestCompressBC7RejectsInputAndPreservesCancellation(t *testing.T) {
 	t.Parallel()
 
-	for _, compress := range []func(context.Context, []byte, BlockCompressionOptions) ([]byte, error){CompressBC7, CompressETC2RGBA} {
+	for _, compress := range []func(context.Context, []byte, BlockCompressionOptions) ([]byte, error){CompressBC7, CompressETC2RGBA, CompressASTC6x6} {
 		for _, input := range [][]byte{nil, []byte("not KTX2"), ldrTestTexture(3, 4, [4]byte{1, 2, 3, 4}, texturedata.Linear)} {
 			if _, err := compress(t.Context(), input, BlockCompressionOptions{}); !errors.Is(err, errBlockCompression) {
 				t.Fatal("invalid BC7 source admitted", err)
 			}
 		}
 
-		valid := ldrTestTexture(4, 4, [4]byte{1, 2, 3, 4}, texturedata.SRGB)
+		valid := ldrTestTexture(12, 12, [4]byte{1, 2, 3, 4}, texturedata.SRGB)
 		for _, quality := range []int{-1, 5} {
 			if _, err := compress(t.Context(), valid, BlockCompressionOptions{LDRQuality: &quality}); !errors.Is(err, errBlockCompression) {
 				t.Fatal("invalid BC7 quality admitted", err)

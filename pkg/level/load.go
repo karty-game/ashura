@@ -3,13 +3,13 @@ package level
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/basistranscode"
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/material"
-	"github.com/karty-game/karty-webgpu/pkg/model"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/basistranscode"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/material"
+	"github.com/karty-game/ashura/pkg/model"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var (
@@ -84,6 +84,8 @@ type Instance struct {
 	models             []*model.Instance
 	nextPage, nextPart int
 	presenting         bool
+	decals             *engine.DecalPlacement
+	decalLayers        uint32
 }
 
 // Load is the synchronous convenience form of Begin and Step. Interactive

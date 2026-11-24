@@ -5,10 +5,9 @@ package lightmapper
 import "errors"
 
 const (
-	SceneSchema    = "karty.lightmapper-scene@3"
-	Algorithm      = "diffuse-lightmapper@1"
-	ReceiverSchema = "karty.lightmapper-receivers@1"
-	ResultSchema   = "karty.lightmapper-linear@1"
+	SceneSchema  = "karty.lightmapper-scene@3"
+	Algorithm    = "diffuse-lightmapper@1"
+	ResultSchema = "karty.lightmapper-linear@1"
 )
 
 var (

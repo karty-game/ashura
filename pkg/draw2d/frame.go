@@ -6,7 +6,7 @@ import (
 	"math"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 // Frame borrows retained storage until the next Frame or mutation. Idle frames do

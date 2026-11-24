@@ -37,9 +37,9 @@ func TestBasicSceneDoesNotImportOptionalUI(t *testing.T) {
 
 			for dependency := range strings.FieldsSeq(string(output)) {
 				if strings.HasPrefix(dependency, "github.com/go-text/typesetting") ||
-					strings.HasPrefix(dependency, "github.com/karty-game/karty-webgpu/pkg/ui") ||
-					dependency == "github.com/karty-game/karty-webgpu/pkg/debug" ||
-					dependency == "github.com/karty-game/karty-webgpu/samples/internal/sampleui" {
+					strings.HasPrefix(dependency, "github.com/karty-game/ashura/pkg/ui") ||
+					dependency == "github.com/karty-game/ashura/pkg/debug" ||
+					dependency == "github.com/karty-game/ashura/samples/internal/sampleui" {
 					t.Fatalf("%s basic scene retains optional dependency %s", target, dependency)
 				}
 			}

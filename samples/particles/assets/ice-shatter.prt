@@ -1,0 +1,668 @@
+{
+  "duration": 1.55,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 24,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.051
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 28,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Frost mist",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 42,
+          "min": -42,
+          "mode": "range"
+        },
+        "life": {
+          "max": 1.24,
+          "min": 0.64,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 138,
+          "min": 79,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 93,
+          "min": 50,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Frost mist",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0.12,
+              "b": 1,
+              "g": 0.83,
+              "r": 0.67,
+              "t": 0
+            },
+            {
+              "a": 0.47,
+              "b": 0.99,
+              "g": 0.76,
+              "r": 0.55,
+              "t": 0.19
+            },
+            {
+              "a": 0,
+              "b": 0.77,
+              "g": 0.49,
+              "r": 0.31,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.53
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 1.4
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.9
+          },
+          "gravity": {
+            "x": 0,
+            "y": 36
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": null,
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "volume",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 19
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 30,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 36,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Ice facets",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 200,
+          "min": -200,
+          "mode": "range"
+        },
+        "life": {
+          "max": 1.06,
+          "min": 0.62,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 41,
+          "min": 21,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 240,
+          "min": 112,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Ice facets",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 1,
+              "g": 0.99,
+              "r": 0.96,
+              "t": 0
+            },
+            {
+              "a": 0.97,
+              "b": 1,
+              "g": 0.97,
+              "r": 0.84,
+              "t": 0.46
+            },
+            {
+              "a": 0.82,
+              "b": 0.98,
+              "g": 0.87,
+              "r": 0.74,
+              "t": 0.78
+            },
+            {
+              "a": 0,
+              "b": 0.83,
+              "g": 0.67,
+              "r": 0.47,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.78
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.18,
+              "v": 1
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.7,
+              "v": 0.85
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 0.14
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.54
+          },
+          "gravity": {
+            "x": 0,
+            "y": 345
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": {
+        "align": "none",
+        "maxStretch": 1.38,
+        "minStretch": 1.38,
+        "speedScale": 0
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 10,
+        "spread": 122
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "user:ice-lance"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 18,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.017
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 22,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Ice chips",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 200,
+          "min": -200,
+          "mode": "range"
+        },
+        "life": {
+          "max": 1.06,
+          "min": 0.62,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 28,
+          "min": 12,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 240,
+          "min": 112,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Ice chips",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 1,
+              "g": 0.99,
+              "r": 0.96,
+              "t": 0
+            },
+            {
+              "a": 0.97,
+              "b": 1,
+              "g": 0.97,
+              "r": 0.84,
+              "t": 0.46
+            },
+            {
+              "a": 0.82,
+              "b": 0.98,
+              "g": 0.87,
+              "r": 0.74,
+              "t": 0.78
+            },
+            {
+              "a": 0,
+              "b": 0.83,
+              "g": 0.67,
+              "r": 0.47,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.78
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.18,
+              "v": 1
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.7,
+              "v": 0.85
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 0.14
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 0.54
+          },
+          "gravity": {
+            "x": 0,
+            "y": 345
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": {
+        "align": "none",
+        "maxStretch": 1.05,
+        "minStretch": 1.05,
+        "speedScale": 0
+      },
+      "shape": {
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "direction": -90,
+        "emitFrom": "volume",
+        "kind": "cone",
+        "radius": 10,
+        "spread": 122
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "user:ice-chip"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "add",
+      "byEmitterSpeed": null,
+      "bySpeed": null,
+      "collision": null,
+      "dissolve": null,
+      "emission": {
+        "bursts": [
+          {
+            "count": 32,
+            "cycles": 1,
+            "interval": 0,
+            "probability": 1,
+            "spread": 0,
+            "time": 0.02
+          }
+        ],
+        "delay": 0,
+        "maxParticles": 40,
+        "prewarm": false,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 0
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "Crystal glints",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "max": 155,
+          "min": -155,
+          "mode": "range"
+        },
+        "life": {
+          "max": 0.79,
+          "min": 0.31,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "max": 360,
+          "min": 0,
+          "mode": "range"
+        },
+        "size": {
+          "max": 33,
+          "min": 12,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 230,
+          "min": 110,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "limitVelocity": null,
+      "name": "Crystal glints",
+      "noise": null,
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 1,
+              "b": 1,
+              "g": 0.96,
+              "r": 0.91,
+              "t": 0
+            },
+            {
+              "a": 0.8,
+              "b": 1,
+              "g": 0.82,
+              "r": 0.61,
+              "t": 0.32
+            },
+            {
+              "a": 0,
+              "b": 0.99,
+              "g": 0.43,
+              "r": 0.39,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.77
+            },
+            {
+              "ease": "easeOut",
+              "t": 0.27,
+              "v": 1.14
+            },
+            {
+              "ease": "easeOut",
+              "t": 1,
+              "v": 0.02
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": {
+            "mode": "constant",
+            "value": 1.31
+          },
+          "gravity": {
+            "x": 0,
+            "y": 212
+          },
+          "gravityParam": null,
+          "orbital": null,
+          "radial": null,
+          "speedMultiplier": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "randomFlip": null,
+      "render": {
+        "align": "velocity",
+        "maxStretch": 4,
+        "minStretch": 1,
+        "speedScale": 0.01
+      },
+      "shape": {
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 0,
+        "emitFrom": "volume",
+        "innerRadius": 0,
+        "kind": "circle",
+        "radius": 13
+      },
+      "space": "local",
+      "startColor": null,
+      "subEmitters": null,
+      "texture": {
+        "frames": null,
+        "ref": "spark"
+      },
+      "tintParam": null,
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "Ashura sample",
+    "name": "Ice Shatter",
+    "notes": "A burst of faceted ice shards and chips with embedded PNG textures, frost mist and crystal glints."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 1010,
+  "textures": {
+    "ice-chip": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAA4CAYAAABNGP5yAAAEKUlEQVR4nOyaUW7bRhCGR7TIIkpT6UVPMlD3BFVvoJ6gyg3cG7g3SE/Q5KmPVW7g3kA+QZuiBVygde2iBGxYtWjZoUjuclUMvZMQsmxxyVnbjTmTgJwlQeP/ZnaHXLv5/Z8xPGZz6KQGUAOoAdQAagA1gMcHoEknD9GGm97nANCfJbA1jWHw94Xo/3LydqfXbb2mez4IAMNNr41CAWAAAFt4LhX0j0OASQQwT7PbYH8yx8PIPw2BC0LzvrKqhQ70eQcvSgUQJADT+OqYt+OLGJJUUcgGoXmXWdX/rzkKnkTXRZNJtQB/FlFIhhAOe93WHg08GADDTe8rANileJVN4/eZThc0utpQfLpYedOufxoOet3WGxq4dwA68yOK8xbKq0xPovWiyWKp4OTyxg82nDrjKhBsVMCI5nReNGY7eTeFi/vBNKRTKxAcC6U/pBiF/zYFOJmXEz+LJVzEksLbrKPXhPbS+N0BWC59FP/XBUXl7OAsLHhn5n1dCe17AZAv/VBWF7/U9qxBcLhLH8XvB3SlnN3Q9op6f10HYgWQL318kdkPiq/wJdpeUR/4p+EPFFgFQKXPJX5N2zPx7SIQHK7S3w/ev7NXsQJtjxWCw1H6BzMe8QZtz8S3lmIeAFT6KP5floo1bntFfZtO2ABQ6U8iPvEl2946f9nrto4oYAFApc/xosPU9m5ybMYvKGADgOJDCR0u8Uxtb5W/6HVb5xSwAMDSDyUMq77oWGp7ecd9glcUsADA0pcKRhy93mLbK7TwlfocFgpGvwfQ4RIfpQqCRILgL/2xyS5RIQBY+r+ewZCj1+OCdxYLCPWK/0nLzY5Rkt559gsBwNL/YwajquJROGb8Ul5/ECOEtW3PGMBPExjJBXRWXizganElfCZuF4cQUrUAIZXVtme8CMpFtrkZlBX+z9t4rXjy9lMXmhsNCq20vWVvFPkLkd5H3qf6G7t/y23vLMt4IqFMLrOKuUxAmq222PY+o4C1AvCfHydHfpx8sa7ELkWaZTwoKR7daTSg87FnWglGC58xAHI/Tr7Vv+g4XCV8EguQDG0NITxrudBo8Le9SgA0hD3adsJefjxP2ITn3d1wskpoNOxlvxQADeHcj5Pnx/NkO0oV44uxMQTjtscCgNx1nderpgSnI4T2U4/Cym2PFYCG8MZ0J9bUvaYDz1ru8oVSbY8dgIZw7rrOcwDYoTFue+Jt5CEU/tq7EwDkruu80lMisAxhm+Fx/AA0hD29ETmmMSbDKbbzxNvYqtL2jL8FyjhOCQD4Ugj1XYVpcaghovCxfia7WwFA7rrON0KoMe0g0/gt9rMWvKsXV+tuFYCG8KMQqn/Dt0SQy/KurSzfKwAN4UgIhYvjS71IkuA95h/1MAFoCJjdryl+KOZYeu7/xmoANYAaQA2gBvCYAfw3AIwLEPIhXJIIAAAAAElFTkSuQmCC",
+    "ice-lance": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAwCAYAAAChS3wfAAADsUlEQVR4nOxazU7bShT+CEl04ysuuX+RroR1EYt00UqgvkDhASqhvEDpG/AGDVIfIF11a96AXTcs0j2Loi66oWqKGlQakQYKOLFjU51kjkAmOGN7nJ/ic7A0cyaJ/H3nm3PGCenXHzu4z5biQUJAQkBCQEJAQkBCQELAvSMgzYNps5KefcJjYas8ELbasoG2C5x3AdN2V/e/mVUtl1mbOgJKenYZwAaAdQCLHGczHcByAZMup3/ZV7QC2M4Vaq0ODpptmhrFXAZTQcAg0M5VH9y5AEygLxx+x207PrfxoWHC7Lo0rRUL2javTSQBd4E+tYGG1ZezjF3aLt4fX6JpdjlEbvBgoggYBJqcsvu10wcvidsrd69VeDB2Au4CTd60gKbtL20JuXvdKBa0U56MhQA/0JRtknjTks/2ELlLZT92AvxAA9d7O2i2JeR+06vFgrbPk9gJGAaask0Sb1rXrQpQKnevGz5rSI8CNGebgJ/5KlWJ3G/6wNanhAAZ0NTCKNONCNkOKPdA2Q9NQEnPPvP7cDp6Ura/2xwJbwHlLl38QhNQ0rP/D/pgVdmOIHfp1heJAAA7API8oaNpwwp2YIlJ7oGzH5iAkp59AWCF54emGpkrkjt7DcCmX+sLRYB4/CzHAf6s4/QeWiLInZ3uryIj/UAElPTsPBc92uv1thrwtM8PTtqo/7A4FNaq1JGKBe0zB5QSIMAvEviDC/mnsmH7nK6uG6litoTctyVeG44A0fLWVYH/cmb15B4ROBe5chC5ByaAWx5V+kMzGviTy27vGT1igaO/d0Lu+wHeE44Aanmmgzxl3h1/gWuJjL/iQKwEUMszHayEBa+wwPGRdjOq3KUJoJbXtFCut4ODV1jguKdvFAvaWw7ETgC1vIYF46g91gLXEv18iwMjI+CoDaNhDX66G0GB46P2ZpieroSAl28+7YgfGfKepVv2Ry6Dhwt5/DP3G4p5jcNhjfa5Yabc2OQ+yGcG/YvM7l59WdzQimep57nsLB78Nw/97985FNZaIuNlM+WOJONSBAgS5sVhY4Nj6dkZLBXmsPTvHDLpSD8r1gTBFTPlKq/sSghg392r05cflYW/tPyjhT9VAKdshz66xl4DvP70sV4TUh1aE3y8KoCPdH/LuGw6az5rfkYyXzRT7tokgpcigG6cAIjOUJUsbGUB/Pm4ipsyAgIQURMFk4BvTTpw6RrgdSHltZybuvkNkTFJhS1WArxE8HxaLRXw9b+cJQQkBNxzAn4OAP8MGKzVDaUdAAAAAElFTkSuQmCC"
+  }
+}

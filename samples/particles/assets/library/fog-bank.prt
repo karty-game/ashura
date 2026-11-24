@@ -1,0 +1,378 @@
+{
+  "duration": 4,
+  "layers": [
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 25,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 5
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "fog-near",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 4,
+          "min": 2.5,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 140,
+          "min": 90,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 15,
+          "min": 5,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "fog-near",
+      "noise": {
+        "frequency": 0.004,
+        "octaves": 2,
+        "scrollSpeed": 0.1,
+        "strength": {
+          "mode": "constant",
+          "value": 12
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.7692,
+              "g": 0.6719999999999999,
+              "r": 0.6200000000000001,
+              "t": 0
+            },
+            {
+              "a": 0.336,
+              "b": 0.7692,
+              "g": 0.6719999999999999,
+              "r": 0.6200000000000001,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.7278,
+              "g": 0.6335000000000001,
+              "r": 0.5800000000000001,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": {
+          "keys": [
+            {
+              "ease": "easeOut",
+              "t": 0,
+              "v": 0.8
+            },
+            {
+              "t": 1,
+              "v": 1.3
+            }
+          ],
+          "mode": "curve"
+        },
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 25,
+            "y": -4
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "height": 120,
+        "kind": "rect",
+        "width": 420
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 34,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 7
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "fog-far",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 4,
+          "min": 2.5,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 90,
+          "min": 50,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 15,
+          "min": 5,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "fog-far",
+      "noise": {
+        "frequency": 0.004,
+        "octaves": 2,
+        "scrollSpeed": 0.1,
+        "strength": {
+          "mode": "constant",
+          "value": 9
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.7692,
+              "g": 0.6719999999999999,
+              "r": 0.6200000000000001,
+              "t": 0
+            },
+            {
+              "a": 0.21000000000000002,
+              "b": 0.7692,
+              "g": 0.6719999999999999,
+              "r": 0.6200000000000001,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.7278,
+              "g": 0.6335000000000001,
+              "r": 0.5800000000000001,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 14,
+            "y": -2
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "height": 120,
+        "kind": "rect",
+        "width": 420
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    },
+    {
+      "attractor": null,
+      "attractorInfluence": 0,
+      "blend": "normal",
+      "byEmitterSpeed": null,
+      "collision": null,
+      "emission": {
+        "bursts": [],
+        "delay": 0,
+        "maxParticles": 13,
+        "prewarm": true,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 4
+        },
+        "rateOverTimeParam": null
+      },
+      "enabled": true,
+      "id": "wisps",
+      "inheritVelocity": 0,
+      "initial": {
+        "angularVelocity": {
+          "mode": "constant",
+          "value": 0
+        },
+        "life": {
+          "max": 2.6,
+          "min": 1.8,
+          "mode": "range"
+        },
+        "lifeParam": null,
+        "rotation": {
+          "mode": "constant",
+          "value": 0
+        },
+        "size": {
+          "max": 50,
+          "min": 30,
+          "mode": "range"
+        },
+        "sizeParam": null,
+        "speed": {
+          "max": 16,
+          "min": 6,
+          "mode": "range"
+        },
+        "speedParam": null
+      },
+      "killZones": null,
+      "name": "wisps",
+      "noise": {
+        "frequency": 0.004,
+        "octaves": 2,
+        "scrollSpeed": 0.1,
+        "strength": {
+          "mode": "constant",
+          "value": 16
+        }
+      },
+      "opacityParam": null,
+      "overLifetime": {
+        "color": {
+          "keys": [
+            {
+              "a": 0,
+              "b": 0.7829999999999999,
+              "g": 0.7028,
+              "r": 0.6599999999999999,
+              "t": 0
+            },
+            {
+              "a": 0.252,
+              "b": 0.7829999999999999,
+              "g": 0.7028,
+              "r": 0.6599999999999999,
+              "t": 0.3
+            },
+            {
+              "a": 0,
+              "b": 0.7554,
+              "g": 0.6719999999999999,
+              "r": 0.6200000000000001,
+              "t": 1
+            }
+          ]
+        },
+        "rotation": null,
+        "size": null,
+        "velocity": {
+          "drag": null,
+          "gravity": {
+            "x": 40,
+            "y": -8
+          },
+          "gravityParam": null,
+          "radial": null,
+          "x": null,
+          "y": null
+        }
+      },
+      "shape": {
+        "emitFrom": "volume",
+        "height": 60,
+        "kind": "rect",
+        "width": 420
+      },
+      "space": "local",
+      "startColor": null,
+      "texture": {
+        "frames": null,
+        "ref": "smoke"
+      },
+      "trail": null,
+      "wind": null
+    }
+  ],
+  "looping": false,
+  "meta": {
+    "createdWith": "particlr@0.x",
+    "name": "Fog bank",
+    "notes": "Three prewarmed layers of fog fade after a finite preview."
+  },
+  "params": [],
+  "schemaVersion": 13,
+  "seed": 133
+}

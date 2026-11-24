@@ -5,7 +5,7 @@ package wgpu
 import "github.com/gogpu/gputypes"
 
 // Type aliases from gputypes for single-import ergonomics.
-// Importing wgpu "github.com/karty-game/karty-webgpu/internal/webgpu" is sufficient — no separate
+// Importing wgpu "github.com/karty-game/ashura/internal/webgpu" is sufficient — no separate
 // gputypes import required when using these aliases.
 
 // Extent3D is a 3D extent (width/height/depth or array layers).

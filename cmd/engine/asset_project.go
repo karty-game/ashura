@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/assetbuild"
 )
 
 const assetConfigFile = "asset.config.go"
@@ -27,6 +27,7 @@ type assetOptions struct {
 	profile string
 	target  string
 	noCache bool
+	inspect bool
 	jobs    int
 	log     io.Writer
 }
@@ -109,24 +110,30 @@ func normalizeAssetOptions(options assetOptions) (assetOptions, error) {
 
 func prepareDefaultProject(ctx context.Context, project string, options assetOptions) error {
 	info, err := os.Lstat(filepath.Join(project, "assets"))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-
-	if err != nil {
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		if !options.inspect {
+			return nil
+		}
+	case err != nil:
 		return fmt.Errorf("asset sources: %w", err)
-	}
-
-	if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+	case !info.IsDir() || info.Mode()&os.ModeSymlink != 0:
 		return fmt.Errorf("asset sources must be a directory: %w", errAssetProject)
 	}
 
 	parts := strings.Split(options.target, "/")
-	_, err = assetbuild.Build(ctx, assetbuild.DefaultConfig([]string{"assets/**"}, "generated/assets"), assetbuild.Options{
+	config := assetbuild.DefaultConfig([]string{"assets/**"}, "generated/assets")
+	buildOptions := assetbuild.Options{
 		Phase:   options.phase,
 		Project: project, Profile: options.profile, TargetOS: parts[0], TargetArch: parts[1],
 		NoCache: options.noCache, Log: options.log, Jobs: options.jobs,
-	})
+	}
+
+	if options.inspect {
+		return assetbuild.Inspect(ctx, config, buildOptions)
+	}
+
+	_, err = assetbuild.Build(ctx, config, buildOptions)
 
 	return err
 }
@@ -140,6 +147,10 @@ func executeAssetRecipe(ctx context.Context, project string, options assetOption
 	}
 	if options.noCache {
 		arguments = append(arguments, "--no-cache")
+	}
+
+	if options.inspect {
+		arguments = append(arguments, "--inspect")
 	}
 
 	if options.jobs > 0 {

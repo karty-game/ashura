@@ -25,9 +25,9 @@ Put the GLB importer before the impostor plugin in `asset.config.go`:
 
 ```go
 import (
-    "github.com/karty-game/karty-webgpu/pkg/assetbuild"
-    impostorbuild "github.com/karty-game/karty-webgpu/pkg/impostor/build"
-    modelbuild "github.com/karty-game/karty-webgpu/pkg/model/build"
+    "github.com/karty-game/ashura/pkg/assetbuild"
+    impostorbuild "github.com/karty-game/ashura/pkg/impostor/build"
+    modelbuild "github.com/karty-game/ashura/pkg/model/build"
 )
 
 // Inside assetbuild.Main's configuration function:
@@ -105,9 +105,8 @@ The static descriptor is 3,168B and geometry 152B.
 Container metadata and executable/host files are additional; these figures are
 not complete sample export sizes. Retained CPU copies and GPU allocation overhead
 are separate residency costs. The published sample uses standard Go with a
-35,000,000-byte complete-file budget to preserve the temporary 256px captures
-and all three reference models. See [validation](../../spec/validation.md)
-for measured complete exports and runtime qualification limits.
+35,000,000-byte per-platform budget to preserve the temporary 256px captures
+and all three reference models. See the [comparison sample](../../samples/impostors/README.md).
 The `detailed` profile is an extended-mip reference at the
 same 256px capture resolution, with padding 16 and five mips. All capture, dilation, mip construction,
 channel packing and compression are offline; camera motion causes no asset rebuilding.
@@ -205,8 +204,7 @@ exact cell contacts retain the original traversal. Attribute selection
 also reads the axis datasets. **This is not a six-read shader**, and a single
 quad does not establish a performance win. Traversal exhaustion and invalid
 inside-volume viewing conditions produce a magenta diagnostic rather than an
-accepted empty result. Hardware rotation, residency and source comparisons are
-recorded in [validation](../../spec/validation.md).
+accepted empty result.
 
 Camera or object movement changes ordinary transforms and GPU ray evaluation.
 It does not trigger CPU model scans, geometry generation, atlas processing,
@@ -247,11 +245,9 @@ capture; prefabs must first be flattened by their build processor.
 
 ## Measurements
 
-Current graphics checks and their limits belong in [validation](../../spec/validation.md).
-[Historical benchmarks](../../spec/impostor-benchmarks.md) describe earlier
-capture profiles and representations; their timings do not qualify the current
-BC1 resource. The 6/9/12 counts above describe sampling instructions, not GPU
-duration or device FPS. The [comparison sample](../../samples/impostors/#representation-limits)
+GPU duration and device FPS require separate measurements from the 6/9/12
+sampling instruction counts above. The
+[comparison sample](../../samples/impostors/README.md#representation-limits)
 explains how to inspect approximation errors.
 
 ## Explicit capture baselines and compatibility
@@ -267,7 +263,7 @@ are 128px, eight azimuths and three rows spanning −30 to +30 degrees. Existing
 angular-specific options also select this mode for recipe compatibility.
 
 Format v4 uses `KIMPOST4` and resource schema `karty.impostor@4`, capped at 192 MiB.
-It carries explicit storage metadata: BC1 for published Angular/Octahedral captures,
+It carries explicit storage metadata: BC1, ETC2 RGBA or ASTC6x6 for published Angular/Octahedral captures,
 exact RGBA8 for the layered reference. The 3,168-byte prepared uniform adds a
 storage vector before the capture table. Runtime admission checks storage,
 container profiles, color space, dimensions and mip counts before App textures
@@ -275,6 +271,14 @@ are created. CPU loading remains valid before `Run`; the active backend rejects
 unsupported compression at GPU preparation.
 
 Versions 1–3 are rejected and must be rebuilt. The action revision
-`bc1-view-atlases@9` invalidates affected impostor outputs while unchanged upstream
-imports can be reused. There is one current wire format and no compatibility
-conversion. See [Decision 20](../../spec/decisions/0020-bc1-impostor-atlases.md).
+`native-view-atlases@10` invalidates affected impostor outputs while unchanged upstream
+imports can be reused. Format v4 is the current wire format.
+
+The sample now publishes separate BC1 desktop and ASTC6x6 mobile files, retaining
+256 px captures on both platforms. Mobile padding is 16 px for block alignment;
+desktop padding remains 8 px. It reads only the supported profile asynchronously
+at startup/model selection, using generated path/size/SHA-256 descriptors. Camera
+and UI updates continue while a file is pending. Mobile atlases preserve RGB
+normals and depth alpha and use the existing non-BC1 shader path. No runtime
+transcoding or normal-component reconstruction occurs. See the
+[build options](build/README.md).

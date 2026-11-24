@@ -8,7 +8,7 @@ geometry for chunking, UV generation and a lighting bake.
 
 Start with `levelbuild.Scenes`, then prepare its materials with
 `levelbuild.Materials`. Import
-`levelbuild "github.com/karty-game/karty-webgpu/pkg/level/build"`.
+`levelbuild "github.com/karty-game/ashura/pkg/level/build"`.
 
 ```mermaid
 flowchart LR

@@ -2,8 +2,8 @@
 package reflection
 
 import (
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // ProbeOptions configures a probe's axis-aligned influence volume. HalfExtents

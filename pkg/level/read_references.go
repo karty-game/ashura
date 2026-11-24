@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
-	"github.com/karty-game/karty-webgpu/pkg/scene/resource"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/scene/resource"
 )
 
 const (
@@ -15,9 +14,14 @@ const (
 	activeReferenceBytes     = 32 << 20
 )
 
-type referenceArrival struct {
+type referenceArrival[T any] struct {
 	index   int
-	payload *resource.Payload
+	payload T
+}
+
+type referencePayload struct {
+	file    *resource.Payload
+	entries []*resource.Payload
 }
 
 func (prepared *PreparedChunk) readFiles(ctx context.Context, base string, refs []Reference) error {
@@ -34,17 +38,37 @@ func (prepared *PreparedChunk) readFiles(ctx context.Context, base string, refs 
 		missing = append(missing, ref)
 	}
 
-	payloads, err := readReferences(ctx, missing, func(ctx context.Context, ref Reference) (*resource.Payload, error) {
-		return resource.ReadVerified(ctx, base, resource.Asset{ID: prepared.chunk.ID, Path: ref.Path, Size: ref.Size, SHA256: ref.SHA256})
+	return prepared.readMissingFiles(ctx, base, missing)
+}
+
+func (prepared *PreparedChunk) readMissingFiles(ctx context.Context, base string, missing []Reference) error {
+	targets, bundle := prepared.readTargets(missing)
+
+	payloads, err := readReferences(ctx, targets, func(ctx context.Context, ref Reference) (referencePayload, error) {
+		asset := prepared.resourceAsset(ref)
+		if ref == bundle.file {
+			file, slices, err := resource.ReadVerifiedSlices(ctx, base, asset, bundle.entries)
+
+			return referencePayload{file: file, entries: slices}, err
+		}
+
+		file, err := resource.ReadVerified(ctx, base, asset)
+
+		return referencePayload{file: file}, err
 	})
 	if err != nil {
 		return fmt.Errorf("chunk %s: %w", prepared.chunk.ID, err)
 	}
 
-	for index, ref := range missing {
-		data := payloads[index]
-		prepared.verified[ref.SHA256] = data
-		prepared.files[ref.SHA256] = resourcedata.Bytes(data)
+	for index, ref := range targets {
+		result := payloads[index]
+		if len(result.entries) == 0 || bundle.retainFile {
+			prepared.payloads[ref.SHA256] = result.file
+		}
+
+		for entryIndex, data := range result.entries {
+			prepared.payloads[bundle.entries[entryIndex].Asset.SHA256] = data
+		}
 	}
 
 	return nil
@@ -55,11 +79,11 @@ func (prepared *PreparedChunk) readFiles(ctx context.Context, base string, refs 
 // and checksum work as well as transport: at most eight reads and 32 MiB of
 // declared payloads, with a larger valid file read alone. Completed GPU-ready
 // bytes retain the existing aggregate bound; no App work runs in these tasks.
-func readReferences(
+func readReferences[T any](
 	ctx context.Context,
 	refs []Reference,
-	read func(context.Context, Reference) (*resource.Payload, error),
-) ([]*resource.Payload, error) {
+	read func(context.Context, Reference) (T, error),
+) ([]T, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -73,8 +97,8 @@ func readReferences(
 		workers.Wait()
 	}()
 
-	completed := make(chan referenceArrival, concurrentReferenceReads)
-	payloads := make([]*resource.Payload, len(refs))
+	completed := make(chan referenceArrival[T], concurrentReferenceReads)
+	payloads := make([]T, len(refs))
 	next, active, bytes := 0, 0, 0
 
 	for next < len(refs) || active > 0 {
@@ -92,7 +116,7 @@ func readReferences(
 					cancel(err)
 				}
 
-				completed <- referenceArrival{index: index, payload: payload}
+				completed <- referenceArrival[T]{index: index, payload: payload}
 			})
 		}
 

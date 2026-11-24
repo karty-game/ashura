@@ -7,15 +7,16 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/bufferdata"
-	"github.com/karty-game/karty-webgpu/internal/diagnostics"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	"github.com/karty-game/karty-webgpu/internal/texturedata"
-	"github.com/karty-game/karty-webgpu/internal/uihost"
-	"github.com/karty-game/karty-webgpu/pkg/compute"
-	"github.com/karty-game/karty-webgpu/pkg/shader"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/bufferdata"
+	"github.com/karty-game/ashura/internal/diagnostics"
+	"github.com/karty-game/ashura/internal/particledata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
+	"github.com/karty-game/ashura/internal/texturedata"
+	"github.com/karty-game/ashura/internal/uihost"
+	"github.com/karty-game/ashura/pkg/compute"
+	"github.com/karty-game/ashura/pkg/shader"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 var errAppClosed = ErrClosed
@@ -47,9 +48,12 @@ type AppConfig struct {
 // from another goroutine; Close may be called inside an OnUpdate callback.
 type App struct {
 	screen2D         screenLayer
+	particles        []*particledata.Instance
+	particleSlots    uint32
 	ui               uihost.Attachment
 	features         []Feature
 	featureMask      platform.FeatureMask
+	unculledLights   bool
 	uiTime           time.Duration
 	metrics          diagnostics.Monitor
 	buffers          map[*shader.Buffer]struct{}
@@ -141,7 +145,7 @@ func (app *App) RunContext(ctx context.Context, world *World) error {
 		world = NewWorld()
 	}
 
-	shadowResolution, err := pointShadowResolution(world)
+	shadowResolution, err := pointShadowResolutionFor(world, app.featureMask.Has(platform.ClusteredLightsFeature))
 	if err != nil {
 		return err
 	}
@@ -172,11 +176,8 @@ func (app *App) RunContext(ctx context.Context, world *World) error {
 		_ = app.Close()
 	}()
 
-	resources := app.computeResources()
-	if len(resources.Buffers) > 0 || len(resources.Pipelines) > 0 || len(resources.BindGroups) > 0 {
-		if err := driver.PrepareCompute(resources); err != nil {
-			return err
-		}
+	if err := app.prepareGPU(); err != nil {
+		return err
 	}
 
 	err = driver.Run(ctx, func(dt time.Duration, input platform.InputState) (render.Frame, error) {
@@ -218,6 +219,8 @@ func (app *App) Close() error {
 		app.screen2D.Close()
 	}
 
+	app.particles = nil
+	app.particleSlots = 0
 	app.closeFrameObserver()
 	app.closeCompute()
 

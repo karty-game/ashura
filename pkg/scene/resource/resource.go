@@ -33,9 +33,11 @@ type Asset struct {
 // Call from an I/O goroutine; admit the returned bytes on the application loop.
 // Browser base is a relative same-origin URL prefix; native base is a directory.
 func Read(ctx context.Context, base string, asset Asset) ([]byte, error) {
-	if ctx == nil || asset.ID == "" || !fs.ValidPath(asset.Path) || strings.ContainsAny(asset.Path, "\\%?#:\x00") || asset.Size < 1 ||
-		asset.Size > maxBytes ||
-		!validChecksum(asset.SHA256) {
+	return readAsset(ctx, base, asset, nil)
+}
+
+func readAsset(ctx context.Context, base string, asset Asset, entries []Slice) ([]byte, error) {
+	if ctx == nil || !validAsset(asset) {
 		return nil, fmt.Errorf("resource %q descriptor: %w", asset.ID, ErrInvalid)
 	}
 
@@ -43,7 +45,7 @@ func Read(ctx context.Context, base string, asset Asset) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := read(ctx, base, asset.Path, asset.Size, asset.SHA256)
+	data, err := read(ctx, base, asset.Path, asset.Size, asset.SHA256, entries)
 	if err != nil {
 		if canceled := ctx.Err(); canceled != nil {
 			return nil, canceled
@@ -57,6 +59,11 @@ func Read(ctx context.Context, base string, asset Asset) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func validAsset(asset Asset) bool {
+	return asset.ID != "" && fs.ValidPath(asset.Path) && !strings.ContainsAny(asset.Path, "\\%?#:\x00") &&
+		asset.Size >= 1 && asset.Size <= maxBytes && validChecksum(asset.SHA256)
 }
 
 func validChecksum(sum string) bool {

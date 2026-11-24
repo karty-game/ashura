@@ -4,8 +4,8 @@ package native
 
 import (
 	"github.com/gogpu/gputypes"
-	"github.com/karty-game/karty-webgpu/internal/render"
-	wgpu "github.com/karty-game/karty-webgpu/internal/webgpu"
+	"github.com/karty-game/ashura/internal/render"
+	wgpu "github.com/karty-game/ashura/internal/webgpu"
 )
 
 func (driver *pointShadowFeature) initPointShadowDebug() error {
@@ -50,7 +50,7 @@ func (driver *pointShadowFeature) initPointShadowDebug() error {
 	shadow.debugGroup, err = driver.device.CreateBindGroup(
 		&wgpu.BindGroupDescriptor{
 			Layout:  layout,
-			Entries: []wgpu.BindGroupEntry{{Binding: 0, TextureView: shadow.cube}, {Binding: 1, Sampler: shadow.sampler}},
+			Entries: []wgpu.BindGroupEntry{{Binding: 0, TextureView: shadow.layers}, {Binding: 1, Sampler: shadow.sampler}},
 		},
 	)
 

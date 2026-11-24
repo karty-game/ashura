@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/spritepaint"
+	"github.com/karty-game/ashura/internal/spritepaint"
 )
 
 func fixtureImage(t *testing.T, width, height int) *Image {

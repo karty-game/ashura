@@ -155,7 +155,7 @@ Pipelines: []assetbuild.Pipeline{{
 }},
 ```
 
-`uibuild` is `github.com/karty-game/karty-webgpu/pkg/ui/build`. The UI plugin writes
+`uibuild` is `github.com/karty-game/ashura/pkg/ui/build`. The UI plugin writes
 GPU-ready straight-alpha RGBA pages, a typed `assets.Load()` catalog and
 `atlas.json` metadata into ignored `generated/assets/`. The generated catalog
 loads each page once and supplies named image regions such as `UiCoin`,
@@ -206,6 +206,5 @@ check(list.ScrollToRow(9999))
 row bindings, and whole-playground node/record-slot counts. Inspection is
 explicit: the sample does not update labels or allocate telemetry strings on
 idle frames. Retained record slots include hidden playground sections and are
-not a GPU draw-call counter. These counters demonstrate bounded UI work;
-measured CPU allocations, submission counts and hardware frame pacing are
-reported separately in [validation](../../spec/validation.md).
+not a GPU draw-call counter. These counters demonstrate bounded UI work. CPU
+allocations, submission counts and hardware frame pacing require separate checks.

@@ -7,8 +7,8 @@ import (
 	"math"
 	"slices"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // PrepareModel applies a static placement offline, preserving indices, UVs and

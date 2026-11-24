@@ -7,9 +7,9 @@ import (
 	"syscall/js"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/impostordata"
-	"github.com/karty-game/karty-webgpu/internal/platform"
-	"github.com/karty-game/karty-webgpu/internal/render"
+	"github.com/karty-game/ashura/internal/impostordata"
+	"github.com/karty-game/ashura/internal/platform"
+	"github.com/karty-game/ashura/internal/render"
 )
 
 func TestMaterialFeaturesRegisterOnlyTheirOwnShader(t *testing.T) {
@@ -70,7 +70,7 @@ func TestMaterialFeatureAdmissionPrecedesGPUUploads(t *testing.T) {
 
 	driver := &Driver{}
 	for _, draw := range []render.DrawCall{{}, {Source: true}, {Impostor: &impostordata.Document{}}} {
-		if _, err := driver.materialGroup(draw, render.Frame{}); !errors.Is(err, platform.ErrFeatureMissing) {
+		if _, err := driver.materialGroup(draw); !errors.Is(err, platform.ErrFeatureMissing) {
 			t.Fatal("missing material feature was not rejected before GPU use", err)
 		}
 	}

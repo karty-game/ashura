@@ -5,8 +5,8 @@ package modelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/meshdata"
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/meshdata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 // Result reports exact prepared geometry/texture sizes, without runtime work.

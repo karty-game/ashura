@@ -4,10 +4,10 @@ package main
 import (
 	"log"
 
-	"github.com/karty-game/karty-webgpu/pkg/debug"
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/engine/features"
-	"github.com/karty-game/karty-webgpu/samples/internal/sample"
+	"github.com/karty-game/ashura/pkg/debug"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/engine/features"
+	"github.com/karty-game/ashura/samples/internal/sample"
 )
 
 const width, height = 1280, 720

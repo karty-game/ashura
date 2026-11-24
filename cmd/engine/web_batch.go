@@ -19,6 +19,9 @@ import (
 func prepareWebAssets(ctx context.Context, root string, packages []webPackage, options assetOptions) error {
 	const maxWorkers = 4
 
+	actionJobs := max(1, options.jobs)
+	projectWorkers := min(maxWorkers, max(1, runtime.GOMAXPROCS(0)/actionJobs))
+
 	ctx, cancel := context.WithCancelCause(ctx)
 	defer cancel(nil)
 
@@ -32,7 +35,7 @@ func prepareWebAssets(ctx context.Context, root string, packages []webPackage, o
 		next    atomic.Int64
 	)
 
-	for range min(len(packages), runtime.GOMAXPROCS(0), maxWorkers) {
+	for range min(len(packages), projectWorkers) {
 		workers.Go(func() {
 			for ctx.Err() == nil {
 				index := int(next.Add(1) - 1)

@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 13,
+  "meta": {
+    "name": "Smoke",
+    "createdWith": "particlr@0.x",
+    "notes": "Soft rising smoke plume with a dense core."
+  },
+  "duration": 2,
+  "looping": true,
+  "seed": 7,
+  "params": [],
+  "layers": [
+    {
+      "id": "smoke-core",
+      "name": "smoke-core",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "smoke",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 8
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": false,
+        "maxParticles": 28
+      },
+      "shape": {
+        "kind": "circle",
+        "radius": 8,
+        "innerRadius": 0,
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "emitFrom": "volume"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 1.6,
+          "max": 2.4
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 6,
+          "max": 16
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 34,
+          "max": 50
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -16,
+          "max": 16
+        }
+      },
+      "overLifetime": {
+        "size": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0.4,
+              "ease": "easeOut"
+            },
+            {
+              "t": 1,
+              "v": 1.6
+            }
+          ]
+        },
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 0.12,
+              "g": 0.12,
+              "b": 0.14,
+              "a": 0
+            },
+            {
+              "t": 0.2,
+              "r": 0.1,
+              "g": 0.1,
+              "b": 0.12,
+              "a": 0.5
+            },
+            {
+              "t": 1,
+              "r": 0.05,
+              "g": 0.05,
+              "b": 0.06,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": null,
+        "velocity": {
+          "gravity": {
+            "x": 8,
+            "y": -18
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "constant",
+            "value": 1.6
+          },
+          "speedMultiplier": null,
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 20
+        },
+        "frequency": 0.006,
+        "scrollSpeed": 0.15,
+        "octaves": 2
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": null,
+      "randomFlip": null,
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    },
+    {
+      "id": "smoke",
+      "name": "smoke",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "smoke",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 18
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": false,
+        "maxParticles": 64
+      },
+      "shape": {
+        "kind": "circle",
+        "radius": 14,
+        "innerRadius": 0,
+        "arc": 360,
+        "arcMode": "random",
+        "arcSpeed": 1,
+        "emitFrom": "volume"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 1.2,
+          "max": 2
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 10,
+          "max": 30
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 26,
+          "max": 44
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -20,
+          "max": 20
+        }
+      },
+      "overLifetime": {
+        "size": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 0.5,
+              "ease": "easeOut"
+            },
+            {
+              "t": 1,
+              "v": 1.8
+            }
+          ]
+        },
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 0.32,
+              "g": 0.32,
+              "b": 0.34,
+              "a": 0
+            },
+            {
+              "t": 0.2,
+              "r": 0.3,
+              "g": 0.3,
+              "b": 0.32,
+              "a": 0.45
+            },
+            {
+              "t": 1,
+              "r": 0.14,
+              "g": 0.14,
+              "b": 0.16,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": null,
+        "velocity": {
+          "gravity": {
+            "x": 12,
+            "y": -26
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "constant",
+            "value": 1.4
+          },
+          "speedMultiplier": null,
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 28
+        },
+        "frequency": 0.006,
+        "scrollSpeed": 0.15,
+        "octaves": 2
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": null,
+      "randomFlip": null,
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    }
+  ]
+}

@@ -5,9 +5,9 @@ package levelbuild
 import (
 	"fmt"
 
-	"github.com/karty-game/karty-webgpu/internal/leveldata"
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
-	"github.com/karty-game/karty-webgpu/pkg/texture"
+	"github.com/karty-game/ashura/internal/leveldata"
+	"github.com/karty-game/ashura/pkg/assetbuild"
+	"github.com/karty-game/ashura/pkg/texture"
 )
 
 // NativeTextureOptions publishes normalized eight-bit lightmaps as GPU blocks.
@@ -28,6 +28,9 @@ type NativeTextureOptions struct {
 	// NativeAlbedo prepares opaque albedos offline through AlbedoETC1S's input
 	// preparation, retaining BC1/ETC2 blocks rather than a runtime decoder path.
 	NativeAlbedo bool
+	// ProfileMaterials publishes native albedo and relief under the selected
+	// texture profile. It requires NativeAlbedo.
+	ProfileMaterials bool
 }
 
 const (
@@ -64,6 +67,10 @@ func normalizeNativeTextures(profile NativeTextureOptions) (NativeTextureOptions
 	if profile.Family == nativeTextureBC && profile.LightmapFormat != nativeTextureBC7 && profile.LightmapFormat != nativeTextureBC1 ||
 		profile.Family == nativeTextureETC2 && profile.LightmapFormat != nativeTextureETC2 {
 		return NativeTextureOptions{}, fmt.Errorf("native LDR format/family mismatch: %w", ErrInvalid)
+	}
+
+	if profile.ProfileMaterials && !profile.NativeAlbedo {
+		return NativeTextureOptions{}, fmt.Errorf("profile material publication requires native albedo: %w", ErrInvalid)
 	}
 
 	encoder, err := normalizeLDRTextureEncoder(profile.Encoder)

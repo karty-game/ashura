@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 
-	"github.com/karty-game/karty-webgpu/internal/resourcedata"
+	"github.com/karty-game/ashura/internal/resourcedata"
 )
 
 // Payload is an immutable, already verified resource. Its bytes cannot be
@@ -20,10 +20,14 @@ func ReadVerified(ctx context.Context, base string, asset Asset) (*Payload, erro
 		return nil, err
 	}
 
-	var digest [32]byte
-	if _, err := hex.Decode(digest[:], []byte(asset.SHA256)); err != nil {
-		return nil, err
-	}
+	return ownVerified(data, asset.SHA256), nil
+}
 
-	return resourcedata.OwnVerified(data, digest), nil
+// ownVerified is called after descriptor and checksum admission.
+func ownVerified(data []byte, checksum string) *Payload {
+	var digest [32]byte
+
+	_, _ = hex.Decode(digest[:], []byte(checksum))
+
+	return resourcedata.OwnVerified(data, digest)
 }

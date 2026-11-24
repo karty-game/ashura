@@ -22,6 +22,7 @@ const (
 	Schema5          = "karty.baked-level@5"
 	Schema6          = "karty.baked-level@6"
 	Schema7          = "karty.baked-level@7"
+	Schema8          = "ashura.baked-level@8"
 	MaxManifestBytes = 8 << 20
 	MaxChunks        = 4096
 	MaxPages         = 8192
@@ -30,11 +31,27 @@ const (
 
 var ErrFormat = errors.New("invalid prepared baked level")
 
-// Ref names an immutable external payload relative to the public asset root.
+// Ref identifies immutable prepared bytes. Paths are relative to the public
+// asset root; a chunk bundle can supply its indexed page payloads internally.
 type Ref struct {
 	Path   string `json:"path"`
 	Size   int    `json:"size"`
 	SHA256 string `json:"sha256"`
+}
+
+// BundleEntry locates one chunk-owned payload inside a verified bundle. Size
+// and expected content identity come from the chunk's ordinary page references.
+type BundleEntry struct {
+	SHA256 string `json:"sha256"`
+	Offset int64  `json:"offset"`
+}
+
+// ChunkBundle indexes offline-packed geometry, UVs and lightmaps. Material
+// textures remain independent shared references. Runtime readers use these
+// precomputed offsets without parsing or extracting the archive.
+type ChunkBundle struct {
+	File    Ref           `json:"file"`
+	Entries []BundleEntry `json:"entries"`
 }
 
 // Material references shared GPU-ready Source textures.
@@ -70,14 +87,15 @@ type Page struct {
 // Chunk owns one logical space's grid cell. Geometry vertices are local to
 // Origin; Origin, Min and Max are world-space coordinates for selection/culling.
 type Chunk struct {
-	ID      string     `json:"id"`
-	Space   string     `json:"space"`
-	Cell    [3]int32   `json:"cell"`
-	Origin  [3]float32 `json:"origin"`
-	Min     [3]float32 `json:"min"`
-	Max     [3]float32 `json:"max"`
-	Sources []string   `json:"sources"`
-	Pages   []Page     `json:"pages"`
+	ID      string       `json:"id"`
+	Space   string       `json:"space"`
+	Cell    [3]int32     `json:"cell"`
+	Origin  [3]float32   `json:"origin"`
+	Min     [3]float32   `json:"min"`
+	Max     [3]float32   `json:"max"`
+	Sources []string     `json:"sources"`
+	Pages   []Page       `json:"pages"`
+	Bundle  *ChunkBundle `json:"bundle,omitempty"`
 }
 
 // Object preserves logical identity independently of static presentation residency.

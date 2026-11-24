@@ -7,7 +7,7 @@ package levelbuild
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 var ErrGeometry = errors.New("invalid or oversized level geometry")

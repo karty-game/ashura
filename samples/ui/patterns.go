@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/karty-game/karty-webgpu/pkg/ui"
+	"github.com/karty-game/ashura/pkg/ui"
 )
 
 func feedbackShowcase(update func(string), check func(error)) *ui.Node {

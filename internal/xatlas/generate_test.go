@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/modeldata"
+	"github.com/karty-game/ashura/internal/modeldata"
 )
 
 func TestPortableSingleAtlasPreservesSourceTriangles(t *testing.T) {

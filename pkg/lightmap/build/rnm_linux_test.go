@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/karty-game/karty-webgpu/internal/lightmapdata"
-	"github.com/karty-game/karty-webgpu/internal/lightmapfixture"
-	"github.com/karty-game/karty-webgpu/pkg/lightmap"
-	lightmapbuild "github.com/karty-game/karty-webgpu/pkg/lightmap/build"
+	"github.com/karty-game/ashura/internal/lightmapdata"
+	"github.com/karty-game/ashura/internal/lightmapfixture"
+	"github.com/karty-game/ashura/pkg/lightmap"
+	lightmapbuild "github.com/karty-game/ashura/pkg/lightmap/build"
 )
 
 func TestHardwareRNMVisibilityBasisEnvironmentAndBounce(t *testing.T) {

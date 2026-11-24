@@ -3,8 +3,8 @@ package reflection_test
 import (
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/pkg/engine"
-	"github.com/karty-game/karty-webgpu/pkg/reflection"
+	"github.com/karty-game/ashura/pkg/engine"
+	"github.com/karty-game/ashura/pkg/reflection"
 )
 
 func TestDefaultProbeAllowsExplicitDisabledStrength(t *testing.T) {

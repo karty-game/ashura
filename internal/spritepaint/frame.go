@@ -1,7 +1,7 @@
 // Package spritepaint defines the shared retained 2D submission ABI.
 package spritepaint
 
-import "github.com/karty-game/karty-webgpu/internal/uipaint"
+import "github.com/karty-game/ashura/internal/uipaint"
 
 // Stride packs two transform vectors, UV bounds, linear tint/opacity and a clip.
 const Stride = 80

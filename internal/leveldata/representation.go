@@ -34,7 +34,7 @@ func validPageRepresentation(page Page) bool {
 
 func schemaAllowsRepresentation(schema string, chunk Chunk) bool {
 	for _, page := range chunk.Pages {
-		if schema == Schema6 || schema == Schema7 {
+		if schema == Schema6 || schema == Schema7 || schema == Schema8 {
 			if page.Representation != RGBDiffuse && page.Representation != RNMFit {
 				return false
 			}

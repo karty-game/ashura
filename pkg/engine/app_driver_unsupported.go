@@ -5,7 +5,7 @@ package engine
 import (
 	"errors"
 
-	"github.com/karty-game/karty-webgpu/internal/platform"
+	"github.com/karty-game/ashura/internal/platform"
 )
 
 func newDriver(platform.Config) (platform.Driver, error) {

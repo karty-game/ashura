@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/karty-game/karty-webgpu/internal/uipaint"
+	"github.com/karty-game/ashura/internal/uipaint"
 )
 
 func TestSharedImageAdmissionAndAtomicVisualReplacement(t *testing.T) {

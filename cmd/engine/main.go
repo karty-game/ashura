@@ -14,8 +14,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/karty-game/karty-webgpu/pkg/assetbuild"
 )
 
 const (
@@ -31,10 +29,11 @@ const (
 
 var (
 	errUsage = errors.New(
-		"usage: engine run web [go-package-or-pattern] [--addr host:port] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] | " +
-			"engine build web [go-package-or-pattern] [--output dist/samples] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] | " +
+		"usage: engine run web [go-package-or-pattern] [--addr host:port] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] [--jobs count] | " +
+			"engine build web [go-package-or-pattern] [--output dist/samples] [--compiler auto|go|tinygo] [--profile dev] [--no-cache] [--jobs count] | " +
 			"engine assets build [--project directory | --source assets --output generated/assets] [--jobs count] | " +
 			"engine assets generate [go-package-or-pattern | --project directory] [--profile dev] | " +
+			"engine assets inspect [directory | --project directory] [--phase generate|build] [--profile dev] [--target os/arch] | " +
 			"engine assets model --input source.glb --output prepared.kmodel | " +
 			"engine assets texture --input source.png --output prepared.ktx2 --usage albedo|normal|ao|ssbump",
 	)
@@ -59,20 +58,7 @@ func run(args []string) error {
 	}
 
 	if len(args) >= 2 && args[0] == assetCommand {
-		switch args[1] {
-		case "generate":
-			return runAssetCatalog(ctx, args[2:], assetbuild.PhaseGenerate)
-		case "model":
-			return buildModel(args[2:])
-		case "lightmap":
-			return buildLightmap(ctx, args[2:])
-		case buildCommand:
-			return buildAssetCatalog(ctx, args[2:])
-		case "texture":
-			return buildTexture(args[2:])
-		default:
-			return errUsage
-		}
+		return runAssetCommand(ctx, args[1], args[2:])
 	}
 
 	if len(args) < 2 || args[0] != "run" || args[1] != "web" {

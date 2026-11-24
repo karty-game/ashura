@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 13,
+  "meta": {
+    "name": "Foliage drift",
+    "createdWith": "particlr@0.x",
+    "notes": "Drifting leaves whose hue jitters per-particle around a warm green."
+  },
+  "duration": 4,
+  "looping": true,
+  "seed": 96,
+  "params": [],
+  "layers": [
+    {
+      "id": "leaves",
+      "name": "leaves",
+      "enabled": true,
+      "blend": "normal",
+      "texture": {
+        "ref": "square",
+        "frames": null
+      },
+      "emission": {
+        "rateOverTime": {
+          "mode": "constant",
+          "value": 7
+        },
+        "rateOverTimeParam": null,
+        "rateOverDistance": null,
+        "rateOverDistanceParam": null,
+        "bursts": [],
+        "delay": 0,
+        "prewarm": true,
+        "maxParticles": 40
+      },
+      "shape": {
+        "kind": "edge",
+        "length": 420,
+        "emitFrom": "surface"
+      },
+      "space": "local",
+      "inheritVelocity": 0,
+      "attractorInfluence": 0,
+      "initial": {
+        "life": {
+          "mode": "range",
+          "min": 3,
+          "max": 4
+        },
+        "lifeParam": null,
+        "speed": {
+          "mode": "range",
+          "min": 10,
+          "max": 25
+        },
+        "speedParam": null,
+        "size": {
+          "mode": "range",
+          "min": 7,
+          "max": 12
+        },
+        "sizeParam": null,
+        "rotation": {
+          "mode": "range",
+          "min": 0,
+          "max": 360
+        },
+        "angularVelocity": {
+          "mode": "range",
+          "min": -70,
+          "max": 70
+        }
+      },
+      "overLifetime": {
+        "size": null,
+        "color": {
+          "keys": [
+            {
+              "t": 0,
+              "r": 0.45,
+              "g": 0.62,
+              "b": 0.22,
+              "a": 0
+            },
+            {
+              "t": 0.12,
+              "r": 0.45,
+              "g": 0.62,
+              "b": 0.22,
+              "a": 0.9
+            },
+            {
+              "t": 0.85,
+              "r": 0.4,
+              "g": 0.52,
+              "b": 0.2,
+              "a": 0.9
+            },
+            {
+              "t": 1,
+              "r": 0.4,
+              "g": 0.52,
+              "b": 0.2,
+              "a": 0
+            }
+          ]
+        },
+        "rotation": {
+          "mode": "curve",
+          "keys": [
+            {
+              "t": 0,
+              "v": 50
+            },
+            {
+              "t": 0.33,
+              "v": -50
+            },
+            {
+              "t": 0.66,
+              "v": 50
+            },
+            {
+              "t": 1,
+              "v": -50
+            }
+          ]
+        },
+        "velocity": {
+          "gravity": {
+            "x": -16,
+            "y": 42
+          },
+          "gravityParam": null,
+          "drag": {
+            "mode": "constant",
+            "value": 0.6
+          },
+          "speedMultiplier": {
+            "mode": "curve",
+            "keys": [
+              {
+                "t": 0,
+                "v": 1
+              },
+              {
+                "t": 0.5,
+                "v": 0.5,
+                "ease": "easeInOut"
+              },
+              {
+                "t": 1,
+                "v": 1
+              }
+            ]
+          },
+          "x": null,
+          "y": null,
+          "orbital": null,
+          "radial": null
+        }
+      },
+      "limitVelocity": null,
+      "noise": {
+        "strength": {
+          "mode": "constant",
+          "value": 20
+        },
+        "frequency": 0.008,
+        "scrollSpeed": 0.15,
+        "octaves": 1
+      },
+      "wind": null,
+      "bySpeed": null,
+      "byEmitterSpeed": null,
+      "startColor": {
+        "mode": "hueJitter",
+        "degrees": 40
+      },
+      "randomFlip": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "tintParam": null,
+      "opacityParam": null,
+      "render": null,
+      "dissolve": null,
+      "collision": null,
+      "killZones": null,
+      "attractor": null,
+      "subEmitters": null,
+      "trail": null
+    }
+  ]
+}
