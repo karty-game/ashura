@@ -175,6 +175,39 @@ See [production lightmap baking](../../pkg/lightmap/bake/README.md) and
 
 ## Copyright annex
 
-The [Sponza asset credits](assets/CREDITS.md) document licenses, sources and
-adaptations for the model, textures and relief maps. The web export includes
-the same credits.
+**Crytek Sponza**, © 2010 Frank Meinl / Crytek, is inspired by Marko Dabrovic's
+original Sponza (2002). The asset notices below apply alongside Ashura's
+[MIT source-code license](../../LICENSE).
+
+The model and diffuse textures come from Babylon.js's Sponza Dynamic Shadows
+demo. Babylon maintainers confirmed reuse permission in October 2022.
+[Demo](https://www.babylonjs.com/Demos/SponzaDynamicShadows/) ·
+[Source scene](https://www.babylonjs.com/Scenes/SponzaDynamicShadows/SponzaDynamicShadows.babylon) ·
+[Reuse discussion](https://forum.babylonjs.com/t/whats-the-license-on-the-sponzadynamicshadows-scene/34399)
+
+Karty's offline adaptation flattens translations, converts Z and texture V
+conventions, indexes position/normal/UV tuples and merges compatible materials.
+Opaque diffuse JPEG bytes are preserved. Chain and foliage diffuse/mask JPEGs
+are combined into RGBA PNGs with alpha cutoff 0.5. The adaptation excludes
+collision proxies, sky, embers, the moving lamp marker and existing AO/lighting
+textures. The consolidated GLB preserves the prior opaque/cutout geometry and
+image buffers.
+
+Nine unmodified Crytek Sponza height maps come from Morgan McGuire's Computer
+Graphics Archive under Creative Commons Attribution 3.0 Unported.
+[Archive](https://casual-effects.com/data/) ·
+[Model entry](https://casual-effects.com/g3d/data10/common/model/crytek_sponza/info.js) ·
+[Download](https://casual-effects.com/g3d/data10/common/model/crytek_sponza/sponza.zip) ·
+[License](https://creativecommons.org/licenses/by/3.0/legalcode)
+
+McGuire's July 14, 2011 modifications corrected the Crytek OBJ export, derived
+height maps from normals using `normal2bump.cpp`, combined diffuse/mask textures,
+cleaned masks, supplied `gi_flag.tga` and separated the untextured atrium banner.
+The retained height-map sources are `lion_bump.png`, `background_bump.png`,
+`sponza_arch_bump.png`, `spnza_bricks_a_bump.png`, `sponza_column_a_bump.png`,
+`sponza_column_b_bump.png`, `sponza_column_c_bump.png`, `vase_bump.png` and
+`vase_round_bump.png`, renamed to `*-height.png` roles here.
+`floor-height.png` is Karty-authored. Karty's offline SSBump processing generates
+the published relief coefficients from these inputs.
+
+No endorsement by the original authors is implied.

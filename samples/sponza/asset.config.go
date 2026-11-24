@@ -8,7 +8,6 @@ import (
 	bake "github.com/karty-game/ashura/pkg/lightmap/bake"
 	meshbuild "github.com/karty-game/ashura/pkg/mesh/build"
 	modelbuild "github.com/karty-game/ashura/pkg/model/build"
-	"github.com/karty-game/ashura/samples/internal/sampleassets"
 )
 
 func main() {
@@ -47,7 +46,7 @@ func main() {
 				Output: []assetbuild.Plugin{
 					rnmPublication(),
 				},
-			}, sampleassets.Credits("assets/CREDITS.md", "CREDITS.md")},
+			}},
 		}
 	})
 }
